@@ -24,13 +24,13 @@
       width: auto;
       position: absolute;
       left: 20px;
-      top: 30%; /* loggan ännu högre upp */
+      top: 20%; /* loggan högre upp */
       transform: translateY(-50%);
     }
 
     #date-container {
       position: absolute;
-      top: 50%;
+      top: 65%; /* datum + veckonummer nedåt */
       left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
@@ -64,7 +64,10 @@
       header img {
         height: 50px;
         left: 10px;
-        top: 25%; /* högre upp på mobil */
+        top: 15%; /* högre upp på mobil */
+      }
+      #date-container {
+        top: 60%; /* datum nedåt på mobil */
       }
       #date {
         font-size: 24px;
@@ -139,5 +142,6 @@
   </script>
 </body>
 </html>
+
 
 
