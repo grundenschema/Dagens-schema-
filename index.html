@@ -10,44 +10,83 @@
       height: 100%;
       font-family: Arial, sans-serif;
     }
+
     header {
-      height: 120px;
+      height: 140px;
       background: #f5f5f5;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       position: relative;
       padding: 0 20px;
     }
+
     header img {
       height: 60px;
       width: auto;
       position: absolute;
       left: 20px;
-      top: 50%;
+      top: 30%; /* loggan ännu högre upp */
       transform: translateY(-50%);
     }
-    #date {
-      font-size: 36px;
-      font-weight: bold;
+
+    #date-container {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
+    }
+
+    #date {
+      font-size: 36px;
+      font-weight: bold;
       white-space: nowrap;
     }
+
+    #week {
+      font-size: 18px;
+      margin-top: 4px;
+    }
+
     iframe {
       width: 90%;
-      height: calc(100% - 120px);
+      height: calc(100% - 140px);
       border: none;
       margin-left: 5%;
       display: block;
+    }
+
+    /* RESPONSIV DESIGN */
+    @media (max-width: 600px) {
+      header {
+        height: 120px;
+        padding: 0 10px;
+      }
+      header img {
+        height: 50px;
+        left: 10px;
+        top: 25%; /* högre upp på mobil */
+      }
+      #date {
+        font-size: 24px;
+      }
+      #week {
+        font-size: 14px;
+      }
+      iframe {
+        width: 100%;
+        margin-left: 0;
+        height: calc(100% - 120px);
+      }
     }
   </style>
 </head>
 <body>
   <header>
     <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
-    <div id="date"></div>
+    <div id="date-container">
+      <div id="date"></div>
+      <div id="week"></div>
+    </div>
   </header>
 
   <iframe 
@@ -56,8 +95,17 @@
 
   <script>
     const dateDiv = document.getElementById('date');
+    const weekDiv = document.getElementById('week');
     const weekdays = ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'];
     const months = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];
+
+    function getWeekNumber(d) {
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+      return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+    }
 
     function updateDate() {
       const now = new Date();
@@ -65,27 +113,25 @@
       const day = now.getDate();
       const monthName = months[now.getMonth()];
       dateDiv.textContent = `${dayName} ${day} ${monthName}`;
+      weekDiv.textContent = `Vecka ${getWeekNumber(now)}`;
     }
 
-    // Kör direkt vid start
     updateDate();
 
-    // Räkna ut hur länge till midnatt
     function scheduleMidnightUpdate() {
       const now = new Date();
       const tomorrow = new Date(now);
-      tomorrow.setHours(24,0,0,0); // nästa midnatt
+      tomorrow.setHours(24,0,0,0);
       const msToMidnight = tomorrow - now;
 
       setTimeout(() => {
         updateDate();
-        setInterval(updateDate, 24 * 60 * 60 * 1000); // uppdatera varje dygn
+        setInterval(updateDate, 24 * 60 * 60 * 1000);
       }, msToMidnight);
     }
 
     scheduleMidnightUpdate();
 
-    // Ladda om iframe var 30:e sekund
     setInterval(() => {
       const iframe = document.querySelector("iframe");
       iframe.src = iframe.src;
@@ -93,4 +139,5 @@
   </script>
 </body>
 </html>
+
 
