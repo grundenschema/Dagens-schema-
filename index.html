@@ -120,7 +120,7 @@
   </header>
 
   <iframe 
-    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQO6TD-DjG8JAIDCfa0kS--X2WGguKsyWuByRJSIvrLVUryn0u_0Bqrd0_ac36JJHjc7qQVDByREf2X/pubhtml?gid=1354710623&amp;single=true&amp;widget=true&amp;headers=false&chrome=false"
+    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQO6TD-DjG8JAIDCfa0kS--X2WGguKsyWuByRJSIvrLVUryn0u_0Bqrd0_ac36JJHjc7qQVDByREf2X/pubhtml?gid=569452929&amp;single=true&amp;widget=true&amp;headers=false"
     id="spreadsheet-iframe">
   </iframe>
 
@@ -136,7 +136,7 @@
       const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
       const dayNum = date.getUTCDay() || 7;
       date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+      const yearStart = new Date(Date.UTC(date.getFullYear(),0,1));
       return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
     }
 
@@ -151,7 +151,6 @@
 
     function updateClock() {
       const now = new Date();
-      // 24h-format med sekunder, enligt svensk lokal
       clockDiv.textContent = now.toLocaleTimeString('sv-SE', {
         hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
       });
@@ -161,15 +160,14 @@
     updateDate();
     updateClock();
 
-    // ⏱️ Uppdatera klockan varje sekund
     setInterval(updateClock, 1000);
 
-    // 🔄 Uppdatera hela sidan varje minut
     setInterval(() => {
       window.location.reload();
     }, 60000);
   </script>
 </body>
 </html>
+
 
 
