@@ -1,101 +1,57 @@
-<!DOCTYPE html>
-<html lang="sv">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grundenschema</title>
+const dateDiv = document.getElementById('date');
+const weekDiv = document.getElementById('week');
+const clockDiv = document.getElementById('clock');
+const iframe = document.getElementById('spreadsheet-iframe');
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/648af43c60a6ff58e7083e01_Grunden_logotyp-vit-transparent.png">
+const weekdays = ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'];
+const months = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];
 
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    header { display: flex; justify-content: space-between; align-items: center; }
-    #logo { width: 60px; height: 60px; }
-    #clockDiv, #dateDiv { font-size: 18px; margin-top: 10px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background-color: #f4f4f4; }
-  </style>
-</head>
-<body>
+function getWeekNumber(d) {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+}
 
-  <header>
-    <h1>Grundenschema</h1>
-    <!-- Logotypen i högra hörnet -->
-    <img id="logo" src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/648af43c60a6ff58e7083e01_Grunden_logotyp-vit-transparent.png" alt="Grunden">
-  </header>
+function updateDate() {
+  const now = new Date();
+  dateDiv.textContent = `${weekdays[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  weekDiv.textContent = `Vecka ${getWeekNumber(now)}`;
+}
 
-  <div id="dateDiv"></div>
-  <div id="clockDiv"></div>
+function updateClock() {
+  const now = new Date();
+  clockDiv.textContent = now.toLocaleTimeString('sv-SE', {
+    hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+}
 
-  <div id="schedule"></div>
+function scheduleMidnightUpdate() {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(24,0,0,0);
+  const msToMidnight = midnight - now;
 
-  <script>
-    const clockDiv = document.getElementById('clockDiv');
-    const dateDiv = document.getElementById('dateDiv');
-    const scheduleDiv = document.getElementById('schedule');
-
-    // Veckonummer
-    function getWeekNumber(d) {
-      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-      const dayNum = date.getUTCDay() || 7;
-      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(date.getFullYear(), 0, 1));
-      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-    }
-
-    function updateDate() {
-      const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      dateDiv.textContent = now.toLocaleDateString('sv-SE', options) + ' | Vecka ' + getWeekNumber(now);
-    }
-
-    function updateClock() {
-      const now = new Date();
-      clockDiv.textContent = now.toLocaleTimeString('sv-SE', {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-    }
-
+  setTimeout(() => {
     updateDate();
-    updateClock();
-    setInterval(updateClock, 1000);
-    setInterval(() => window.location.reload(), 60000);
+    setInterval(updateDate, 24*60*60*1000);
+  }, msToMidnight);
+}
 
-    // Hämta schemat från Google Sheets (CSV)
-    const csvUrl = 'DIN_CSV_LÄNK_HÄR'; // byt mot din publicerade CSV-länk
+// Init
+updateDate();
+updateClock();
+scheduleMidnightUpdate();
 
-    fetch(csvUrl)
-      .then(response => response.text())
-      .then(data => {
-        const rows = data.split('\n').map(row => row.split(','));
-        let html = '<table>';
-        rows.forEach((row, index) => {
-          html += '<tr>';
-          row.forEach(cell => {
-            if(index === 0){
-              html += `<th>${cell}</th>`;
-            } else {
-              html += `<td>${cell}</td>`;
-            }
-          });
-          html += '</tr>';
-        });
-        html += '</table>';
-        scheduleDiv.innerHTML = html;
-      })
-      .catch(error => {
-        scheduleDiv.innerHTML = '<p>Det gick inte att hämta schemat.</p>';
-        console.error('Fel vid hämtning av schemat:', error);
-      });
-  </script>
+// Uppdatera klockan varje sekund
+setInterval(updateClock, 1000);
 
-</body>
-</html>
+// Uppdatera iframe var 30:e sekund
+setInterval(() => {
+  iframe.contentWindow.location.reload();
+}, 30000);
+
 
 
 
