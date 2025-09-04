@@ -1,80 +1,54 @@
-<!DOCTYPE html>
-<html lang="sv">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grundenschema</title>
+</header>
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/648af43c60a6ff58e7083e01_Grunden_logotyp-vit-transparent.png">
+<iframe 
+  src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQO6TD-DjG8JAIDCfa0kS--X2WGguKsyWuByRJSIvrLVUryn0u_0Bqrd0_ac36JJHjc7qQVDByREf2X/pubhtml?gid=569452929&amp;single=true&amp;widget=true&amp;headers=false"
+  id="spreadsheet-iframe">
+</iframe>
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <header>
-    <nav>
-      <!-- Navigation Menu -->
-      <ul>
-        <li><a href="#">grundenschema</a></li>
-        <li><a href="#">Dagens-schema</a></li>
-      </ul>
-    </nav>
-  </header>
+<script>
+  const clockDiv = document.getElementById('clockDiv');
+  const dateDiv = document.getElementById('dateDiv');
 
-  <!-- Google Sheets iframe -->
-  <iframe 
-    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQO6TD-DjG8JAIDCfa0kS--X2WGguKsyWuByRJSIvrLVUryn0u_0Bqrd0_ac36JJHjc7qQVDByREf2X/pubhtml?gid=569452929&amp;single=true&amp;widget=true&amp;headers=false"
-    id="spreadsheet-iframe">
-  </iframe>
+  // Funktion för veckonummer
+  function getWeekNumber(d) {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getFullYear(), 0, 1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  }
 
-  <div id="clockDiv"></div>
-  <div id="dateDiv"></div>
+  // Uppdatera datum
+  function updateDate() {
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    dateDiv.textContent = now.toLocaleDateString('sv-SE', options) + ' | Vecka ' + getWeekNumber(now);
+  }
 
-  <script>
-    const clockDiv = document.getElementById('clockDiv');
-    const dateDiv = document.getElementById('dateDiv');
+  // Uppdatera klockan
+  function updateClock() {
+    const now = new Date();
+    clockDiv.textContent = now.toLocaleTimeString('sv-SE', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  }
 
-    // Funktion för veckonummer
-    function getWeekNumber(d) {
-      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-      const dayNum = date.getUTCDay() || 7;
-      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(date.getFullYear(), 0, 1));
-      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-    }
+  updateDate();
+  updateClock();
 
-    // Uppdatera datum
-    function updateDate() {
-      const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      dateDiv.textContent = now.toLocaleDateString('sv-SE', options) + ' | Vecka ' + getWeekNumber(now);
-    }
+  // ⏱️ Uppdatera klockan varje sekund
+  setInterval(updateClock, 1000);
 
-    // Uppdatera klockan
-    function updateClock() {
-      const now = new Date();
-      clockDiv.textContent = now.toLocaleTimeString('sv-SE', {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-    }
-
-    updateDate();
-    updateClock();
-
-    // ⏱️ Uppdatera klockan varje sekund
-    setInterval(updateClock, 1000);
-
-    // 🔄 Uppdatera hela sidan varje minut
-    setInterval(() => {
-      window.location.reload();
-    }, 60000);
-  </script>
-</body>
+  // 🔄 Uppdatera hela sidan varje minut
+  setInterval(() => {
+    window.location.reload();
+  }, 60000);
+</script>
 </html>
+
 
 
 
