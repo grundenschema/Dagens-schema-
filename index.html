@@ -8,22 +8,27 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/648af43c60a6ff58e7083e01_Grunden_logotyp-vit-transparent.png">
 
-  <!-- CSS -->
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; }
+    #logo { width: 60px; height: 60px; }
+    #clockDiv, #dateDiv { font-size: 18px; margin-top: 10px; }
     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #f4f4f4; }
-    #clockDiv, #dateDiv { font-size: 18px; margin-top: 10px; }
   </style>
 </head>
 <body>
 
-  <h1>Grundenschema</h1>
+  <header>
+    <h1>Grundenschema</h1>
+    <!-- Logotypen i högra hörnet -->
+    <img id="logo" src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/648af43c60a6ff58e7083e01_Grunden_logotyp-vit-transparent.png" alt="Grunden">
+  </header>
+
   <div id="dateDiv"></div>
   <div id="clockDiv"></div>
 
-  <!-- Här kommer schemat -->
   <div id="schedule"></div>
 
   <script>
@@ -40,29 +45,28 @@
       return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
     }
 
-    // Datum
     function updateDate() {
       const now = new Date();
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       dateDiv.textContent = now.toLocaleDateString('sv-SE', options) + ' | Vecka ' + getWeekNumber(now);
     }
 
-    // Klocka
     function updateClock() {
       const now = new Date();
       clockDiv.textContent = now.toLocaleTimeString('sv-SE', {
-        hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
       });
     }
 
     updateDate();
     updateClock();
     setInterval(updateClock, 1000);
-
-    // 🔄 Uppdatera hela sidan varje minut
     setInterval(() => window.location.reload(), 60000);
 
-    // Hämta schemat från Google Sheets (publicera som CSV)
+    // Hämta schemat från Google Sheets (CSV)
     const csvUrl = 'DIN_CSV_LÄNK_HÄR'; // byt mot din publicerade CSV-länk
 
     fetch(csvUrl)
@@ -92,5 +96,6 @@
 
 </body>
 </html>
+
 
 
