@@ -40,8 +40,8 @@
       const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
       const dayNum = date.getUTCDay() || 7;
       date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(date.getFullYear(), 0, 1));
-      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+      const yearStart = new Date(Date.UTC(date.getFullYear(),0,1));
+      return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
     }
 
     // Uppdatera datum
@@ -72,6 +72,7 @@
   </script>
 </body>
 </html>
+
 
 
 
