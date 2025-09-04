@@ -1,154 +1,57 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="utf-8">
-  <title>Schema</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: Arial, sans-serif;
-    }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grundenschema</title>
 
-    header {
-      height: 140px;
-      background: #f5f5f5;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: relative;
-      padding: 0 20px;
-    }
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/648af43c60a6ff58e7083e01_Grunden_logotyp-vit-transparent.png">
 
-    header img {
-      height: 60px;
-      width: auto;
-      position: absolute;
-      left: 20px;
-      top: 20%;
-      transform: translateY(-50%);
-    }
-
-    /* 🔔 Digital klocka uppe till höger */
-    #clock {
-      position: absolute;
-      top: 16px;
-      right: 20px;
-      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-      font-size: 28px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      background: #f5f5f5; /* Samma färg som header */
-      padding: 6px 10px;
-      border-radius: 12px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-      user-select: none;
-    }
-
-    #date-container {
-      position: absolute;
-      top: 65%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-    }
-
-    #date {
-      font-size: 36px;
-      font-weight: bold;
-      white-space: nowrap;
-    }
-
-    #week {
-      font-size: 18px;
-      margin-top: 4px;
-    }
-
-    iframe {
-      width: 90%;
-      height: calc(100% - 140px);
-      border: none;
-      margin-left: 5%;
-      display: block;
-      min-height: 400px;
-    }
-
-    @media (max-width: 600px) {
-      header {
-        height: 120px;
-        padding: 0 10px;
-      }
-      header img {
-        height: 50px;
-        left: 10px;
-        top: 15%;
-      }
-      #clock {
-        top: 10px;
-        right: 10px;
-        font-size: 20px;
-        padding: 4px 8px;
-        border-radius: 10px;
-      }
-      #date-container {
-        top: 60%;
-      }
-      #date {
-        font-size: 24px;
-      }
-      #week {
-        font-size: 14px;
-      }
-      iframe {
-        width: 100%;
-        margin-left: 0;
-        height: calc(100% - 120px);
-      }
-    }
-  </style>
+  <!-- Här kan du lägga till CSS-filer -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
-
-    <!-- ⏰ Digital klocka -->
-    <div id="clock" aria-label="Digital klocka"></div>
-
-    <div id="date-container">
-      <div id="date"></div>
-      <div id="week"></div>
-    </div>
+    <nav>
+      <!-- Navigation Menu -->
+      <ul>
+        <li><a href="#">grundenschema</a></li>
+        <li><a href="#">Dagens-schema</a></li>
+      </ul>
+    </nav>
   </header>
 
+  <!-- Google Sheets iframe -->
   <iframe 
     src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQO6TD-DjG8JAIDCfa0kS--X2WGguKsyWuByRJSIvrLVUryn0u_0Bqrd0_ac36JJHjc7qQVDByREf2X/pubhtml?gid=569452929&amp;single=true&amp;widget=true&amp;headers=false"
     id="spreadsheet-iframe">
   </iframe>
 
+  <div id="clockDiv"></div>
+  <div id="dateDiv"></div>
+
   <script>
-    const dateDiv = document.getElementById('date');
-    const weekDiv = document.getElementById('week');
-    const clockDiv = document.getElementById('clock');
+    const clockDiv = document.getElementById('clockDiv');
+    const dateDiv = document.getElementById('dateDiv');
 
-    const weekdays = ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'];
-    const months = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];
-
+    // Funktion för veckonummer
     function getWeekNumber(d) {
       const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
       const dayNum = date.getUTCDay() || 7;
       date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(date.getFullYear(),0,1));
-      return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+      const yearStart = new Date(Date.UTC(date.getFullYear(), 0, 1));
+      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
     }
 
+    // Uppdatera datum
     function updateDate() {
       const now = new Date();
-      const dayName = weekdays[now.getDay()];
-      const day = now.getDate();
-      const monthName = months[now.getMonth()];
-      dateDiv.textContent = `${dayName} ${day} ${monthName}`;
-      weekDiv.textContent = `Vecka ${getWeekNumber(now)}`;
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      dateDiv.textContent = now.toLocaleDateString('sv-SE', options) + ' | Vecka ' + getWeekNumber(now);
     }
 
+    // Uppdatera klockan
     function updateClock() {
       const now = new Date();
       clockDiv.textContent = now.toLocaleTimeString('sv-SE', {
@@ -156,18 +59,20 @@
       });
     }
 
-    // Init
     updateDate();
     updateClock();
 
+    // ⏱️ Uppdatera klockan varje sekund
     setInterval(updateClock, 1000);
 
+    // 🔄 Uppdatera hela sidan varje minut
     setInterval(() => {
       window.location.reload();
     }, 60000);
   </script>
 </body>
 </html>
+
 
 
 
