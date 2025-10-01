@@ -7,7 +7,7 @@
   <style>
     body { 
       font-family: sans-serif; 
-      max-width: 800px; 
+      max-width: 1200px;   /* bredare layout */
       margin: 0 auto; 
       padding: 20px; 
       position: relative;
@@ -24,7 +24,7 @@
     /* Tabell för desktop */
     .table-container { overflow-x: auto; }
     table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
     th { background: #f2f2f2; }
     td.aktivitet { font-weight: bold; }
 
@@ -77,6 +77,7 @@
   <div class="list-container" id="schema-list"></div>
 
 <script>
+// --- färger & emojis ---
 const aktivitetFarger = {
   "Måndagsmöte":     {color:"#AED6F1", emoji:"📅"},
   "Gruppmöte":       {color:"#7FB3D5", emoji:"👥"},
@@ -111,6 +112,7 @@ const aktivitetFarger = {
   "Musikdokumentär": {color:"#D2B4DE", emoji:"🎶"}
 };
 
+// --- hämta schema ---
 async function loadSchema() {
   const url = "https://script.google.com/macros/s/AKfycbzujIM80MWW1nsKDPySb4M0m2ylvUWk_SBko5Q_SJGfWJmcROFAxWf0jNjFi-nBVcA/exec"; 
   try {
@@ -126,17 +128,14 @@ async function loadSchema() {
 
     json.data.forEach(row => {
       const [start, slut, aktivitet, deltagare, coach] = row;
-      if (slut <= nowStr) return;
 
-     let status = "";
-if (slut <= nowStr) {
-  status = "❌"; // redan slut
-} else if (start <= nowStr && slut >= nowStr) {
-  status = "🟢"; // pågående
-} else {
-  status = "";   // kommande
-}
-
+      // status
+      let status = "";
+      if (slut <= nowStr) {
+        status = "❌"; // redan slut
+      } else if (start <= nowStr && slut >= nowStr) {
+        status = "🟢"; // pågående
+      }
 
       const fargEmoji = aktivitetFarger[aktivitet] || {color:"#fff", emoji:""};
       const aktivitetText = `${status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${aktivitet}`;
@@ -167,6 +166,7 @@ if (slut <= nowStr) {
   }
 }
 
+// --- klocka ---
 function updateClock() {
   const now = new Date();
   document.getElementById("clock").textContent =
