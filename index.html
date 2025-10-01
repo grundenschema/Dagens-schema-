@@ -128,8 +128,15 @@ async function loadSchema() {
       const [start, slut, aktivitet, deltagare, coach] = row;
       if (slut <= nowStr) return;
 
-      let status = "";
-      if (start <= nowStr && slut >= nowStr) status = "🟢";
+     let status = "";
+if (slut <= nowStr) {
+  status = "❌"; // redan slut
+} else if (start <= nowStr && slut >= nowStr) {
+  status = "🟢"; // pågående
+} else {
+  status = "";   // kommande
+}
+
 
       const fargEmoji = aktivitetFarger[aktivitet] || {color:"#fff", emoji:""};
       const aktivitetText = `${status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${aktivitet}`;
