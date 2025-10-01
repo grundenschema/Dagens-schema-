@@ -62,6 +62,7 @@ async function loadSchema() {
   try {
     const res = await fetch(url);
     const json = await res.json();
+    console.log("Schema-data:", json.data);
     const tbody = document.querySelector("#schema tbody");
     tbody.innerHTML = "";
 
