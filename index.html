@@ -1,116 +1,76 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8">
-  <title>Digital Klocka med Spreadsheet</title>
-  <style>
-    /* Header med logotyp */
-    header {
-      position: relative;
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background-color: #f8f8f8;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    header img {
-      height: 60px;
-      width: auto;
-    }
-
-    /* Digital klocka */
-    #clock {
-      font-family: "SFMono-Regular", Consolas, monospace;
-      font-size: 24px;
-      font-weight: 600;
-      background: rgba(255,255,255,0.8);
-      padding: 6px 10px;
-      border-radius: 12px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-      user-select: none;
-    }
-
-    /* Datum och vecka */
-    #date-container {
-      margin: 20px;
-      font-family: sans-serif;
-      font-size: 18px;
-    }
-
-    /* Iframe */
-    #spreadsheet-iframe {
-      width: 100%;
-      height: 600px;
-      border: none;
-      margin-top: 20px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Dagens schema</title>
+<style>
+  body { font-family: sans-serif; margin: 20px; }
+  h1 { margin-bottom: 10px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ddd; padding: 8px; }
+  th { background: #eee; }
+  td.aktivitet { font-weight: bold; }
+</style>
 </head>
 <body>
-  <header>
-    <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
-    <div id="clock" aria-label="Digital klocka"></div>
-  </header>
+<h1>Dagens schema</h1>
+<table id="schema">
+  <thead>
+    <tr><th>Start</th><th>Slut</th><th>Aktivitet</th><th>Deltagare</th><th>Coach</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-  <div id="date-container">
-    <div id="date"></div>
-    <div id="week"></div>
-  </div>
+<script>
+// --- färger & emojis från din gamla funktion ---
+const aktivitetFarger = {
+  "Lunch":         {color:"#F9E79F", emoji:"🍲"},
+  "Frukost":       {color:"#FAD7A0", emoji:"🥐"},
+  "Ateljé":        {color:"#F5CBA7", emoji:"🎨"},
+  "Musik":         {color:"#D2B4DE", emoji:"🎶"},
+  "Pod":           {color:"#A9CCE3", emoji:"🎙️"},
+  "Gym":           {color:"#A3E4D7", emoji:"🏋️‍♂️"},
+  "Film":          {color:"#E6B0AA", emoji:"🎬"},
+  "Behandling":    {color:"#EDBB99", emoji:"💆"},
+  "Handla":        {color:"#ABEBC6", emoji:"🛍️"},
+  "Uppstart":      {color:"#F0B27A", emoji:"🚀"},
+  "Poesigruppen":  {color:"#F1948A", emoji:"✍️"},
+  "Trummor":       {color:"#F1948A", emoji:"🥁"},
+  "Rollspel":      {color:"#BB8FCE", emoji:"🐉"},
+  "Återkoppling":  {color:"#85C1E9", emoji:"🔄"},
+  "Medicin":       {color:"#E59866", emoji:"💊"}
+};
 
-  <iframe 
-    id="spreadsheet-iframe"
-    src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQO6TD-DjG8JAIDCfa0kS--X2WGguKsyWuByRJSIvrLVUryn0u_0Bqrd0_ac36JJHjc7qQVDByREf2X/pubhtml?gid=569452929&single=true&widget=true&headers=false">
-  </iframe>
+// --- hämta schema från Apps Script ---
+async function loadSchema() {
+  const url = "DIN_APPS_SCRIPT_URL_HÄR"; // <- ersätt med din /exec-URL
+  const res = await fetch(url);
+  const json = await res.json();
+  const tbody = document.querySelector("#schema tbody");
+  tbody.innerHTML = "";
 
-  <script>
-    const dateDiv = document.getElementById('date'); 
-    const weekDiv = document.getElementById('week'); 
-    const clockDiv = document.getElementById('clock'); 
-    const iframe = document.getElementById('spreadsheet-iframe'); 
+  json.data.forEach(row => {
+    const tr = document.createElement("tr");
+    const [start, slut, aktivitet, deltagare, coach] = row;
 
-    const weekdays = ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag']; 
-    const months = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december']; 
+    // lägg till färg & emoji
+    const fargEmoji = aktivitetFarger[aktivitet] || {color:"#fff", emoji:""};
+    const aktivitetText = (fargEmoji.emoji ? fargEmoji.emoji + " " : "") + aktivitet;
 
-    function getWeekNumber(d) {
-      d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-      const dayNum = d.getUTCDay() || 7;
-      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-      return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-    }
+    tr.innerHTML = `
+      <td>${start}</td>
+      <td>${slut}</td>
+      <td class="aktivitet" style="background:${fargEmoji.color}">${aktivitetText}</td>
+      <td>${deltagare}</td>
+      <td>${coach}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
 
-    function updateDate() {
-      const now = new Date();
-      dateDiv.textContent = `${weekdays[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-      weekDiv.textContent = `Vecka ${getWeekNumber(now)}`;
-    }
-
-    function updateClock() {
-      const now = new Date();
-      clockDiv.textContent = now.toLocaleTimeString('sv-SE', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    }
-
-    function scheduleMidnightUpdate() {
-      const now = new Date();
-      const midnight = new Date(now);
-      midnight.setHours(24,0,0,0);
-      const msToMidnight = midnight - now;
-      setTimeout(() => {
-        updateDate();
-        setInterval(updateDate, 24*60*60*1000);
-      }, msToMidnight);
-    }
-
-    // Init
-    updateDate();
-    updateClock();
-    scheduleMidnightUpdate();
-
-    setInterval(updateClock, 1000);
-    setInterval(() => { iframe.contentWindow.location.reload(); }, 30000);
-  </script>
+loadSchema();
+</script>
 </body>
 </html>
+
 
