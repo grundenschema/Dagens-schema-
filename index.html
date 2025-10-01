@@ -29,8 +29,7 @@
       top: 20px; 
       right: 20px; 
     }
-
-    /* Anpassning för små skärmar */
+    /* Mobilanpassning */
     @media (max-width: 600px) {
       body { padding: 10px; }
       h1 { font-size: 20px; }
@@ -64,7 +63,106 @@
   </div>
 
 <script>
-// samma JS-kod som tidigare (med färger, filter, prickar, auto-update)
+// --- färger & emojis ---
+const aktivitetFarger = {
+  "Måndagsmöte":     {color:"#AED6F1", emoji:"📅"},
+  "Gruppmöte":       {color:"#7FB3D5", emoji:"👥"},
+  "Lunch":           {color:"#F9E79F", emoji:"🍲"},
+  "Frukost":         {color:"#FAD7A0", emoji:"🥐"},
+  "Ateljé":          {color:"#F5CBA7", emoji:"🎨"},
+  "Musik":           {color:"#D2B4DE", emoji:"🎶"},
+  "Pod":             {color:"#A9CCE3", emoji:"🎙️"},
+  "Padel":           {color:"#82E0AA", emoji:"🏓"},
+  "Lite av varje":   {color:"#FADBD8", emoji:"✨"},
+  "Yoga":            {color:"#D5F5E3", emoji:"🧘"},
+  "Gym":             {color:"#A3E4D7", emoji:"🏋️‍♂️"},
+  "Lunchpromenad":   {color:"#F7DC6F", emoji:"🚶‍♂️🍲"},
+  "Kulturpromenad":  {color:"#F8C471", emoji:"🏛️🚶"},
+  "Film":            {color:"#E6B0AA", emoji:"🎬"},
+  "Behandling":      {color:"#EDBB99", emoji:"💆"},
+  "Handla":          {color:"#ABEBC6", emoji:"🛍️"},
+  "Gåträning":       {color:"#76D7C4", emoji:"🚶"},
+  "Uppstart":        {color:"#F0B27A", emoji:"🚀"},
+  "Poesigruppen":    {color:"#F1948A", emoji:"✍️"},
+  "Trummor":         {color:"#F1948A", emoji:"🥁"},
+  "Rollspel":        {color:"#BB8FCE", emoji:"🐉"},
+  "Återkoppling":    {color:"#85C1E9", emoji:"🔄"},
+  "Medicin":         {color:"#E59866", emoji:"💊"},
+  "Föreningsgruppen":{color:"#D6DBDF", emoji:"🤝"},
+  "Öppen verkstad":  {color:"#F5B7B1", emoji:"🔧"},
+  "Biljard":         {color:"#A9DFBF", emoji:"🎱"},
+  "Spelgruppen":     {color:"#F8C471", emoji:"🎲"},
+  "Sömnad":          {color:"#F5EEF8", emoji:"🧵"},
+  "Filmkunskap":     {color:"#E6B0AA", emoji:"🎬"},
+  "Musikquizz":      {color:"#D2B4DE", emoji:"🎶"},
+  "Musikdokumentär": {color:"#D2B4DE", emoji:"🎶"}
+};
+
+// --- hämta schema ---
+async function loadSchema() {
+  const url = "https://script.google.com/macros/s/AKfycbzujIM80MWW1nsKDPySb4M0m2ylvUWk_SBko5Q_SJGfWJmcROFAxWf0jNjFi-nBVcA/exec"; 
+  try {
+    const res = await fetch(url);
+    const json = await res.json();
+    const tbody = document.querySelector("#schema tbody");
+    tbody.innerHTML = "";
+
+    const now = new Date();
+    const nowStr = now.toTimeString().slice(0,5); // HH:MM
+
+    json.data.forEach(row => {
+      const [start, slut, aktivitet, deltagare, coach] = row;
+
+      // hoppa över om aktiviteten redan är slut
+      if (slut <= nowStr) return;
+
+      // kolla status
+      let status = "";
+      if (start <= nowStr && slut >= nowStr) {
+        status = "🟢"; // grön prick = pågående
+      }
+
+      const fargEmoji = aktivitetFarger[aktivitet] || {color:"#fff", emoji:""};
+      const aktivitetText = `${status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${aktivitet}`;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${start}</td>
+        <td>${slut}</td>
+        <td class="aktivitet" style="background:${fargEmoji.color}">${aktivitetText}</td>
+        <td>${deltagare}</td>
+        <td>${coach}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Fel vid hämtning:", err);
+  }
+}
+
+// --- klocka ---
+function updateClock() {
+  const now = new Date();
+  document.getElementById("clock").textContent =
+    now.toLocaleDateString("sv-SE", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) +
+    " " +
+    now.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+// ladda direkt
+loadSchema();
+
+// auto-uppdatera var 30:e minut efter 08:00
+setInterval(() => {
+  const now = new Date();
+  if (now.getHours() >= 8) {
+    loadSchema();
+  }
+}, 30*60*1000);
+
 </script>
 </body>
 </html>
