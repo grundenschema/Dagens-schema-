@@ -7,7 +7,7 @@
   <style>
     body { 
       font-family: sans-serif; 
-      max-width: 1200px;   /* bredare layout */
+      max-width: 1200px;
       margin: 0 auto; 
       padding: 20px; 
       position: relative;
@@ -35,7 +35,6 @@
       border-radius: 8px;
       padding: 10px;
       margin-bottom: 10px;
-      background: #f9f9f9;
     }
     .list-item strong { display: block; margin-bottom: 4px; }
 
@@ -101,6 +100,7 @@ const aktivitetFarger = {
   "Trummor":         {color:"#F1948A", emoji:"🥁"},
   "Rollspel":        {color:"#BB8FCE", emoji:"🐉"},
   "Återkoppling":    {color:"#85C1E9", emoji:"🔄"},
+  "Handling":        {color:"#73C6B6", emoji:"🛒"},
   "Medicin":         {color:"#E59866", emoji:"💊"},
   "Föreningsgruppen":{color:"#D6DBDF", emoji:"🤝"},
   "Öppen verkstad":  {color:"#F5B7B1", emoji:"🔧"},
@@ -125,9 +125,18 @@ async function loadSchema() {
 
     const now = new Date();
     const nowStr = now.toTimeString().slice(0,5);
+    const hour = now.getHours();
+
+    // visa inget före 06:00 eller efter 16:00
+    if (hour < 6 || hour >= 16) return;
 
     json.data.forEach(row => {
       const [start, slut, aktivitet, deltagare, coach] = row;
+
+      // filtrera bara 08–16
+      const startHour = parseInt(start.split(":")[0], 10);
+      const endHour = parseInt(slut.split(":")[0], 10);
+      if (startHour < 8 || endHour > 16) return;
 
       // status
       let status = "";
@@ -140,12 +149,13 @@ async function loadSchema() {
       const fargEmoji = aktivitetFarger[aktivitet] || {color:"#fff", emoji:""};
       const aktivitetText = `${status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${aktivitet}`;
 
-      // tabell (desktop)
+      // tabell (desktop) – hel rad färg
       const tr = document.createElement("tr");
+      tr.style.background = fargEmoji.color;
       tr.innerHTML = `
         <td>${start}</td>
         <td>${slut}</td>
-        <td class="aktivitet" style="background:${fargEmoji.color}">${aktivitetText}</td>
+        <td class="aktivitet">${aktivitetText}</td>
         <td>${deltagare}</td>
         <td>${coach}</td>
       `;
@@ -154,6 +164,7 @@ async function loadSchema() {
       // lista (mobil)
       const div = document.createElement("div");
       div.className = "list-item";
+      div.style.background = fargEmoji.color;
       div.innerHTML = `
         <strong>${start}–${slut} ${aktivitetText}</strong>
         <div>👥 ${deltagare}</div>
@@ -179,7 +190,7 @@ setInterval(updateClock, 1000);
 updateClock();
 loadSchema();
 setInterval(() => {
-  if (new Date().getHours() >= 8) loadSchema();
+  if (new Date().getHours() >= 6) loadSchema();
 }, 30*60*1000);
 </script>
 </body>
