@@ -2,28 +2,103 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <title>Schema-test</title>
+  <title>Dagens schema</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    h1 { margin-bottom: 10px; }
+    #clock { font-family: monospace; font-size: 18px; margin-bottom: 15px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f2f2f2; }
+    td.aktivitet { font-weight: bold; }
+  </style>
 </head>
 <body>
-  <h1>Test av API</h1>
-  <pre id="output">Hämtar data...</pre>
+  <h1>Dagens schema</h1>
+  <div id="clock"></div>
 
-  <script>
-  async function loadSchema() {
-    const url = "https://script.google.com/macros/s/AKfycbzujIM80MWW1nsKDPySb4M0m2ylvUWk_SBko5Q_SJGfWJmcROFAxWf0jNjFi-nBVcA/exec"; // <-- byt till din riktiga /exec-URL
-    try {
-      const res = await fetch(url);
-      const json = await res.json();
-      document.getElementById("output").textContent = JSON.stringify(json, null, 2);
-    } catch (err) {
-      document.getElementById("output").textContent = "Fel: " + err;
-    }
+  <table id="schema">
+    <thead>
+      <tr>
+        <th>Start</th>
+        <th>Slut</th>
+        <th>Aktivitet</th>
+        <th>Deltagare</th>
+        <th>Coach</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+<script>
+// --- färger & emojis (din gamla logik) ---
+const aktivitetFarger = {
+  "Måndagsmöte":     {color:"#AED6F1", emoji:"📅"},
+  "Gruppmöte":       {color:"#7FB3D5", emoji:"👥"},
+  "Lunch":           {color:"#F9E79F", emoji:"🍲"},
+  "Frukost":         {color:"#FAD7A0", emoji:"🥐"},
+  "Ateljé":          {color:"#F5CBA7", emoji:"🎨"},
+  "Musik":           {color:"#D2B4DE", emoji:"🎶"},
+  "Pod":             {color:"#A9CCE3", emoji:"🎙️"},
+  "Padel":           {color:"#82E0AA", emoji:"🏓"},
+  "Gym":             {color:"#A3E4D7", emoji:"🏋️‍♂️"},
+  "Film":            {color:"#E6B0AA", emoji:"🎬"},
+  "Behandling":      {color:"#EDBB99", emoji:"💆"},
+  "Handla":          {color:"#ABEBC6", emoji:"🛍️"},
+  "Uppstart":        {color:"#F0B27A", emoji:"🚀"},
+  "Poesigruppen":    {color:"#F1948A", emoji:"✍️"},
+  "Trummor":         {color:"#F1948A", emoji:"🥁"},
+  "Rollspel":        {color:"#BB8FCE", emoji:"🐉"},
+  "Återkoppling":    {color:"#85C1E9", emoji:"🔄"},
+  "Medicin":         {color:"#E59866", emoji:"💊"},
+  "Biljard":         {color:"#A9DFBF", emoji:"🎱"},
+  "Spelgruppen":     {color:"#F8C471", emoji:"🎲"},
+  "Sömnad":          {color:"#F5EEF8", emoji:"🧵"}
+};
+
+// --- hämta schema från Apps Script ---
+async function loadSchema() {
+  const url = "https://script.google.com/macros/s/AKfycbzujIM80MWW1nsKDPySb4M0m2ylvUWk_SBko5Q_SJGfWJmcROFAxWf0jNjFi-nBVcA/exec"; 
+  try {
+    const res = await fetch(url);
+    const json = await res.json();
+    const tbody = document.querySelector("#schema tbody");
+    tbody.innerHTML = "";
+
+    json.data.forEach(row => {
+      const tr = document.createElement("tr");
+      const [start, slut, aktivitet, deltagare, coach] = row;
+
+      // färg & emoji
+      const fargEmoji = aktivitetFarger[aktivitet] || {color:"#fff", emoji:""};
+      const aktivitetText = (fargEmoji.emoji ? fargEmoji.emoji + " " : "") + aktivitet;
+
+      tr.innerHTML = `
+        <td>${start}</td>
+        <td>${slut}</td>
+        <td class="aktivitet" style="background:${fargEmoji.color}">${aktivitetText}</td>
+        <td>${deltagare}</td>
+        <td>${coach}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Fel vid hämtning:", err);
   }
-  loadSchema();
-  </script>
+}
+
+// --- klocka ---
+function updateClock() {
+  const now = new Date();
+  document.getElementById("clock").textContent =
+    now.toLocaleDateString("sv-SE", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) +
+    " " +
+    now.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+loadSchema();
+</script>
 </body>
 </html>
-
-
-
-
