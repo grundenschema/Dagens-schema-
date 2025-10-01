@@ -43,7 +43,7 @@ const aktivitetFarger = {
 
 // --- hämta schema från Apps Script ---
 async function loadSchema() {
-  const url = "DIN_APPS_SCRIPT_URL_HÄR"; // <- ersätt med din /exec-URL
+  const url = "https://script.google.com/macros/s/AKfycbzujIM80MWW1nsKDPySb4M0m2ylvUWk_SBko5Q_SJGfWJmcROFAxWf0jNjFi-nBVcA/exec"; // <- ersätt med din /exec-URL
   const res = await fetch(url);
   const json = await res.json();
   const tbody = document.querySelector("#schema tbody");
