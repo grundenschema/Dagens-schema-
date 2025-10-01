@@ -13,28 +13,38 @@
       position: relative;
     }
     h1 { margin-bottom: 10px; }
-    #clock { 
-      font-family: monospace; 
-      font-size: 18px; 
-      margin-bottom: 15px; 
-    }
-    .table-container { overflow-x: auto; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background: #f2f2f2; }
-    td.aktivitet { font-weight: bold; }
+    #clock { font-family: monospace; font-size: 18px; margin-bottom: 15px; }
     header img { 
       height: 60px; 
       position: absolute; 
       top: 20px; 
       right: 20px; 
     }
-    /* Mobilanpassning */
+
+    /* Tabell för desktop */
+    .table-container { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f2f2f2; }
+    td.aktivitet { font-weight: bold; }
+
+    /* Lista för mobil */
+    .list-container { display: none; }
+    .list-item {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #f9f9f9;
+    }
+    .list-item strong { display: block; margin-bottom: 4px; }
+
+    /* Byt vy på små skärmar */
     @media (max-width: 600px) {
-      body { padding: 10px; }
+      .table-container { display: none; }
+      .list-container { display: block; }
       h1 { font-size: 20px; }
       #clock { font-size: 14px; }
-      th, td { font-size: 12px; padding: 6px; }
       header img { height: 40px; }
     }
   </style>
@@ -47,6 +57,7 @@
   <h1>Dagens schema</h1>
   <div id="clock"></div>
 
+  <!-- Desktop tabell -->
   <div class="table-container">
     <table id="schema">
       <thead>
@@ -62,8 +73,10 @@
     </table>
   </div>
 
+  <!-- Mobil lista -->
+  <div class="list-container" id="schema-list"></div>
+
 <script>
-// --- färger & emojis ---
 const aktivitetFarger = {
   "Måndagsmöte":     {color:"#AED6F1", emoji:"📅"},
   "Gruppmöte":       {color:"#7FB3D5", emoji:"👥"},
@@ -98,33 +111,30 @@ const aktivitetFarger = {
   "Musikdokumentär": {color:"#D2B4DE", emoji:"🎶"}
 };
 
-// --- hämta schema ---
 async function loadSchema() {
   const url = "https://script.google.com/macros/s/AKfycbzujIM80MWW1nsKDPySb4M0m2ylvUWk_SBko5Q_SJGfWJmcROFAxWf0jNjFi-nBVcA/exec"; 
   try {
     const res = await fetch(url);
     const json = await res.json();
     const tbody = document.querySelector("#schema tbody");
+    const listContainer = document.getElementById("schema-list");
     tbody.innerHTML = "";
+    listContainer.innerHTML = "";
 
     const now = new Date();
-    const nowStr = now.toTimeString().slice(0,5); // HH:MM
+    const nowStr = now.toTimeString().slice(0,5);
 
     json.data.forEach(row => {
       const [start, slut, aktivitet, deltagare, coach] = row;
-
-      // hoppa över om aktiviteten redan är slut
       if (slut <= nowStr) return;
 
-      // kolla status
       let status = "";
-      if (start <= nowStr && slut >= nowStr) {
-        status = "🟢"; // grön prick = pågående
-      }
+      if (start <= nowStr && slut >= nowStr) status = "🟢";
 
       const fargEmoji = aktivitetFarger[aktivitet] || {color:"#fff", emoji:""};
       const aktivitetText = `${status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${aktivitet}`;
 
+      // tabell (desktop)
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${start}</td>
@@ -134,13 +144,22 @@ async function loadSchema() {
         <td>${coach}</td>
       `;
       tbody.appendChild(tr);
+
+      // lista (mobil)
+      const div = document.createElement("div");
+      div.className = "list-item";
+      div.innerHTML = `
+        <strong>${start}–${slut} ${aktivitetText}</strong>
+        <div>👥 ${deltagare}</div>
+        <div>🎓 ${coach}</div>
+      `;
+      listContainer.appendChild(div);
     });
   } catch (err) {
     console.error("Fel vid hämtning:", err);
   }
 }
 
-// --- klocka ---
 function updateClock() {
   const now = new Date();
   document.getElementById("clock").textContent =
@@ -151,18 +170,10 @@ function updateClock() {
 
 setInterval(updateClock, 1000);
 updateClock();
-
-// ladda direkt
 loadSchema();
-
-// auto-uppdatera var 30:e minut efter 08:00
 setInterval(() => {
-  const now = new Date();
-  if (now.getHours() >= 8) {
-    loadSchema();
-  }
+  if (new Date().getHours() >= 8) loadSchema();
 }, 30*60*1000);
-
 </script>
 </body>
 </html>
