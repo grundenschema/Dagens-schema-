@@ -128,28 +128,39 @@ async function loadSchema() {
     const now = getStockholmDate();
     const nowStr = now.toTimeString().slice(0,5);
 
-    json.data.forEach(row => {
+    // Gör om till objekt och sätt status
+    const aktiviteter = json.data.map(row => {
       const [start, slut, aktivitet, deltagare, coach] = row;
-
       let status = "";
       if (slut <= nowStr) {
         status = "❌";
       } else if (start <= nowStr && slut >= nowStr) {
         status = "🟢";
       }
+      return { start, slut, aktivitet, deltagare, coach, status };
+    });
 
-      const fargEmoji = aktivitetFarger[aktivitet] || {color:"#fff", emoji:""};
-      const aktivitetText = `${status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${aktivitet}`;
+    // Sortera: pågående först, sedan på starttid
+    aktiviteter.sort((a, b) => {
+      if (a.status === "🟢" && b.status !== "🟢") return -1;
+      if (b.status === "🟢" && a.status !== "🟢") return 1;
+      return a.start.localeCompare(b.start);
+    });
+
+    // Rendera
+    aktiviteter.forEach(act => {
+      const fargEmoji = aktivitetFarger[act.aktivitet] || {color:"#fff", emoji:""};
+      const aktivitetText = `${act.status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${act.aktivitet}`;
 
       // tabell
       const tr = document.createElement("tr");
       tr.style.background = fargEmoji.color;
       tr.innerHTML = `
-        <td>${start}</td>
-        <td>${slut}</td>
+        <td>${act.start}</td>
+        <td>${act.slut}</td>
         <td class="aktivitet">${aktivitetText}</td>
-        <td>${deltagare}</td>
-        <td>${coach}</td>
+        <td>${act.deltagare}</td>
+        <td>${act.coach}</td>
       `;
       tbody.appendChild(tr);
 
@@ -158,12 +169,13 @@ async function loadSchema() {
       div.className = "list-item";
       div.style.background = fargEmoji.color;
       div.innerHTML = `
-        <strong>${start}–${slut} ${aktivitetText}</strong>
-        <div>👥 ${deltagare}</div>
-        <div>🎓 ${coach}</div>
+        <strong>${act.start}–${act.slut} ${aktivitetText}</strong>
+        <div>👥 ${act.deltagare}</div>
+        <div>🎓 ${act.coach}</div>
       `;
       listContainer.appendChild(div);
     });
+
   } catch (err) {
     console.error("Fel vid hämtning:", err);
   }
@@ -193,3 +205,4 @@ setInterval(loadSchema, 30*60*1000);
 </script>
 </body>
 </html>
+
