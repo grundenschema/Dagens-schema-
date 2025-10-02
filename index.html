@@ -36,6 +36,10 @@
     }
     .list-item strong { display: block; margin-bottom: 4px; }
 
+    /* Extra tydlighet */
+    .ended { opacity: 0.6; }
+    .green { border: 2px solid green; }
+
     @media (max-width: 600px) {
       .table-container { display: none; }
       .list-container { display: block; }
@@ -162,6 +166,7 @@ async function loadSchema() {
       // tabell
       const tr = document.createElement("tr");
       tr.style.background = fargEmoji.color;
+      tr.classList.add(act.status === "🟢" ? "green" : act.status === "❌" ? "ended" : "");
       tr.innerHTML = `
         <td>${act.start}</td>
         <td>${act.slut}</td>
@@ -174,6 +179,8 @@ async function loadSchema() {
       // lista (mobil)
       const div = document.createElement("div");
       div.className = "list-item";
+      if (act.status === "🟢") div.classList.add("green");
+      if (act.status === "❌") div.classList.add("ended");
       div.style.background = fargEmoji.color;
       div.innerHTML = `
         <strong>${act.start}–${act.slut} ${aktivitetText}</strong>
@@ -182,6 +189,12 @@ async function loadSchema() {
       `;
       listContainer.appendChild(div);
     });
+
+    // Scrolla till första pågående
+    const firstGreen = document.querySelector(".list-item.green, tr.green");
+    if (firstGreen) {
+      firstGreen.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
 
   } catch (err) {
     console.error("Fel vid hämtning:", err);
