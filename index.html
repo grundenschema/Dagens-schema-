@@ -133,17 +133,24 @@ async function loadSchema() {
       const [start, slut, aktivitet, deltagare, coach] = row;
       let status = "";
       if (slut <= nowStr) {
-        status = "❌";
+        status = "❌";       // avslutad
       } else if (start <= nowStr && slut >= nowStr) {
-        status = "🟢";
+        status = "🟢";       // pågående
       }
       return { start, slut, aktivitet, deltagare, coach, status };
     });
 
-    // Sortera: pågående först, sedan på starttid
+    // Sorteringsordning: avslutade -> pågående -> kommande
+    const priority = status => {
+      if (status === "❌") return 0;
+      if (status === "🟢") return 1;
+      return 2;
+    };
+
     aktiviteter.sort((a, b) => {
-      if (a.status === "🟢" && b.status !== "🟢") return -1;
-      if (b.status === "🟢" && a.status !== "🟢") return 1;
+      const pa = priority(a.status);
+      const pb = priority(b.status);
+      if (pa !== pb) return pa - pb;
       return a.start.localeCompare(b.start);
     });
 
@@ -205,4 +212,3 @@ setInterval(loadSchema, 30*60*1000);
 </script>
 </body>
 </html>
-
