@@ -112,6 +112,13 @@ const aktivitetFarger = {
   "Musikdokumentär": {color:"#D2B4DE", emoji:"🎶"}
 };
 
+// Hjälpfunktion: svensk tid
+function getStockholmDate() {
+  return new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Europe/Stockholm" })
+  );
+}
+
 // --- hämta schema ---
 async function loadSchema() {
   const url = "https://script.google.com/macros/s/AKfycbzujIM80MWW1nsKDPySb4M0m2ylvUWk_SBko5Q_SJGfWJmcROFAxWf0jNjFi-nBVcA/exec"; 
@@ -123,33 +130,38 @@ async function loadSchema() {
     tbody.innerHTML = "";
     listContainer.innerHTML = "";
 
-    const now = new Date();
+    const now = getStockholmDate();
+    const weekday = new Intl.DateTimeFormat("sv-SE", { weekday: "long", timeZone: "Europe/Stockholm" })
+                      .format(now)
+                      .toLowerCase(); // t.ex. "måndag"
+
     const nowStr = now.toTimeString().slice(0,5);
     const hour = now.getHours();
 
-    // visa inget före 06:00 eller efter 16:00
     if (hour < 6 || hour >= 16) return;
 
     json.data.forEach(row => {
-      const [start, slut, aktivitet, deltagare, coach] = row;
+      // Anpassa till hur din data är strukturerad
+      // Antag: [Dag, Start, Slut, Aktivitet, Deltagare, Coach]
+      const [dag, start, slut, aktivitet, deltagare, coach] = row;
 
-      // filtrera bara 08–16
+      if (!dag || dag.toLowerCase() !== weekday) return;
+
       const startHour = parseInt(start.split(":")[0], 10);
       const endHour = parseInt(slut.split(":")[0], 10);
       if (startHour < 8 || endHour > 16) return;
 
-      // status
       let status = "";
       if (slut <= nowStr) {
-        status = "❌"; // redan slut
+        status = "❌";
       } else if (start <= nowStr && slut >= nowStr) {
-        status = "🟢"; // pågående
+        status = "🟢";
       }
 
       const fargEmoji = aktivitetFarger[aktivitet] || {color:"#fff", emoji:""};
       const aktivitetText = `${status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${aktivitet}`;
 
-      // tabell (desktop) – hel rad färg
+      // tabell
       const tr = document.createElement("tr");
       tr.style.background = fargEmoji.color;
       tr.innerHTML = `
@@ -179,7 +191,7 @@ async function loadSchema() {
 
 // --- klocka ---
 function updateClock() {
-  const now = new Date();
+  const now = getStockholmDate();
   const options = { 
     weekday: "long", 
     year: "numeric", 
@@ -188,7 +200,7 @@ function updateClock() {
     hour: "2-digit", 
     minute: "2-digit", 
     second: "2-digit",
-    timeZone: "Europe/Stockholm" // alltid svensk tid
+    timeZone: "Europe/Stockholm"
   };
   document.getElementById("clock").textContent =
     new Intl.DateTimeFormat("sv-SE", options).format(now);
@@ -198,9 +210,8 @@ setInterval(updateClock, 1000);
 updateClock();
 loadSchema();
 setInterval(() => {
-  if (new Date().getHours() >= 6) loadSchema();
+  if (getStockholmDate().getHours() >= 6) loadSchema();
 }, 30*60*1000);
 </script>
 </body>
 </html>
-
