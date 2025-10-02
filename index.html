@@ -178,7 +178,6 @@ async function loadSchema() {
 }
 
 // --- klocka ---
-// --- klocka ---
 function updateClock() {
   const now = new Date();
   const options = { 
@@ -189,15 +188,10 @@ function updateClock() {
     hour: "2-digit", 
     minute: "2-digit", 
     second: "2-digit",
-    timeZone: "Europe/Stockholm" // tvinga svensk tid
+    timeZone: "Europe/Stockholm" // alltid svensk tid
   };
   document.getElementById("clock").textContent =
     new Intl.DateTimeFormat("sv-SE", options).format(now);
-}
-
-setInterval(updateClock, 1000);
-updateClock();
-
 }
 
 setInterval(updateClock, 1000);
@@ -209,3 +203,4 @@ setInterval(() => {
 </script>
 </body>
 </html>
+
