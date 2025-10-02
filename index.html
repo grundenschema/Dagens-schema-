@@ -130,48 +130,66 @@ async function loadSchema() {
     const now = getStockholmDate();
     const nowStr = now.toTimeString().slice(0,5);
 
-    let firstGreenElement = null;
-
-    json.data.forEach(row => {
+    // Gör om till objekt
+    const aktiviteter = json.data.map(row => {
       const [start, slut, aktivitet, deltagare, coach] = row;
       let status = "";
       if (slut <= nowStr) {
-        status = "❌";
+        status = "❌";       // avslutad
       } else if (start <= nowStr && slut >= nowStr) {
-        status = "🟢";
+        status = "🟢";       // pågående
       }
+      return { start, slut, aktivitet, deltagare, coach, status };
+    });
 
-      const fargEmoji = aktivitetFarger[aktivitet] || {color:"#fff", emoji:""};
-      const aktivitetText = `${status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${aktivitet}`;
+    // Dela upp i tre block
+    const ended = aktiviteter.filter(a => a.status === "❌");
+    const ongoing = aktiviteter.filter(a => a.status === "🟢");
+    const upcoming = aktiviteter.filter(a => a.status === "");
+
+    // Sortera varje block på starttid
+    const sortByStart = (a,b) => a.start.localeCompare(b.start);
+    ended.sort(sortByStart);
+    ongoing.sort(sortByStart);
+    upcoming.sort(sortByStart);
+
+    // Slå ihop i rätt ordning
+    const finalList = [...ended, ...ongoing, ...upcoming];
+
+    let firstGreenElement = null;
+
+    // Rendera
+    finalList.forEach(act => {
+      const fargEmoji = aktivitetFarger[act.aktivitet] || {color:"#fff", emoji:""};
+      const aktivitetText = `${act.status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${act.aktivitet}`;
 
       // tabell
       const tr = document.createElement("tr");
       tr.style.background = fargEmoji.color;
-      if (status === "❌") tr.classList.add("ended");
+      if (act.status === "❌") tr.classList.add("ended");
       tr.innerHTML = `
-        <td>${start}</td>
-        <td>${slut}</td>
+        <td>${act.start}</td>
+        <td>${act.slut}</td>
         <td class="aktivitet">${aktivitetText}</td>
-        <td>${deltagare}</td>
-        <td>${coach}</td>
+        <td>${act.deltagare}</td>
+        <td>${act.coach}</td>
       `;
       tbody.appendChild(tr);
 
       // lista (mobil)
       const div = document.createElement("div");
       div.className = "list-item";
-      if (status === "❌") div.classList.add("ended");
+      if (act.status === "❌") div.classList.add("ended");
       div.style.background = fargEmoji.color;
       div.innerHTML = `
-        <strong>${start}–${slut} ${aktivitetText}</strong>
-        <div>👥 ${deltagare}</div>
-        <div>🎓 ${coach}</div>
+        <strong>${act.start}–${act.slut} ${aktivitetText}</strong>
+        <div>👥 ${act.deltagare}</div>
+        <div>🎓 ${act.coach}</div>
       `;
       listContainer.appendChild(div);
 
-      // spara första gröna
-      if (status === "🟢" && !firstGreenElement) {
-        firstGreenElement = div;
+      if (act.status === "🟢" && !firstGreenElement) {
+        firstGreenElement = div; // spara första gröna
       }
     });
 
