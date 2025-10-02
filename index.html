@@ -130,62 +130,55 @@ async function loadSchema() {
     const now = getStockholmDate();
     const nowStr = now.toTimeString().slice(0,5);
 
-    // Gör om till objekt och sätt status
-    const aktiviteter = json.data.map(row => {
+    let firstGreenElement = null;
+
+    json.data.forEach(row => {
       const [start, slut, aktivitet, deltagare, coach] = row;
       let status = "";
       if (slut <= nowStr) {
-        status = "❌";       // avslutad
+        status = "❌";
       } else if (start <= nowStr && slut >= nowStr) {
-        status = "🟢";       // pågående
+        status = "🟢";
       }
-      return { start, slut, aktivitet, deltagare, coach, status };
-    });
 
-    // Sortering: pågående först, sedan avslutade, sist kommande
-    const priority = status => {
-      if (status === "🟢") return 0;
-      if (status === "❌") return 1;
-      return 2;
-    };
-
-    aktiviteter.sort((a, b) => {
-      const pa = priority(a.status);
-      const pb = priority(b.status);
-      if (pa !== pb) return pa - pb;
-      return a.start.localeCompare(b.start);
-    });
-
-    // Rendera
-    aktiviteter.forEach(act => {
-      const fargEmoji = aktivitetFarger[act.aktivitet] || {color:"#fff", emoji:""};
-      const aktivitetText = `${act.status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${act.aktivitet}`;
+      const fargEmoji = aktivitetFarger[aktivitet] || {color:"#fff", emoji:""};
+      const aktivitetText = `${status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${aktivitet}`;
 
       // tabell
       const tr = document.createElement("tr");
       tr.style.background = fargEmoji.color;
-      if (act.status === "❌") tr.classList.add("ended");
+      if (status === "❌") tr.classList.add("ended");
       tr.innerHTML = `
-        <td>${act.start}</td>
-        <td>${act.slut}</td>
+        <td>${start}</td>
+        <td>${slut}</td>
         <td class="aktivitet">${aktivitetText}</td>
-        <td>${act.deltagare}</td>
-        <td>${act.coach}</td>
+        <td>${deltagare}</td>
+        <td>${coach}</td>
       `;
       tbody.appendChild(tr);
 
       // lista (mobil)
       const div = document.createElement("div");
       div.className = "list-item";
-      if (act.status === "❌") div.classList.add("ended");
+      if (status === "❌") div.classList.add("ended");
       div.style.background = fargEmoji.color;
       div.innerHTML = `
-        <strong>${act.start}–${act.slut} ${aktivitetText}</strong>
-        <div>👥 ${act.deltagare}</div>
-        <div>🎓 ${act.coach}</div>
+        <strong>${start}–${slut} ${aktivitetText}</strong>
+        <div>👥 ${deltagare}</div>
+        <div>🎓 ${coach}</div>
       `;
       listContainer.appendChild(div);
+
+      // spara första gröna
+      if (status === "🟢" && !firstGreenElement) {
+        firstGreenElement = div;
+      }
     });
+
+    // Scrolla till första pågående
+    if (firstGreenElement) {
+      firstGreenElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
 
   } catch (err) {
     console.error("Fel vid hämtning:", err);
