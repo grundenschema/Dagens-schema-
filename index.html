@@ -21,14 +21,12 @@
       right: 20px; 
     }
 
-    /* Tabell för desktop */
     .table-container { overflow-x: auto; }
     table { border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
     th { background: #f2f2f2; }
     td.aktivitet { font-weight: bold; }
 
-    /* Lista för mobil */
     .list-container { display: none; }
     .list-item {
       border: 1px solid #ddd;
@@ -38,7 +36,6 @@
     }
     .list-item strong { display: block; margin-bottom: 4px; }
 
-    /* Byt vy på små skärmar */
     @media (max-width: 600px) {
       .table-container { display: none; }
       .list-container { display: block; }
@@ -56,7 +53,6 @@
   <h1>Dagens schema</h1>
   <div id="clock"></div>
 
-  <!-- Desktop tabell -->
   <div class="table-container">
     <table id="schema">
       <thead>
@@ -72,7 +68,6 @@
     </table>
   </div>
 
-  <!-- Mobil lista -->
   <div class="list-container" id="schema-list"></div>
 
 <script>
@@ -131,25 +126,10 @@ async function loadSchema() {
     listContainer.innerHTML = "";
 
     const now = getStockholmDate();
-    const weekday = new Intl.DateTimeFormat("sv-SE", { weekday: "long", timeZone: "Europe/Stockholm" })
-                      .format(now)
-                      .toLowerCase(); // t.ex. "måndag"
-
     const nowStr = now.toTimeString().slice(0,5);
-    const hour = now.getHours();
-
-    if (hour < 6 || hour >= 16) return;
 
     json.data.forEach(row => {
-      // Anpassa till hur din data är strukturerad
-      // Antag: [Dag, Start, Slut, Aktivitet, Deltagare, Coach]
-      const [dag, start, slut, aktivitet, deltagare, coach] = row;
-
-      if (!dag || dag.toLowerCase() !== weekday) return;
-
-      const startHour = parseInt(start.split(":")[0], 10);
-      const endHour = parseInt(slut.split(":")[0], 10);
-      if (startHour < 8 || endHour > 16) return;
+      const [start, slut, aktivitet, deltagare, coach] = row;
 
       let status = "";
       if (slut <= nowStr) {
@@ -209,9 +189,7 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 loadSchema();
-setInterval(() => {
-  if (getStockholmDate().getHours() >= 6) loadSchema();
-}, 30*60*1000);
+setInterval(loadSchema, 30*60*1000);
 </script>
 </body>
 </html>
