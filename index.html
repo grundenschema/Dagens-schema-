@@ -118,7 +118,7 @@ function getStockholmDate() {
 
 // --- hämta schema ---
 async function loadSchema() {
-  const url = "https://script.google.com/macros/s/AKfycbzujIM80MWW1nsKDPySb4M0m2ylvUWk_SBko5Q_SJGfWJmcROFAxWf0jNjFi-nBVcA/exec"; 
+  const url = "DIN_SCRIPT_URL_HÄR";  // byt till din Apps Script webapp-URL
   try {
     const res = await fetch(url);
     const json = await res.json();
@@ -129,18 +129,21 @@ async function loadSchema() {
 
     const now = getStockholmDate();
     const nowStr = now.toTimeString().slice(0,5);
+    const idag = now.toISOString().slice(0,10);
 
-    // Gör om till objekt
-    const aktiviteter = json.data.map(row => {
-      const [start, slut, aktivitet, deltagare, coach] = row;
-      let status = "";
-      if (slut <= nowStr) {
-        status = "❌";       // avslutad
-      } else if (start <= nowStr && slut >= nowStr) {
-        status = "🟢";       // pågående
-      }
-      return { start, slut, aktivitet, deltagare, coach, status };
-    });
+    // --- filtrera på dagens datum ---
+    const aktiviteter = json.data
+      .filter(row => row[0] === idag) // [0] = Datum
+      .map(row => {
+        const [datum, start, slut, aktivitet, deltagare, coach] = row;
+        let status = "";
+        if (slut <= nowStr) {
+          status = "❌";       
+        } else if (start <= nowStr && slut >= nowStr) {
+          status = "🟢";       
+        }
+        return { start, slut, aktivitet, deltagare, coach, status };
+      });
 
     // Dela upp i tre block
     const ended = aktiviteter.filter(a => a.status === "❌");
@@ -153,9 +156,7 @@ async function loadSchema() {
     ongoing.sort(sortByStart);
     upcoming.sort(sortByStart);
 
-    // Slå ihop i rätt ordning
     const finalList = [...ended, ...ongoing, ...upcoming];
-
     let firstGreenElement = null;
 
     // Rendera
@@ -193,7 +194,6 @@ async function loadSchema() {
       }
     });
 
-    // Scrolla till första pågående
     if (firstGreenElement) {
       firstGreenElement.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -227,3 +227,4 @@ setInterval(loadSchema, 30*60*1000);
 </script>
 </body>
 </html>
+
