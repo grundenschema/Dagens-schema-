@@ -3,17 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test av schema</title>
+  <title>Test av schema-JSON</title>
 </head>
 <body>
   <h1>Test av schema-JSON</h1>
+  <p>Om allt fungerar ska JSON från Google Apps Script synas nedan:</p>
   <pre id="output">Hämtar data...</pre>
 
 <script>
 async function loadTest() {
-  const url = "DIN_SCRIPT_URL_HÄR"; // <-- byt till din Apps Script-webapp-URL
+  const url = "<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test av schema-JSON</title>
+</head>
+<body>
+  <h1>Test av schema-JSON</h1>
+  <p>Om allt fungerar ska JSON från Google Apps Script synas nedan:</p>
+  <pre id="output">Hämtar data...</pre>
+
+<script>
+async function loadTest() {
+  const url = "DIN_URL_HÄR";  // <-- klistra in din riktiga WebApp-URL här
   try {
-    const res = await fetch(url + "?t=" + Date.now()); // cache-buster
+    // Lägg till timestamp så vi slipper cache
+    const res = await fetch(url + "?t=" + Date.now());
     const json = await res.json();
     document.getElementById("output").textContent = JSON.stringify(json, null, 2);
   } catch (err) {
@@ -21,11 +37,22 @@ async function loadTest() {
     console.error(err);
   }
 }
-
 loadTest();
 </script>
 </body>
 </html>
-
-
-
+";  // <-- klistra in din riktiga WebApp-URL här
+  try {
+    // Lägg till timestamp så vi slipper cache
+    const res = await fetch(url + "?t=" + Date.now());
+    const json = await res.json();
+    document.getElementById("output").textContent = JSON.stringify(json, null, 2);
+  } catch (err) {
+    document.getElementById("output").textContent = "Fel: " + err;
+    console.error(err);
+  }
+}
+loadTest();
+</script>
+</body>
+</html>
