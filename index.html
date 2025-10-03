@@ -3,229 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dagens schema</title>
-  <style>
-    body { 
-      font-family: sans-serif; 
-      max-width: 1200px;
-      margin: 0 auto; 
-      padding: 20px; 
-      position: relative;
-    }
-    h1 { margin-bottom: 10px; }
-    #clock { font-family: monospace; font-size: 18px; margin-bottom: 15px; }
-    header img { 
-      height: 60px; 
-      position: absolute; 
-      top: 20px; 
-      right: 20px; 
-    }
-
-    .table-container { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-    th { background: #f2f2f2; }
-    td.aktivitet { font-weight: bold; }
-
-    .list-container { display: none; max-height: 70vh; overflow-y: auto; }
-    .list-item {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-    .list-item strong { display: block; margin-bottom: 4px; }
-
-    .ended { opacity: 0.6; }
-
-    @media (max-width: 600px) {
-      .table-container { display: none; }
-      .list-container { display: block; }
-      h1 { font-size: 20px; }
-      #clock { font-size: 14px; }
-      header img { height: 40px; }
-    }
-  </style>
+  <title>Test av schema</title>
 </head>
 <body>
-  <header>
-    <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
-  </header>
-
-  <h1>Dagens schema</h1>
-  <div id="clock"></div>
-
-  <div class="table-container">
-    <table id="schema">
-      <thead>
-        <tr>
-          <th>Start</th>
-          <th>Slut</th>
-          <th>Aktivitet</th>
-          <th>Deltagare</th>
-          <th>Coach</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <div class="list-container" id="schema-list"></div>
+  <h1>Test av schema-JSON</h1>
+  <pre id="output">Hämtar data...</pre>
 
 <script>
-// --- färger & emojis ---
-const aktivitetFarger = {
-  "Måndagsmöte":     {color:"#AED6F1", emoji:"📅"},
-  "Gruppmöte":       {color:"#7FB3D5", emoji:"👥"},
-  "Lunch":           {color:"#F9E79F", emoji:"🍲"},
-  "Frukost":         {color:"#FAD7A0", emoji:"🥐"},
-  "Ateljé":          {color:"#F5CBA7", emoji:"🎨"},
-  "Musik":           {color:"#D2B4DE", emoji:"🎶"},
-  "Pod":             {color:"#A9CCE3", emoji:"🎙️"},
-  "Padel":           {color:"#82E0AA", emoji:"🏓"},
-  "Lite av varje":   {color:"#FADBD8", emoji:"✨"},
-  "Yoga":            {color:"#D5F5E3", emoji:"🧘"},
-  "Gym":             {color:"#A3E4D7", emoji:"🏋️‍♂️"},
-  "Lunchpromenad":   {color:"#F7DC6F", emoji:"🚶‍♂️🍲"},
-  "Kulturpromenad":  {color:"#F8C471", emoji:"🏛️🚶"},
-  "Film":            {color:"#E6B0AA", emoji:"🎬"},
-  "Behandling":      {color:"#EDBB99", emoji:"💆"},
-  "Handla":          {color:"#ABEBC6", emoji:"🛍️"},
-  "Gåträning":       {color:"#76D7C4", emoji:"🚶"},
-  "Uppstart":        {color:"#F0B27A", emoji:"🚀"},
-  "Poesigruppen":    {color:"#F1948A", emoji:"✍️"},
-  "Trummor":         {color:"#F1948A", emoji:"🥁"},
-  "Rollspel":        {color:"#BB8FCE", emoji:"🐉"},
-  "Återkoppling":    {color:"#85C1E9", emoji:"🔄"},
-  "Handling":        {color:"#73C6B6", emoji:"🛒"},
-  "Medicin":         {color:"#E59866", emoji:"💊"},
-  "Föreningsgruppen":{color:"#D6DBDF", emoji:"🤝"},
-  "Öppen verkstad":  {color:"#F5B7B1", emoji:"🔧"},
-  "Biljard":         {color:"#A9DFBF", emoji:"🎱"},
-  "Spelgruppen":     {color:"#F8C471", emoji:"🎲"},
-  "Sömnad":          {color:"#F5EEF8", emoji:"🧵"},
-  "Filmkunskap":     {color:"#E6B0AA", emoji:"🎬"},
-  "Musikquizz":      {color:"#D2B4DE", emoji:"🎶"},
-  "Musikdokumentär": {color:"#D2B4DE", emoji:"🎶"}
-};
-
-// Hjälpfunktion: svensk tid
-function getStockholmDate() {
-  return new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Europe/Stockholm" })
-  );
-}
-
-// --- hämta schema ---
-async function loadSchema() {
-  const url = "DIN_SCRIPT_URL_HÄR";  // byt till din Apps Script webapp-URL
+async function loadTest() {
+  const url = "DIN_SCRIPT_URL_HÄR"; // <-- byt till din Apps Script-webapp-URL
   try {
-    const res = await fetch(url);
+    const res = await fetch(url + "?t=" + Date.now()); // cache-buster
     const json = await res.json();
-    const tbody = document.querySelector("#schema tbody");
-    const listContainer = document.getElementById("schema-list");
-    tbody.innerHTML = "";
-    listContainer.innerHTML = "";
-
-    const now = getStockholmDate();
-    const nowStr = now.toTimeString().slice(0,5);
-    const idag = now.toISOString().slice(0,10);
-
-    // --- filtrera på dagens datum ---
-    const aktiviteter = json.data
-      .filter(row => row[0] === idag) // [0] = Datum
-      .map(row => {
-        const [datum, start, slut, aktivitet, deltagare, coach] = row;
-        let status = "";
-        if (slut <= nowStr) {
-          status = "❌";       
-        } else if (start <= nowStr && slut >= nowStr) {
-          status = "🟢";       
-        }
-        return { start, slut, aktivitet, deltagare, coach, status };
-      });
-
-    // Dela upp i tre block
-    const ended = aktiviteter.filter(a => a.status === "❌");
-    const ongoing = aktiviteter.filter(a => a.status === "🟢");
-    const upcoming = aktiviteter.filter(a => a.status === "");
-
-    // Sortera varje block på starttid
-    const sortByStart = (a,b) => a.start.localeCompare(b.start);
-    ended.sort(sortByStart);
-    ongoing.sort(sortByStart);
-    upcoming.sort(sortByStart);
-
-    const finalList = [...ended, ...ongoing, ...upcoming];
-    let firstGreenElement = null;
-
-    // Rendera
-    finalList.forEach(act => {
-      const fargEmoji = aktivitetFarger[act.aktivitet] || {color:"#fff", emoji:""};
-      const aktivitetText = `${act.status} ${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${act.aktivitet}`;
-
-      // tabell
-      const tr = document.createElement("tr");
-      tr.style.background = fargEmoji.color;
-      if (act.status === "❌") tr.classList.add("ended");
-      tr.innerHTML = `
-        <td>${act.start}</td>
-        <td>${act.slut}</td>
-        <td class="aktivitet">${aktivitetText}</td>
-        <td>${act.deltagare}</td>
-        <td>${act.coach}</td>
-      `;
-      tbody.appendChild(tr);
-
-      // lista (mobil)
-      const div = document.createElement("div");
-      div.className = "list-item";
-      if (act.status === "❌") div.classList.add("ended");
-      div.style.background = fargEmoji.color;
-      div.innerHTML = `
-        <strong>${act.start}–${act.slut} ${aktivitetText}</strong>
-        <div>👥 ${act.deltagare}</div>
-        <div>🎓 ${act.coach}</div>
-      `;
-      listContainer.appendChild(div);
-
-      if (act.status === "🟢" && !firstGreenElement) {
-        firstGreenElement = div; // spara första gröna
-      }
-    });
-
-    if (firstGreenElement) {
-      firstGreenElement.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
+    document.getElementById("output").textContent = JSON.stringify(json, null, 2);
   } catch (err) {
-    console.error("Fel vid hämtning:", err);
+    document.getElementById("output").textContent = "Fel: " + err;
+    console.error(err);
   }
 }
 
-// --- klocka ---
-function updateClock() {
-  const now = getStockholmDate();
-  const options = { 
-    weekday: "long", 
-    year: "numeric", 
-    month: "long", 
-    day: "numeric",
-    hour: "2-digit", 
-    minute: "2-digit", 
-    second: "2-digit",
-    timeZone: "Europe/Stockholm"
-  };
-  document.getElementById("clock").textContent =
-    new Intl.DateTimeFormat("sv-SE", options).format(now);
-}
-
-setInterval(updateClock, 1000);
-updateClock();
-loadSchema();
-setInterval(loadSchema, 30*60*1000);
+loadTest();
 </script>
 </body>
 </html>
+
 
 
