@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -180,18 +179,10 @@ function renderSchema() {
 
   let aktiviteter = allaAktiviteter;
   if (valdCoach !== "alla") {
-    // 🧩 Aktiviteter som ALLA ska se
-    const gemensammaAktiviteter = [
-      "Måndagsmöte",
-      "Gruppmöte",
-      "Återkoppling",
-      "Föreningsgruppen"
-    ];
-
+    // 🧩 visa aktivitet om coachen finns i listan eller om coachfältet innehåller "alla"
     aktiviteter = aktiviteter.filter(a =>
       a.coachLista.includes(valdCoach) ||
-      a.coachStr.toLowerCase().includes("alla") ||
-      gemensammaAktiviteter.includes(a.aktivitet)
+      a.coachStr.toLowerCase().includes("alla")
     );
   }
 
