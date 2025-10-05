@@ -124,12 +124,14 @@
 
     function dayKey(str) { return String(str).slice(0,10); }
     function countCoaches(coachStr) {
-      return (coachStr || "")
-        .split(",").map(c => c.trim()).filter(c => c && c.toLowerCase() !== "alla").length;
+      return parseCoaches(coachStr).length;
     }
     function parseCoaches(coachStr) {
+      const ignore = ["", "-", ".", "ingen", "ingen coach", "eget arbete", "självständigt", "utan coach"];
       return (coachStr || "")
-        .split(",").map(c => c.trim()).filter(c => c && c.toLowerCase() !== "alla");
+        .split(",")
+        .map(c => c.trim())
+        .filter(c => c && !ignore.includes(c.toLowerCase()) && c.toLowerCase() !== "alla");
     }
     function overlap(aStart, aEnd, bStart, bEnd) {
       return !(aEnd <= bStart || aStart >= bEnd);
@@ -167,7 +169,6 @@
         <td data-label="Coach">${row.Coach||""}</td>
       </tr>`;
     }
-
     function renderDaily(data) {
       const today = dayKey(getSEDate().toISOString());
       const todays = data.filter(r => dayKey(r.Datum) === today).sort((a,b)=> (a.Start||"").localeCompare(b.Start||""));
@@ -269,14 +270,49 @@
       document.getElementById("schemaContainer").innerHTML = html;
     }
 
-    document.getElementById("btnDaily").onclick = () => { document.getElementById("coachSelect").style.display = "none"; document.getElementById("sickPanel").style.display = "none"; renderDaily(DATA); };
-    document.getElementById("btnCoach").onclick = () => { document.getElementById("sickPanel").style.display = "none"; document.getElementById("coachSelect").style.display = "inline-block"; const v = document.getElementById("coachSelect").value; if (v) renderCoachWeek(DATA, v); else document.getElementById("schemaContainer").innerHTML = `<p>Välj en coach i listan.</p>`; };
-    document.getElementById("btnSick").onclick = () => { document.getElementById("coachSelect").style.display = "none"; document.getElementById("sickPanel").style.display = "block"; document.getElementById("schemaContainer").innerHTML = `<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`; };
-    document.getElementById("btnShowSick").onclick = () => { const sick = getSelectedSick(); if (!sick.length) { document.getElementById("sickMsg").textContent = "Välj minst en coach."; return; } document.getElementById("sickMsg").textContent = ""; renderSickSchedule(DATA, sick); };
-    document.getElementById("btnClearSick").onclick = () => { document.querySelectorAll("#sickList input[type=checkbox]").forEach(cb => cb.checked = false); document.getElementById("sickMsg").textContent = ""; document.getElementById("schemaContainer").innerHTML = `<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`; };
-    document.addEventListener("change", (e)=>{ if (e.target && e.target.closest("#sickList") && e.target.type === "checkbox") { const sel = getSelectedSick(); if (sel.length > 5) { e.target.checked = false; document.getElementById("sickMsg").textContent = "Du kan välja högst 5 coacher."; } else { document.getElementById("sickMsg").textContent = ""; } } });
+    document.getElementById("btnDaily").onclick = () => {
+      document.getElementById("coachSelect").style.display = "none";
+      document.getElementById("sickPanel").style.display = "none";
+      renderDaily(DATA);
+    };
+    document.getElementById("btnCoach").onclick = () => {
+      document.getElementById("sickPanel").style.display = "none";
+      document.getElementById("coachSelect").style.display = "inline-block";
+      const v = document.getElementById("coachSelect").value;
+      if (v) renderCoachWeek(DATA, v);
+      else document.getElementById("schemaContainer").innerHTML = `<p>Välj en coach i listan.</p>`;
+    };
+    document.getElementById("btnSick").onclick = () => {
+      document.getElementById("coachSelect").style.display = "none";
+      document.getElementById("sickPanel").style.display = "block";
+      document.getElementById("schemaContainer").innerHTML = `<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`;
+    };
+    document.getElementById("btnShowSick").onclick = () => {
+      const sick = getSelectedSick();
+      if (!sick.length) { document.getElementById("sickMsg").textContent = "Välj minst en coach."; return; }
+      document.getElementById("sickMsg").textContent = "";
+      renderSickSchedule(DATA, sick);
+    };
+    document.getElementById("btnClearSick").onclick = () => {
+      document.querySelectorAll("#sickList input[type=checkbox]").forEach(cb => cb.checked = false);
+      document.getElementById("sickMsg").textContent = "";
+      document.getElementById("schemaContainer").innerHTML = `<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`;
+    };
+    document.addEventListener("change", (e)=> {
+      if (e.target && e.target.closest("#sickList") && e.target.type === "checkbox") {
+        const sel = getSelectedSick();
+        if (sel.length > 5) {
+          e.target.checked = false;
+          document.getElementById("sickMsg").textContent = "Du kan välja högst 5 coacher.";
+        } else {
+          document.getElementById("sickMsg").textContent = "";
+        }
+      }
+    });
     loadData();
     setInterval(loadData, 15*60*1000);
   </script>
 </body>
 </html>
+
+
