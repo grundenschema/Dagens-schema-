@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Grunden DV – Schema</title>
   <style>
     body {
@@ -19,7 +19,8 @@
       right: 20px;
     }
     h1 { margin-bottom: 5px; }
-    #clock { font-family: monospace; margin-bottom: 15px; }
+    #clock { font-family: monospace; margin-bottom: 8px; }
+    #updated { font-size: 12px; color: #666; margin-bottom: 16px; }
 
     select, button {
       margin: 5px 5px 15px 0;
@@ -38,6 +39,9 @@
     .ended { opacity: 0.6; }
     .aktivitet { font-weight: bold; }
     .hidden { display: none; }
+
+    .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .status-dot { font-size: 12px; }
   </style>
 </head>
 <body>
@@ -47,18 +51,20 @@
 
   <h1 id="viewTitle">Dagens gemensamma schema</h1>
   <div id="clock"></div>
+  <div id="updated">Senast uppdaterad: –</div>
 
-  <div>
+  <div class="toolbar">
     <button id="showDaily">Gemensamt schema</button>
     <button id="showWeekly">Coachschema</button>
     <select id="coachSelect" class="hidden"></select>
+    <span class="status-dot" title="Uppdaterar status varje minut">🟢/❌ auto</span>
   </div>
 
   <div id="schemaContainer">Laddar schema...</div>
 
   <script>
-    // 🔗 Länk till Google Apps Script-webbappen
-    const url = "https://script.google.com/macros/s/AKfycbxB9ZR9UnDf1rrEmeATZD9y4r5qM4yRySo574CLWYTkXt9-dpS2eOM14T2fpqZg-2x1/exec";
+    // 🔗 Din Google Apps Script-webbapp (deployad adress)
+    const url = "https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
 
     // 🎨 Färger och emojis per aktivitet
     const aktivitetFarger = {
@@ -104,14 +110,32 @@
     setInterval(updateClock, 1000);
     updateClock();
 
+    // Global cache av data för att slippa hämta i onödan mellan vybyten
+    let GLOBAL_DATA = [];
+    let GLOBAL_UPDATED = "";
+
     // 📦 Hämta schema
     async function loadSchema() {
-      const res = await fetch(url + "?t=" + Date.now());
-      const json = await res.json();
-      const data = json.data;
+      try {
+        const res = await fetch(url + "?t=" + Date.now());
+        const json = await res.json();
+        GLOBAL_DATA = Array.isArray(json.data) ? json.data : [];
+        GLOBAL_UPDATED = json.updated || "";
 
-      renderDaily(data);
-      setupWeekly(data);
+        // Skriv ”senast uppdaterad”
+        if (GLOBAL_UPDATED) {
+          document.getElementById("updated").textContent = "Senast uppdaterad: " + GLOBAL_UPDATED;
+        } else {
+          document.getElementById("updated").textContent = "Senast uppdaterad: –";
+        }
+
+        renderDaily(GLOBAL_DATA);
+        setupWeekly(GLOBAL_DATA);
+      } catch (err) {
+        console.error("Fel vid hämtning av schema:", err);
+        document.getElementById("schemaContainer").textContent =
+          "Kunde inte hämta schema. Prova att ladda om sidan.";
+      }
     }
 
     // 📅 Dagens schema
@@ -119,8 +143,10 @@
       document.getElementById("viewTitle").textContent = "Dagens gemensamma schema";
       document.getElementById("coachSelect").classList.add("hidden");
 
-      const todayStr = getStockholmDate().toISOString().split("T")[0];
-      const todays = data.filter(r => r.Datum === todayStr);
+      const todayStr = getStockholmDate().toISOString().split("T")[0]; // "yyyy-MM-dd"
+      // Datum kan komma som "yyyy-MM-dd" eller som "yyyy-MM-dd 00:00:00" → startsWith
+      const todays = data.filter(r => String(r.Datum).startsWith(todayStr));
+
       const now = getStockholmDate().toTimeString().slice(0,5);
 
       let html = `<table><thead>
@@ -131,13 +157,17 @@
         const f = aktivitetFarger[row.Aktivitet] || {color:"#fff", emoji:""};
         const status = (row.Slut <= now) ? "❌" : (row.Start <= now && row.Slut >= now) ? "🟢" : "";
         html += `<tr style="background:${f.color}" class="${status==='❌'?'ended':''}">
-          <td>${row.Start}</td>
-          <td>${row.Slut}</td>
-          <td class="aktivitet">${status} ${f.emoji||""} ${row.Aktivitet}</td>
-          <td>${row.Deltagare}</td>
-          <td>${row.Coach}</td>
+          <td>${row.Start || ""}</td>
+          <td>${row.Slut || ""}</td>
+          <td class="aktivitet">${status ? status + " " : ""}${f.emoji||""} ${row.Aktivitet || ""}</td>
+          <td>${row.Deltagare || ""}</td>
+          <td>${row.Coach || ""}</td>
         </tr>`;
       });
+
+      if (todays.length === 0) {
+        html += `<tr><td colspan="5">Inga aktiviteter för idag.</td></tr>`;
+      }
 
       html += "</tbody></table>";
       document.getElementById("schemaContainer").innerHTML = html;
@@ -145,9 +175,19 @@
 
     // 👥 Coachlista
     function setupWeekly(data) {
-      const coaches = [...new Set(data.map(r => r.Coach.split(",")).flat().map(c => c.trim()).filter(c => c && c!=="Alla"))].sort();
       const select = document.getElementById("coachSelect");
-      select.innerHTML = "<option value=''>-- Välj coach --</option>" + coaches.map(c => `<option value="${c}">${c}</option>`).join("");
+      // Extrahera coacher (hantera flera coacher separerade med komma)
+      const coaches = [...new Set(
+        data
+          .map(r => (r.Coach || "").split(","))
+          .flat()
+          .map(c => c.trim())
+          .filter(c => c && c !== "Alla")
+      )].sort();
+
+      select.innerHTML = "<option value=''>-- Välj coach --</option>" +
+        coaches.map(c => `<option value="${c}">${c}</option>`).join("");
+
       select.onchange = () => renderWeekly(data, select.value);
     }
 
@@ -158,10 +198,10 @@
 
       let filtered = data;
       if (coach) {
-        filtered = data.filter(r =>
-          r.Coach.split(",").map(c => c.trim()).includes(coach) ||
-          r.Coach.trim() === "Alla"
-        );
+        filtered = data.filter(r => {
+          const coachList = (r.Coach || "").split(",").map(c => c.trim());
+          return coachList.includes(coach) || (r.Coach || "").trim() === "Alla";
+        });
       }
 
       let html = `<table><thead>
@@ -170,60 +210,61 @@
 
       filtered.forEach(row => {
         const f = aktivitetFarger[row.Aktivitet] || {color:"#fff", emoji:""};
+        // Tvinga datum som text om det råkar komma annorlunda
+        const datumText = String(row.Datum).slice(0, 10); // yyyy-MM-dd
         html += `<tr style="background:${f.color}">
-          <td>${row.Datum}</td>
-          <td>${row.Start}</td>
-          <td>${row.Slut}</td>
-          <td class="aktivitet">${f.emoji||""} ${row.Aktivitet}</td>
-          <td>${row.Deltagare}</td>
-          <td>${row.Coach}</td>
+          <td>${datumText}</td>
+          <td>${row.Start || ""}</td>
+          <td>${row.Slut || ""}</td>
+          <td class="aktivitet">${f.emoji||""} ${row.Aktivitet || ""}</td>
+          <td>${row.Deltagare || ""}</td>
+          <td>${row.Coach || ""}</td>
         </tr>`;
       });
+
+      if (filtered.length === 0) {
+        html += `<tr><td colspan="6">Inga aktiviteter hittades${coach ? " för " + coach : ""}.</td></tr>`;
+      }
 
       html += "</tbody></table>";
       document.getElementById("schemaContainer").innerHTML = html;
     }
 
-    // 🟢 Uppdatera statusikoner lokalt
+    // 🟢 Uppdatera statusikoner lokalt (utan nätverksanrop)
     function updateStatusColors() {
       const now = getStockholmDate().toTimeString().slice(0,5);
       document.querySelectorAll("tbody tr").forEach(tr => {
-        const start = tr.children[0]?.textContent;
-        const end = tr.children[1]?.textContent;
+        const start = tr.children[0]?.textContent?.trim();
+        const end = tr.children[1]?.textContent?.trim();
         const aktivitetCell = tr.querySelector(".aktivitet");
-
         if (!start || !end || !aktivitetCell) return;
 
         let status = "";
         if (end <= now) status = "❌";
         else if (start <= now && end >= now) status = "🟢";
 
-        // Ta bort gammal status
-        aktivitetCell.textContent = aktivitetCell.textContent.replace(/^❌|🟢/, "").trim();
-        if (status) aktivitetCell.textContent = status + " " + aktivitetCell.textContent;
-
+        // Ta bort ev. gammal status i början
+        aktivitetCell.textContent = aktivitetCell.textContent.replace(/^(?:🟢|❌)\s*/, "");
+        if (status) aktivitetCell.textContent = `${status} ${aktivitetCell.textContent}`;
         tr.classList.toggle("ended", end <= now);
       });
     }
 
     // 🔘 Knapphantering
-    document.getElementById("showDaily").onclick = () => loadSchema();
+    document.getElementById("showDaily").onclick = () => renderDaily(GLOBAL_DATA);
     document.getElementById("showWeekly").onclick = () => {
       document.getElementById("coachSelect").classList.remove("hidden");
-      fetch(url + "?t=" + Date.now())
-        .then(r => r.json())
-        .then(json => setupWeekly(json.data));
+      renderWeekly(GLOBAL_DATA, document.getElementById("coachSelect").value || "");
     };
 
     // 🚀 Start
     loadSchema();
 
     // 🔄 Uppdatera status var minut
-    setInterval(updateStatusColors, 60000);
+    setInterval(updateStatusColors, 60 * 1000);
 
-    // 🔁 Hämta nytt schema var 15:e minut
+    // 🔁 Hämta nytt schema var 15:e minut (snäll mot Google)
     setInterval(loadSchema, 15 * 60 * 1000);
   </script>
 </body>
 </html>
-
