@@ -118,13 +118,26 @@ function parseCoaches(coachStr){
   return (coachStr||"").split(",").map(c=>c.trim()).filter(c=>c&&!ignore.includes(c.toLowerCase())&&c.toLowerCase()!=="alla");
 }
 function overlap(aStart,aEnd,bStart,bEnd){return !(aEnd<=bStart||aStart>=bEnd);}
+
+/* 🗓️ Ny version – visar nästa vecka på helgen */
 function getThisWeekMonFri(){
-  const today=getSEDate(),day=today.getDay(),mon=new Date(today);
-  mon.setDate(today.getDate()-((day+6)%7));
-  mon.setHours(0,0,0,0);
-  const fri=new Date(mon);fri.setDate(mon.getDate()+4);
-  return{mon,fri};
+  const today=getSEDate();
+  const day=today.getDay(); // 0=sön, 1=mån ...
+  const monday=new Date(today);
+
+  // Om det är lördag (6) eller söndag (0) → visa nästa vecka
+  if(day===0||day===6){
+    monday.setDate(today.getDate()-((day+6)%7)+7);
+  } else {
+    monday.setDate(today.getDate()-((day+6)%7));
+  }
+
+  monday.setHours(0,0,0,0);
+  const friday=new Date(monday);
+  friday.setDate(monday.getDate()+4);
+  return {mon:monday,fri:friday};
 }
+
 function groupByDate(rows){
   const g={};
   rows.forEach(r=>{
@@ -183,7 +196,6 @@ function setupCoachSelect(data){
   s.onchange=()=>{const v=s.value;if(v)renderCoachWeek(DATA,v);};
 }
 
-/* 🗓️ Coachschema (denna vecka) */
 function renderCoachWeek(data, coach){
   document.getElementById("viewTitle").textContent="Coachschema – "+coach;
   const {mon,fri}=getThisWeekMonFri();
@@ -196,7 +208,7 @@ function renderCoachWeek(data, coach){
   const grouped=groupByDate(rows);
   let html="";
   Object.keys(grouped).forEach(k=>html+=sectionHTML(k,grouped[k],null,false));
-  document.getElementById("schemaContainer").innerHTML=rows.length?html:`<p>Inga aktiviteter hittades för ${coach} denna vecka.</p>`;
+  document.getElementById("schemaContainer").innerHTML=rows.length?html:`<p>Inga aktiviteter hittades för ${coach}.</p>`;
 }
 
 function setupSickList(data){
@@ -246,4 +258,5 @@ setInterval(loadData,15*60*1000);
 </script>
 </body>
 </html>
+
 
