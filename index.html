@@ -74,9 +74,6 @@ button:hover{background:#ececec;}
 <div id="schemaContainer">Laddar schema...</div>
 
 <script>
-/* ------------------------------------
-   🔧  All JavaScript-logik
------------------------------------- */
 const url="https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
 const aktivitetFarger={
   "Måndagsmöte":{color:"#AED6F1",emoji:"📅"},"Gruppmöte":{color:"#7FB3D5",emoji:"👥"},
@@ -91,6 +88,7 @@ const aktivitetFarger={
   "Sömnad":{color:"#F5EEF8",emoji:"🧵"},"Filmgruppen":{color:"#E6B0AA",emoji:"🎬"},
   "Musikquizz":{color:"#D2B4DE",emoji:"🎶"},"Musikdokumentär":{color:"#D2B4DE",emoji:"🎶"}
 };
+
 function getSEDate(){return new Date(new Date().toLocaleString("en-US",{timeZone:"Europe/Stockholm"}));}
 function fmtSE(dt,opts){return new Intl.DateTimeFormat("sv-SE",opts).format(dt);}
 function updateClock(){
@@ -110,11 +108,17 @@ async function loadData(){
   renderDaily(DATA);
 }
 
-function dayKey(str){return String(str).slice(0,10);}
+function dayKey(v){
+  if (!v) return "";
+  const d = new Date(v);
+  return d.toISOString().slice(0,10);
+}
+
 function parseCoaches(coachStr){
   const ignore=["","-",".","ingen","ingen coach","eget arbete","självständigt","utan coach"];
   return (coachStr||"").split(",").map(c=>c.trim()).filter(c=>c&&!ignore.includes(c.toLowerCase())&&c.toLowerCase()!=="alla");
 }
+
 function overlap(aStart,aEnd,bStart,bEnd){return !(aEnd<=bStart||aStart>=bEnd);}
 function getThisWeekMonFri(){
   const today=getSEDate(),day=today.getDay(),mon=new Date(today);
@@ -144,6 +148,7 @@ function cardHTML(r,extra=""){
     <div class="row"><label>🧑‍🏫 Coach</label><div>${r.Coach||"-"} ${extra||""}</div></div>
   </div>`;
 }
+
 function sectionHTML(dateKey,rows,extraForRow=null,showWarn=false){
   const label=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(dateKey));
   let html=`<div class="day-section"><div class="day-heading">${label.charAt(0).toUpperCase()+label.slice(1)}</div>`;
@@ -195,8 +200,8 @@ function renderCoachWeek(data, coach, nextWeek=true){
   const friday = new Date(monday);
   friday.setDate(monday.getDate() + 4);
 
-  const startKey = dayKey(monday.toISOString());
-  const endKey = dayKey(friday.toISOString());
+  const startKey = dayKey(monday);
+  const endKey = dayKey(friday);
 
   const rows = data.filter(r=>{
     const cs=parseCoaches(r.Coach);
@@ -225,7 +230,7 @@ function setupSickList(data){
 function getSelectedSick(){return[...document.querySelectorAll("#sickList input:checked")].map(e=>e.value);}
 function renderSickSchedule(data,sickCoaches){
   document.getElementById("viewTitle").textContent="🩺 Sjukschema";
-  const {mon,fri}=getThisWeekMonFri(),sK=dayKey(mon.toISOString()),eK=dayKey(fri.toISOString());
+  const {mon,fri}=getThisWeekMonFri(),sK=dayKey(mon),eK=dayKey(fri);
   const weekRows=data.filter(r=>dayKey(r.Datum)>=sK&&dayKey(r.Datum)<=eK);
   const sickRows=weekRows.filter(r=>sickCoaches.some(s=>parseCoaches(r.Coach).includes(s))).sort((a,b)=>(dayKey(a.Datum)===dayKey(b.Datum)?(a.Start||"").localeCompare(b.Start||""):dayKey(a.Datum).localeCompare(dayKey(b.Datum))));
   const allCoaches=[...new Set(weekRows.map(r=>parseCoaches(r.Coach)).flat())];
@@ -260,5 +265,3 @@ setInterval(loadData,15*60*1000);
 </script>
 </body>
 </html>
-
-
