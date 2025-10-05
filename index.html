@@ -109,16 +109,14 @@ async function loadData(){
 }
 
 function dayKey(v){
-  if (!v) return "";
-  const d = new Date(v);
+  if(!v)return"";
+  const d=new Date(v);
   return d.toISOString().slice(0,10);
 }
-
 function parseCoaches(coachStr){
   const ignore=["","-",".","ingen","ingen coach","eget arbete","självständigt","utan coach"];
   return (coachStr||"").split(",").map(c=>c.trim()).filter(c=>c&&!ignore.includes(c.toLowerCase())&&c.toLowerCase()!=="alla");
 }
-
 function overlap(aStart,aEnd,bStart,bEnd){return !(aEnd<=bStart||aStart>=bEnd);}
 function getThisWeekMonFri(){
   const today=getSEDate(),day=today.getDay(),mon=new Date(today);
@@ -148,7 +146,6 @@ function cardHTML(r,extra=""){
     <div class="row"><label>🧑‍🏫 Coach</label><div>${r.Coach||"-"} ${extra||""}</div></div>
   </div>`;
 }
-
 function sectionHTML(dateKey,rows,extraForRow=null,showWarn=false){
   const label=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(dateKey));
   let html=`<div class="day-section"><div class="day-heading">${label.charAt(0).toUpperCase()+label.slice(1)}</div>`;
@@ -183,39 +180,23 @@ function setupCoachSelect(data){
     o.textContent=c;
     s.appendChild(o);
   });
-  s.onchange=()=>{const v=s.value;if(v)renderCoachWeek(DATA,v,true);};
+  s.onchange=()=>{const v=s.value;if(v)renderCoachWeek(DATA,v);};
 }
 
-/* 🗓️ Coachschema med vecka-växling */
-function renderCoachWeek(data, coach, nextWeek=true){
-  const view = nextWeek ? "Nästa vecka" : "Denna vecka";
-  document.getElementById("viewTitle").innerHTML = `Coachschema – ${coach} (${view})
-    <button id="toggleWeek" style="margin-left:10px;font-size:0.9rem;">⏮️ Växla vecka</button>`;
-
-  const today = getSEDate();
-  const day = today.getDay();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - ((day + 6) % 7) + (nextWeek ? 7 : 0));
-  monday.setHours(0,0,0,0);
-  const friday = new Date(monday);
-  friday.setDate(monday.getDate() + 4);
-
-  const startKey = dayKey(monday);
-  const endKey = dayKey(friday);
-
-  const rows = data.filter(r=>{
+/* 🗓️ Coachschema (denna vecka) */
+function renderCoachWeek(data, coach){
+  document.getElementById("viewTitle").textContent="Coachschema – "+coach;
+  const {mon,fri}=getThisWeekMonFri();
+  const startKey=dayKey(mon),endKey=dayKey(fri);
+  const rows=data.filter(r=>{
     const cs=parseCoaches(r.Coach);
     const dateKey=dayKey(r.Datum);
-    return (cs.includes(coach)||(r.Coach||"").trim().toLowerCase()==="alla")
-           && dateKey>=startKey && dateKey<=endKey;
+    return (cs.includes(coach)||(r.Coach||"").trim().toLowerCase()==="alla")&&dateKey>=startKey&&dateKey<=endKey;
   }).sort((a,b)=>dayKey(a.Datum)===dayKey(b.Datum)?(a.Start||"").localeCompare(b.Start||""):dayKey(a.Datum).localeCompare(dayKey(b.Datum)));
-
   const grouped=groupByDate(rows);
   let html="";
   Object.keys(grouped).forEach(k=>html+=sectionHTML(k,grouped[k],null,false));
-  document.getElementById("schemaContainer").innerHTML=rows.length?html:`<p>Inga aktiviteter hittades för ${coach} ${view.toLowerCase()}.</p>`;
-
-  document.getElementById("toggleWeek").onclick=()=>renderCoachWeek(data,coach,!nextWeek);
+  document.getElementById("schemaContainer").innerHTML=rows.length?html:`<p>Inga aktiviteter hittades för ${coach} denna vecka.</p>`;
 }
 
 function setupSickList(data){
@@ -265,3 +246,4 @@ setInterval(loadData,15*60*1000);
 </script>
 </body>
 </html>
+
