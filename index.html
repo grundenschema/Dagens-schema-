@@ -10,7 +10,6 @@
       max-width: 1000px;
       margin: 0 auto;
       padding: 20px;
-      position: relative;
       background-color: #fafafa;
     }
 
@@ -47,7 +46,7 @@
       margin-bottom: 15px;
     }
 
-    select, button {
+    select {
       padding: 8px 12px;
       border-radius: 8px;
       border: 1px solid #ccc;
@@ -55,8 +54,6 @@
       background-color: #f7f7f7;
       cursor: pointer;
     }
-
-    button:hover { background-color: #e0e0e0; }
 
     table {
       border-collapse: collapse;
@@ -129,11 +126,9 @@
   </header>
 
   <div class="toolbar">
-    <button id="showDaily">Gemensamt schema</button>
     <select id="coachSelect">
-      <option value="">-- Välj coach --</option>
+      <option value="">Gemensamt schema</option>
     </select>
-    <button id="showCoach">Välj coach</button>
   </div>
 
   <div id="schemaContainer">Laddar schema...</div>
@@ -175,7 +170,8 @@
       const opts = { weekday:"long", year:"numeric", month:"long", day:"numeric", hour:"2-digit", minute:"2-digit", second:"2-digit" };
       document.getElementById("clock").textContent = new Intl.DateTimeFormat("sv-SE", opts).format(now);
     }
-    setInterval(updateClock, 1000); updateClock();
+    setInterval(updateClock, 1000);
+    updateClock();
 
     let GLOBAL_DATA = [];
 
@@ -229,6 +225,11 @@
         opt.textContent = c;
         select.appendChild(opt);
       });
+
+      select.onchange = () => {
+        if (select.value === "") renderDaily(GLOBAL_DATA);
+        else renderWeekly(GLOBAL_DATA, select.value);
+      };
     }
 
     function renderWeekly(data, coach) {
@@ -290,13 +291,6 @@
         tr.classList.toggle("ended",e<=now);
       });
     }
-
-    document.getElementById("showDaily").onclick=()=>renderDaily(GLOBAL_DATA);
-    document.getElementById("showCoach").onclick=()=>{
-      const c = document.getElementById("coachSelect").value;
-      if (c === "") renderDaily(GLOBAL_DATA);
-      else renderWeekly(GLOBAL_DATA, c);
-    };
 
     loadSchema();
     setInterval(updateStatusColors,60000);
