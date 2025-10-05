@@ -59,7 +59,7 @@
   <h1 id="schema-title">Dagens schema</h1>
   <div id="clock"></div>
 
-  <!-- 🧩 Nytt: filter för coach -->
+  <!-- 🧩 Filter för coach -->
   <div class="filter-container">
     <label for="coachFilter">Visa schema för: </label>
     <select id="coachFilter">
@@ -126,7 +126,7 @@ function getStockholmDate() {
   );
 }
 
-let allaAktiviteter = []; // 🔹 lagrar hela schemat globalt
+let allaAktiviteter = [];
 
 async function loadSchema() {
   const url = "https://script.google.com/macros/s/AKfycbzx8buYbQ37FJnrb-DYNY3Ku_HNe-QRrLkxxgv978Xh1V6lpAtAA1UiHgybDdxtlT4m/exec";
@@ -142,23 +142,26 @@ async function loadSchema() {
       "Schema för " + schemaDate.toLocaleDateString("sv-SE", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
 
     allaAktiviteter = json.data.map(row => {
-      const [start, slut, aktivitet, deltagare, coach] = row;
+      const [start, slut, aktivitet, deltagare, coachStr] = row;
       let status = "";
-      if (slut <= nowStr) {
-        status = "❌";
-      } else if (start <= nowStr && slut >= nowStr) {
-        status = "🟢";
-      }
-      return { start, slut, aktivitet, deltagare, coach, status };
+      if (slut <= nowStr) status = "❌";
+      else if (start <= nowStr && slut >= nowStr) status = "🟢";
+
+      // 🧩 Dela upp coacher (t.ex. "Lisa, Johan") → ["Lisa", "Johan"]
+      const coachLista = coachStr
+        ? coachStr.split(/,|&| och /i).map(c => c.trim()).filter(Boolean)
+        : [];
+
+      return { start, slut, aktivitet, deltagare, coachStr, coachLista, status };
     });
 
-    // 🧩 fyll coach-listan dynamiskt
-    const coacher = [...new Set(allaAktiviteter.map(a => a.coach).filter(Boolean))].sort();
+    // 🧩 unika coachnamn
+    const coacher = [...new Set(allaAktiviteter.flatMap(a => a.coachLista))].sort();
     const select = document.getElementById("coachFilter");
     select.innerHTML = '<option value="alla">Alla</option>' +
       coacher.map(c => `<option value="${c}">${c}</option>`).join("");
 
-    renderSchema(); // visa initialt
+    renderSchema();
 
   } catch (err) {
     console.error("Fel vid hämtning:", err);
@@ -166,7 +169,7 @@ async function loadSchema() {
   }
 }
 
-// 🔹 Filtrera och visa schemat
+// 🔹 Filtrera schemat
 function renderSchema() {
   const tbody = document.querySelector("#schema tbody");
   const listContainer = document.getElementById("schema-list");
@@ -176,7 +179,8 @@ function renderSchema() {
 
   let aktiviteter = allaAktiviteter;
   if (valdCoach !== "alla") {
-    aktiviteter = aktiviteter.filter(a => a.coach === valdCoach);
+    // 🧩 visa aktivitet om någon av coacherna matchar vald
+    aktiviteter = aktiviteter.filter(a => a.coachLista.includes(valdCoach));
   }
 
   const ended = aktiviteter.filter(a => a.status === "❌").sort((a,b)=>a.start.localeCompare(b.start));
@@ -198,7 +202,7 @@ function renderSchema() {
       <td>${act.slut}</td>
       <td class="aktivitet">${aktivitetText}</td>
       <td>${act.deltagare}</td>
-      <td>${act.coach}</td>
+      <td>${act.coachStr}</td>
     `;
     tbody.appendChild(tr);
 
@@ -209,7 +213,7 @@ function renderSchema() {
     div.innerHTML = `
       <strong>${act.start}–${act.slut} ${aktivitetText}</strong>
       <div>👥 ${act.deltagare}</div>
-      <div>🎓 ${act.coach}</div>
+      <div>🎓 ${act.coachStr}</div>
     `;
     listContainer.appendChild(div);
 
@@ -244,4 +248,5 @@ setInterval(loadSchema, 30*60*1000);
 </script>
 </body>
 </html>
+
 
