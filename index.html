@@ -58,7 +58,6 @@
     <button id="btnSick">Sjukschema</button>
   </div>
 
-  <!-- Enkel panel för sjukschema-val (utan krusiduller) -->
   <div id="sickPanel">
     <h3>🩺 Välj sjuka coacher (max 5)</h3>
     <div id="sickList"></div>
@@ -109,7 +108,7 @@
     }
     setInterval(updateClock, 1000); updateClock();
 
-    let DATA = []; // all rows from API
+    let DATA = [];
 
     async function loadData() {
       const res = await fetch(url + "?t=" + Date.now());
@@ -118,37 +117,32 @@
       document.getElementById("updated").textContent = "Senast uppdaterad: " + (json.updated || "–");
       setupCoachSelect(DATA);
       setupSickList(DATA);
-      renderDaily(DATA);              // startläge
+      renderDaily(DATA);
       document.getElementById("coachSelect").style.display = "none";
       document.getElementById("sickPanel").style.display = "none";
     }
 
-    // --------- Hjälpare ---------
-    function dayKey(str) { return String(str).slice(0,10); } // yyyy-MM-dd
+    function dayKey(str) { return String(str).slice(0,10); }
     function countCoaches(coachStr) {
       return (coachStr || "")
-        .split(",")
-        .map(c => c.trim())
-        .filter(c => c && c.toLowerCase() !== "alla").length;
+        .split(",").map(c => c.trim()).filter(c => c && c.toLowerCase() !== "alla").length;
     }
     function parseCoaches(coachStr) {
       return (coachStr || "")
-        .split(",")
-        .map(c => c.trim())
-        .filter(c => c && c.toLowerCase() !== "alla");
+        .split(",").map(c => c.trim()).filter(c => c && c.toLowerCase() !== "alla");
     }
     function overlap(aStart, aEnd, bStart, bEnd) {
       return !(aEnd <= bStart || aStart >= bEnd);
     }
-    function getNextWeekMonFri() {
+    function getThisWeekMonFri() {
       const today = getSEDate();
-      const day = today.getDay(); // 0=sön,1=mån...
-      const nextMon = new Date(today);
-      nextMon.setDate(today.getDate() + ((8 - day) % 7));
-      nextMon.setHours(0,0,0,0);
-      const fri = new Date(nextMon);
-      fri.setDate(nextMon.getDate() + 4);
-      return { nextMon, fri };
+      const day = today.getDay();
+      const mon = new Date(today);
+      mon.setDate(today.getDate() - ((day + 6) % 7));
+      mon.setHours(0,0,0,0);
+      const fri = new Date(mon);
+      fri.setDate(mon.getDate() + 4);
+      return { nextMon: mon, fri };
     }
 
     function groupByDate(rows) {
@@ -161,7 +155,7 @@
       return Object.keys(grouped).sort().reduce((acc,k)=> (acc[k]=grouped[k], acc), {});
     }
 
-    function rowHTML(row, extraRightHTML="") {
+    function rowHTML(row) {
       const f = aktivitetFarger[row.Aktivitet] || {color:"#fff", emoji:""};
       const cCount = countCoaches(row.Coach);
       const warn = cCount > 2 ? ` <span class="pill warn">⚠️ ${cCount} coacher</span>` : "";
@@ -170,11 +164,10 @@
         <td data-label="Slut">${row.Slut||""}</td>
         <td data-label="Aktivitet" class="aktivitet">${f.emoji||""} ${row.Aktivitet||""}${warn}</td>
         <td data-label="Deltagare">${row.Deltagare||""}</td>
-        <td data-label="Coach">${row.Coach||""}${extraRightHTML}</td>
+        <td data-label="Coach">${row.Coach||""}</td>
       </tr>`;
     }
 
-    // --------- Gemensamt schema (idag) ---------
     function renderDaily(data) {
       const today = dayKey(getSEDate().toISOString());
       const todays = data.filter(r => dayKey(r.Datum) === today).sort((a,b)=> (a.Start||"").localeCompare(b.Start||""));
@@ -187,13 +180,10 @@
       document.getElementById("schemaContainer").innerHTML = html;
     }
 
-    // --------- Coachschema ---------
     function setupCoachSelect(data) {
       const select = document.getElementById("coachSelect");
       select.innerHTML = `<option value="">-- Välj coach --</option>`;
-      const coaches = [...new Set(
-        data.map(r => parseCoaches(r.Coach)).flat()
-      )].sort();
+      const coaches = [...new Set(data.map(r => parseCoaches(r.Coach)).flat())].sort();
       coaches.forEach(c => {
         const opt = document.createElement("option");
         opt.value = c; opt.textContent = c;
@@ -211,15 +201,12 @@
         const cs = parseCoaches(r.Coach);
         return cs.includes(coach) || (r.Coach||"").trim().toLowerCase()==="alla";
       }).sort((a,b)=> (dayKey(a.Datum)===dayKey(b.Datum) ? (a.Start||"").localeCompare(b.Start||"") : dayKey(a.Datum).localeCompare(dayKey(b.Datum))));
-
       const grouped = groupByDate(rows);
       let html = "";
       Object.keys(grouped).forEach(dateKey=>{
         const label = new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(dateKey));
         html += `<div class="day-heading">${label.charAt(0).toUpperCase()+label.slice(1)}</div>`;
-        html += `<table><thead>
-          <tr><th>Start</th><th>Slut</th><th>Aktivitet</th><th>Deltagare</th><th>Coach</th></tr>
-        </thead><tbody>`;
+        html += `<table><thead><tr><th>Start</th><th>Slut</th><th>Aktivitet</th><th>Deltagare</th><th>Coach</th></tr></thead><tbody>`;
         grouped[dateKey].forEach(r => { html += rowHTML(r); });
         html += "</tbody></table>";
       });
@@ -227,7 +214,6 @@
       document.getElementById("schemaContainer").innerHTML = html;
     }
 
-    // --------- Sjukschema (mån–fre kommande vecka) ---------
     function setupSickList(data) {
       const cont = document.getElementById("sickList");
       cont.innerHTML = "";
@@ -243,130 +229,53 @@
     }
 
     function renderSickSchedule(data, sickCoaches) {
-      const { nextMon, fri } = getNextWeekMonFri();
+      const { nextMon, fri } = getThisWeekMonFri();
       const startKey = dayKey(nextMon.toISOString());
       const endKey = dayKey(fri.toISOString());
-
-      // Ta bara måndag–fredag kommande vecka
       const weekRows = data.filter(r => {
         const d = dayKey(r.Datum);
         return d >= startKey && d <= endKey;
       });
-
-      // Pass som berör sjuka
       const sickRows = weekRows.filter(r => {
         const cs = parseCoaches(r.Coach);
         return sickCoaches.some(s => cs.includes(s));
       }).sort((a,b)=> (dayKey(a.Datum)===dayKey(b.Datum) ? (a.Start||"").localeCompare(b.Start||"") : dayKey(a.Datum).localeCompare(dayKey(b.Datum))));
-
-      // Lediga ersättare för varje pass
       const allCoaches = [...new Set(weekRows.map(r => parseCoaches(r.Coach)).flat())];
       let html = "";
-
       const grouped = groupByDate(sickRows);
       Object.keys(grouped).forEach(dateKey=>{
         const label = new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(dateKey));
         html += `<div class="day-heading">${label.charAt(0).toUpperCase()+label.slice(1)}</div>`;
-        html += `<table><thead>
-          <tr><th>Start</th><th>Slut</th><th>Aktivitet</th><th>Deltagare</th><th>Coach</th></tr>
-        </thead><tbody>`;
-
+        html += `<table><thead><tr><th>Start</th><th>Slut</th><th>Aktivitet</th><th>Deltagare</th><th>Coach</th></tr></thead><tbody>`;
         grouped[dateKey].forEach(r=>{
           const cs = parseCoaches(r.Coach);
           const cCount = countCoaches(r.Coach);
           const warn = cCount > 2 ? ` <span class="pill warn">⚠️ ${cCount} coacher</span>` : "";
-
-          // tider för överlappningskoll
-          const tStart = r.Start || "00:00";
-          const tEnd   = r.Slut  || "23:59";
-
-          // lediga = inte sjuk, och har inga överlappande pass den dagen
-          const available = allCoaches
-            .filter(c => !sickCoaches.includes(c))
-            .filter(c => {
-              const cRows = weekRows.filter(x => parseCoaches(x.Coach).includes(c) && dayKey(x.Datum) === dateKey);
-              return !cRows.some(x => overlap(x.Start||"00:00", x.Slut||"23:59", tStart, tEnd));
-            });
-
+          const tStart = r.Start || "00:00"; const tEnd = r.Slut  || "23:59";
+          const available = allCoaches.filter(c => !sickCoaches.includes(c)).filter(c => {
+            const cRows = weekRows.filter(x => parseCoaches(x.Coach).includes(c) && dayKey(x.Datum) === dateKey);
+            return !cRows.some(x => overlap(x.Start||"00:00", x.Slut||"23:59", tStart, tEnd));
+          });
           const f = aktivitetFarger[r.Aktivitet] || {color:"#fff", emoji:""};
           const sickHere = cs.filter(c => sickCoaches.includes(c));
           const others = cs.filter(c => !sickCoaches.includes(c));
-
           const ersHTML = available.length ? ` <span class="pill ok">Ersättare: ${available.join(", ")}</span>` : ` <span class="pill">Inga ersättare funna</span>`;
-          const coachCol = [
-            sickHere.length ? `Sjuk: ${sickHere.join(", ")}` : "",
-            others.length ? `Övriga: ${others.join(", ")}` : ""
-          ].filter(Boolean).join(" &nbsp;•&nbsp; ");
-
-          html += `<tr style="background:${f.color}">
-            <td data-label="Start">${r.Start||""}</td>
-            <td data-label="Slut">${r.Slut||""}</td>
-            <td data-label="Aktivitet" class="aktivitet">${f.emoji||""} ${r.Aktivitet||""}${warn}</td>
-            <td data-label="Deltagare">${r.Deltagare||""}</td>
-            <td data-label="Coach">${coachCol}${ersHTML}</td>
-          </tr>`;
+          const coachCol = [sickHere.length ? `Sjuk: ${sickHere.join(", ")}` : "", others.length ? `Övriga: ${others.join(", ")}` : ""].filter(Boolean).join(" • ");
+          html += `<tr style="background:${f.color}"><td data-label="Start">${r.Start||""}</td><td data-label="Slut">${r.Slut||""}</td><td data-label="Aktivitet" class="aktivitet">${f.emoji||""} ${r.Aktivitet||""}${warn}</td><td data-label="Deltagare">${r.Deltagare||""}</td><td data-label="Coach">${coachCol}${ersHTML}</td></tr>`;
         });
-
         html += "</tbody></table>";
       });
-
-      if (!sickRows.length) html = `<p>Inga pass för valda coacher under mån–fre kommande vecka.</p>`;
+      if (!sickRows.length) html = `<p>Inga pass för valda coacher under mån–fre denna vecka.</p>`;
       document.getElementById("schemaContainer").innerHTML = html;
     }
 
-    // --------- Handlers ---------
-    document.getElementById("btnDaily").onclick = () => {
-      document.getElementById("coachSelect").style.display = "none";
-      document.getElementById("sickPanel").style.display = "none";
-      renderDaily(DATA);
-    };
-
-    document.getElementById("btnCoach").onclick = () => {
-      document.getElementById("sickPanel").style.display = "none";
-      document.getElementById("coachSelect").style.display = "inline-block";
-      const v = document.getElementById("coachSelect").value;
-      if (v) renderCoachWeek(DATA, v);
-      else document.getElementById("schemaContainer").innerHTML = `<p>Välj en coach i listan.</p>`;
-    };
-
-    document.getElementById("btnSick").onclick = () => {
-      document.getElementById("coachSelect").style.display = "none";
-      document.getElementById("sickPanel").style.display = "block";
-      document.getElementById("schemaContainer").innerHTML = `<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`;
-    };
-
-    document.getElementById("btnShowSick").onclick = () => {
-      const sick = getSelectedSick();
-      if (!sick.length) {
-        document.getElementById("sickMsg").textContent = "Välj minst en coach.";
-        return;
-      }
-      document.getElementById("sickMsg").textContent = "";
-      renderSickSchedule(DATA, sick);
-    };
-
-    document.getElementById("btnClearSick").onclick = () => {
-      document.querySelectorAll("#sickList input[type=checkbox]").forEach(cb => cb.checked = false);
-      document.getElementById("sickMsg").textContent = "";
-      document.getElementById("schemaContainer").innerHTML = `<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`;
-    };
-
-    // Max 5 val
-    document.addEventListener("change", (e)=>{
-      if (e.target && e.target.closest("#sickList") && e.target.type === "checkbox") {
-        const sel = getSelectedSick();
-        if (sel.length > 5) {
-          e.target.checked = false;
-          document.getElementById("sickMsg").textContent = "Du kan välja högst 5 coacher.";
-        } else {
-          document.getElementById("sickMsg").textContent = "";
-        }
-      }
-    });
-
-    // 🚀 Start
+    document.getElementById("btnDaily").onclick = () => { document.getElementById("coachSelect").style.display = "none"; document.getElementById("sickPanel").style.display = "none"; renderDaily(DATA); };
+    document.getElementById("btnCoach").onclick = () => { document.getElementById("sickPanel").style.display = "none"; document.getElementById("coachSelect").style.display = "inline-block"; const v = document.getElementById("coachSelect").value; if (v) renderCoachWeek(DATA, v); else document.getElementById("schemaContainer").innerHTML = `<p>Välj en coach i listan.</p>`; };
+    document.getElementById("btnSick").onclick = () => { document.getElementById("coachSelect").style.display = "none"; document.getElementById("sickPanel").style.display = "block"; document.getElementById("schemaContainer").innerHTML = `<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`; };
+    document.getElementById("btnShowSick").onclick = () => { const sick = getSelectedSick(); if (!sick.length) { document.getElementById("sickMsg").textContent = "Välj minst en coach."; return; } document.getElementById("sickMsg").textContent = ""; renderSickSchedule(DATA, sick); };
+    document.getElementById("btnClearSick").onclick = () => { document.querySelectorAll("#sickList input[type=checkbox]").forEach(cb => cb.checked = false); document.getElementById("sickMsg").textContent = ""; document.getElementById("schemaContainer").innerHTML = `<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`; };
+    document.addEventListener("change", (e)=>{ if (e.target && e.target.closest("#sickList") && e.target.type === "checkbox") { const sel = getSelectedSick(); if (sel.length > 5) { e.target.checked = false; document.getElementById("sickMsg").textContent = "Du kan välja högst 5 coacher."; } else { document.getElementById("sickMsg").textContent = ""; } } });
     loadData();
-    // Hämta nytt var 15:e minut (men inga val sparas)
     setInterval(loadData, 15*60*1000);
   </script>
 </body>
