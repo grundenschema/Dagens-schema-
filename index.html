@@ -46,13 +46,19 @@
       margin-bottom: 15px;
     }
 
-    select {
+    select, button {
       padding: 8px 12px;
       border-radius: 8px;
       border: 1px solid #ccc;
       font-size: 14px;
       background-color: #f7f7f7;
       cursor: pointer;
+    }
+
+    button:hover { background-color: #e0e0e0; }
+
+    #coachSelect {
+      display: none;
     }
 
     table {
@@ -126,8 +132,10 @@
   </header>
 
   <div class="toolbar">
+    <button id="showDaily">Gemensamt schema</button>
+    <button id="showCoach">Coachschema</button>
     <select id="coachSelect">
-      <option value="">Gemensamt schema</option>
+      <option value="">-- Välj coach --</option>
     </select>
   </div>
 
@@ -227,8 +235,7 @@
       });
 
       select.onchange = () => {
-        if (select.value === "") renderDaily(GLOBAL_DATA);
-        else renderWeekly(GLOBAL_DATA, select.value);
+        if (select.value) renderWeekly(GLOBAL_DATA, select.value);
       };
     }
 
@@ -277,24 +284,18 @@
       document.getElementById("schemaContainer").innerHTML = html;
     }
 
-    function updateStatusColors(){
-      const now=getStockholmDate().toTimeString().slice(0,5);
-      document.querySelectorAll("tbody tr").forEach(tr=>{
-        const s=tr.children[0]?.textContent?.trim();
-        const e=tr.children[1]?.textContent?.trim();
-        const cell=tr.querySelector(".aktivitet");
-        if(!s||!e||!cell)return;
-        let st="";
-        if(e<=now)st="❌"; else if(s<=now&&e>=now)st="🟢";
-        cell.textContent=cell.textContent.replace(/^(?:🟢|❌)\s*/,"");
-        if(st)cell.textContent=`${st} ${cell.textContent}`;
-        tr.classList.toggle("ended",e<=now);
-      });
-    }
+    document.getElementById("showDaily").onclick = () => {
+      document.getElementById("coachSelect").style.display = "none";
+      renderDaily(GLOBAL_DATA);
+    };
+
+    document.getElementById("showCoach").onclick = () => {
+      document.getElementById("coachSelect").style.display = "inline-block";
+    };
 
     loadSchema();
-    setInterval(updateStatusColors,60000);
     setInterval(loadSchema,900000);
   </script>
 </body>
 </html>
+
