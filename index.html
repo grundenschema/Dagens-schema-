@@ -1,87 +1,54 @@
 <!DOCTYPE html>
 <html lang="sv">
+>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Grunden DV – Schema</title>
   <style>
     :root{
-      --card-bg:#ffffff;
+      --card-bg:#fff;
       --page-bg:#fafafa;
-      --border:#e6e6e6;
-      --muted:#666;
+      --border:#ddd;
+      --muted:#555;
       --heading:#2c3e50;
-      --shadow:0 6px 18px rgba(0,0,0,.06);
+      --shadow:0 6px 18px rgba(0,0,0,.05);
       --radius:16px;
       --pad:14px;
       --band:#9ecbff;
     }
-    *{box-sizing:border-box}
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background:var(--page-bg); }
-    header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
-    header img { height:60px; }
-    #clock { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9rem; margin-bottom: 4px; }
-    #updated { font-size: .8rem; color:var(--muted); margin-bottom: 8px; }
-    .toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:12px; }
-    button, select { padding:8px 12px; border-radius:10px; border:1px solid #ccc; background:#f7f7f7; cursor:pointer; font-size:14px; }
-    button:hover { background:#ececec; }
-    #coachSelect { display:none; }
-
-    #sickPanel { display:none; border:1px solid var(--border); background:var(--card-bg); border-radius:14px; padding:12px; box-shadow:var(--shadow); }
-    #sickPanel h3 { margin:0 0 8px 0; font-size:1rem; }
-    #sickList { display:flex; flex-wrap:wrap; gap:10px 16px; max-height:220px; overflow:auto; }
-    #sickList label { display:flex; align-items:center; gap:6px; white-space:nowrap; }
-    #sickMsg { font-size:.85rem; color:var(--muted); margin-top:6px; }
-
-    .day-section { border-bottom:1px solid #ddd; margin-bottom:22px; padding-bottom:10px; }
-    .day-heading {
-      background:#eef5ff;
-      color:var(--heading);
-      padding:8px 12px;
-      border-radius:12px;
-      font-size:1.05rem;
-      font-weight:700;
-      margin:18px 0 10px 0;
-    }
-
-    table { border-collapse: collapse; width:100%; margin-top:6px; }
-    th, td { border:1px solid #ddd; padding:10px; text-align:left; }
-    th { background:#f2f2f2; }
-    .aktivitet { font-weight:700; }
-    .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:.8rem; background:#fff3cd; color:#8a5b00; border:1px solid #ffe39a; margin-left:8px; white-space:nowrap;}
-    .okpill{ background:#e8f6ee; color:#1a7f37; border:1px solid #cdebd9; }
-
-    .cards { display:none; }
-    .card {
-      position:relative;
-      background:var(--card-bg);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      padding:var(--pad);
-      box-shadow:var(--shadow);
-      margin:0 auto 12px auto;
-      max-width:95%;
-    }
-    .card::before{
-      content:"";
-      position:absolute;
-      left:0; top:0; bottom:0;
-      width:8px;
-      background:var(--band);
-      border-top-left-radius:var(--radius);
-      border-bottom-left-radius:var(--radius);
-    }
-    .card-title{ font-weight:800; font-size:1.05rem; margin:0 0 6px 0; display:flex; align-items:center; gap:8px; }
-    .row { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; font-size:.95rem; padding:2px 0; }
-    .row label{ color:#333; font-weight:700; }
-    .row small{ color:var(--muted); }
-
-    @media (max-width: 700px) {
-      table { display:none; }
-      .cards { display:block; }
-    }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:1000px;margin:0 auto;padding:20px;background:var(--page-bg);}
+    header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;}
+    header img{height:60px;}
+    #clock{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9rem;}
+    #updated{font-size:.8rem;color:var(--muted);margin-bottom:8px;}
+    .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px;}
+    button,select{padding:8px 12px;border-radius:10px;border:1px solid #ccc;background:#f7f7f7;cursor:pointer;font-size:14px;}
+    button:hover{background:#ececec;}
+    #coachSelect{display:none;}
+    #sickPanel{display:none;border:1px solid var(--border);background:var(--card-bg);border-radius:14px;padding:12px;box-shadow:var(--shadow);}
+    #sickPanel h3{margin:0 0 8px 0;font-size:1rem;}
+    #sickList{display:flex;flex-wrap:wrap;gap:8px 14px;max-height:220px;overflow:auto;}
+    #sickList label{display:flex;align-items:center;gap:6px;white-space:nowrap;}
+    #sickMsg{font-size:.85rem;color:var(--muted);margin-top:6px;}
+    .day-section{border-bottom:1px solid #ddd;margin-bottom:22px;padding-bottom:10px;}
+    .day-heading{background:#eef5ff;color:var(--heading);padding:8px 12px;border-radius:12px;font-weight:700;margin:18px 0 10px 0;}
+    table{border-collapse:collapse;width:100%;margin-top:6px;}
+    th,td{border:1px solid #ddd;padding:10px;text-align:left;}
+    th{background:#f2f2f2;}
+    .aktivitet{font-weight:700;}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.8rem;background:#fff3cd;color:#8a5b00;border:1px solid #ffe39a;margin-left:8px;white-space:nowrap;}
+    .okpill{background:#e8f6ee;color:#1a7f37;border:1px solid #cdebd9;}
+    .cards{display:none;}
+    .card{position:relative;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:var(--pad);box-shadow:var(--shadow);margin:0 auto 12px auto;max-width:95%;}
+    .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:var(--band);border-top-left-radius:var(--radius);border-bottom-left-radius:var(--radius);}
+    .card-title{font-weight:800;font-size:1.05rem;margin:0 0 6px 0;display:flex;align-items:center;gap:8px;}
+    .row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;font-size:.95rem;padding:2px 0;}
+    .row label{color:#333;font-weight:700;}
+    @media(max-width:700px){table{display:none;}.cards{display:block;}}
   </style>
 </head>
+
 <body>
   <header>
     <div>
@@ -102,178 +69,64 @@
     <h3>🩺 Välj sjuka coacher (max 5)</h3>
     <div id="sickList"></div>
     <div id="sickMsg"></div>
-    <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
       <button id="btnShowSick">Visa sjukschema</button>
       <button id="btnClearSick" title="Rensa val">Rensa</button>
     </div>
   </div>
 
+  <h2 id="viewTitle"></h2>
   <div id="schemaContainer">Laddar schema...</div>
 
   <script>
-    const url = "https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
+    const url="https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
+    const aktivitetFarger={"Måndagsmöte":{color:"#AED6F1",emoji:"📅"},"Gruppmöte":{color:"#7FB3D5",emoji:"👥"},"Lunch":{color:"#F9E79F",emoji:"🍲"},"Frukost":{color:"#FAD7A0",emoji:"🥐"},"Ateljé":{color:"#F5CBA7",emoji:"🎨"},"Musik":{color:"#D2B4DE",emoji:"🎶"},"Pod":{color:"#A9CCE3",emoji:"🎙️"},"Padel":{color:"#82E0AA",emoji:"🏓"},"Lite av varje":{color:"#FADBD8",emoji:"✨"},"Yoga":{color:"#D5F5E3",emoji:"🧘"},"Gym":{color:"#A3E4D7",emoji:"🏋️‍♂️"},"Film":{color:"#E6B0AA",emoji:"🎬"},"Föreningsgruppen":{color:"#D6DBDF",emoji:"🤝"},"Trummor":{color:"#F1948A",emoji:"🥁"},"Återkoppling":{color:"#85C1E9",emoji:"🔄"},"Medicin":{color:"#E59866",emoji:"💊"},"Biljard":{color:"#A9DFBF",emoji:"🎱"},"Spelgruppen":{color:"#F8C471",emoji:"🎲"},"Sömnad":{color:"#F5EEF8",emoji:"🧵"},"Filmgruppen":{color:"#E6B0AA",emoji:"🎬"},"Musikquizz":{color:"#D2B4DE",emoji:"🎶"},"Musikdokumentär":{color:"#D2B4DE",emoji:"🎶"}};
 
-    const aktivitetFarger = {
-      "Måndagsmöte": {color:"#AED6F1", emoji:"📅"},
-      "Gruppmöte": {color:"#7FB3D5", emoji:"👥"},
-      "Lunch": {color:"#F9E79F", emoji:"🍲"},
-      "Frukost": {color:"#FAD7A0", emoji:"🥐"},
-      "Ateljé": {color:"#F5CBA7", emoji:"🎨"},
-      "Musik": {color:"#D2B4DE", emoji:"🎶"},
-      "Pod": {color:"#A9CCE3", emoji:"🎙️"},
-      "Padel": {color:"#82E0AA", emoji:"🏓"},
-      "Lite av varje": {color:"#FADBD8", emoji:"✨"},
-      "Yoga": {color:"#D5F5E3", emoji:"🧘"},
-      "Gym": {color:"#A3E4D7", emoji:"🏋️‍♂️"},
-      "Film": {color:"#E6B0AA", emoji:"🎬"},
-      "Föreningsgruppen": {color:"#D6DBDF", emoji:"🤝"},
-      "Trummor": {color:"#F1948A", emoji:"🥁"},
-      "Återkoppling": {color:"#85C1E9", emoji:"🔄"},
-      "Medicin": {color:"#E59866", emoji:"💊"},
-      "Biljard": {color:"#A9DFBF", emoji:"🎱"},
-      "Spelgruppen": {color:"#F8C471", emoji:"🎲"},
-      "Sömnad": {color:"#F5EEF8", emoji:"🧵"},
-      "Filmgruppen": {color:"#E6B0AA", emoji:"🎬"},
-      "Musikquizz": {color:"#D2B4DE", emoji:"🎶"},
-      "Musikdokumentär": {color:"#D2B4DE", emoji:"🎶"}
-    };
+    function getSEDate(){return new Date(new Date().toLocaleString("en-US",{timeZone:"Europe/Stockholm"}));}
+    function fmtSE(dt,opts){return new Intl.DateTimeFormat("sv-SE",opts).format(dt);}
+    function updateClock(){const now=getSEDate();document.getElementById("clock").textContent=fmtSE(now,{weekday:"long",year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"});}
+    setInterval(updateClock,1000);updateClock();
 
-    function getSEDate() { return new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Stockholm" })); }
-    function fmtSE(dt, opts) { return new Intl.DateTimeFormat("sv-SE", opts).format(dt); }
-    function updateClock() {
-      const now = getSEDate();
-      const opts = { weekday:"long", year:"numeric", month:"long", day:"numeric", hour:"2-digit", minute:"2-digit", second:"2-digit" };
-      document.getElementById("clock").textContent = fmtSE(now, opts);
-    }
-    setInterval(updateClock, 1000); updateClock();
-
-    let DATA = [];
-
-    async function loadData() {
-      const res = await fetch(url + "?t=" + Date.now());
-      const json = await res.json();
-      DATA = json.data || [];
-      document.getElementById("updated").textContent = "Senast uppdaterad: " + (json.updated || "–");
+    let DATA=[];
+    async function loadData(){
+      const res=await fetch(url+"?t="+Date.now());
+      const json=await res.json();
+      DATA=json.data||[];
+      document.getElementById("updated").textContent="Senast uppdaterad: "+(json.updated||"–");
       setupCoachSelect(DATA);
       setupSickList(DATA);
       renderDaily(DATA);
-      document.getElementById("coachSelect").style.display = "none";
-      document.getElementById("sickPanel").style.display = "none";
+      document.getElementById("coachSelect").style.display="none";
+      document.getElementById("sickPanel").style.display="none";
+      document.getElementById("viewTitle").textContent="Gemensamt schema";
     }
 
-    function dayKey(str) { return String(str).slice(0,10); }
-    function parseCoaches(coachStr) {
-      const ignore = ["", "-", ".", "ingen", "ingen coach", "eget arbete", "självständigt", "utan coach"];
-      return (coachStr || "")
-        .split(",")
-        .map(c => c.trim())
-        .filter(c => c && !ignore.includes(c.toLowerCase()) && c.toLowerCase() !== "alla");
-    }
-    function countCoaches(coachStr) { return parseCoaches(coachStr).length; }
-    function overlap(aStart, aEnd, bStart, bEnd) { return !(aEnd <= bStart || aStart >= bEnd); }
-    function getThisWeekMonFri() {
-      const today = getSEDate();
-      const day = today.getDay();
-      const mon = new Date(today);
-      mon.setDate(today.getDate() - ((day + 6) % 7));
-      mon.setHours(0,0,0,0);
-      const fri = new Date(mon);
-      fri.setDate(mon.getDate() + 4);
-      return { mon, fri };
-    }
-    function groupByDate(rows) {
-      const grouped = {};
-      rows.forEach(r => {
-        const k = dayKey(r.Datum);
-        if (!grouped[k]) grouped[k] = [];
-        grouped[k].push(r);
-      });
-      return Object.keys(grouped).sort().reduce((acc,k)=> (acc[k]=grouped[k], acc), {});
+    function dayKey(str){return String(str).slice(0,10);}
+    function parseCoaches(coachStr){const ignore=["","-",".","ingen","ingen coach","eget arbete","självständigt","utan coach"];return (coachStr||"").split(",").map(c=>c.trim()).filter(c=>c&&!ignore.includes(c.toLowerCase())&&c.toLowerCase()!=="alla");}
+    function overlap(aStart,aEnd,bStart,bEnd){return !(aEnd<=bStart||aStart>=bEnd);}
+    function getThisWeekMonFri(){const today=getSEDate(),day=today.getDay(),mon=new Date(today);mon.setDate(today.getDate()-((day+6)%7));mon.setHours(0,0,0,0);const fri=new Date(mon);fri.setDate(mon.getDate()+4);return{mon,fri};}
+    function groupByDate(rows){const g={};rows.forEach(r=>{const k=dayKey(r.Datum);if(!g[k])g[k]=[];g[k].push(r);});return Object.keys(g).sort().reduce((a,k)=>(a[k]=g[k],a),{});}
+    function colorFor(r){return(aktivitetFarger[r.Aktivitet]||{color:"#fff"}).color;}
+    function emojiFor(r){return(aktivitetFarger[r.Aktivitet]||{emoji:""}).emoji;}
+
+    function cardHTML(r,extra=""){const b=colorFor(r);const t=r.Start&&r.Slut?`${r.Start}–${r.Slut}`:r.Start||r.Slut||"";return `<div class="card" style="--band:${b}"><h4 class="card-title">${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h4><div class="row"><label>🕒 Tid</label><div>${t||"-"}</div></div><div class="row"><label>👥 Deltagare</label><div>${r.Deltagare||"-"}</div></div><div class="row"><label>🧑‍🏫 Coach</label><div>${r.Coach||"-"} ${extra||""}</div></div></div>`;}
+    function sectionHTML(dateKey,rows,extraForRow=null,showWarn=false){
+      const label=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(dateKey));
+      let html=`<div class="day-section"><div class="day-heading">${label.charAt(0).toUpperCase()+label.slice(1)}</div>`;
+      html+=`<div class="cards">`;rows.forEach((r,i)=>{const extra=extraForRow?extraForRow(r):"";html+=cardHTML(r,extra);});html+=`</div>`;
+      html+=`<table><thead><tr><th>Start</th><th>Slut</th><th>Aktivitet</th><th>Deltagare</th><th>Coachinfo</th></tr></thead><tbody>`;
+      rows.forEach(r=>{const warn=showWarn && parseCoaches(r.Coach).length>2?` <span class="pill">⚠️ ${parseCoaches(r.Coach).length} coacher</span>`:"";const extra=extraForRow?extraForRow(r):"";html+=`<tr><td>${r.Start||""}</td><td>${r.Slut||""}</td><td class="aktivitet">${emojiFor(r)} ${r.Aktivitet||""}${warn}</td><td>${r.Deltagare||""}</td><td>${r.Coach||""} ${extra}</td></tr>`;});
+      html+=`</tbody></table></div>`;return html;
     }
 
-    function colorFor(row){ return (aktivitetFarger[row.Aktivitet] || {color:"#ffffff", emoji:""}).color; }
-    function emojiFor(row){ return (aktivitetFarger[row.Aktivitet] || {color:"#ffffff", emoji:""}).emoji || ""; }
-
-    function tableRowHTML(row) {
-      const warn = countCoaches(row.Coach) > 2 ? ` <span class="pill">⚠️ ${countCoaches(row.Coach)} coacher</span>` : "";
-      return `<tr>
-        <td>${row.Start||""}</td>
-        <td>${row.Slut||""}</td>
-        <td class="aktivitet">${emojiFor(row)} ${row.Aktivitet||""}${warn}</td>
-        <td>${row.Deltagare||""}</td>
-        <td>${row.Coach||""}</td>
-      </tr>`;
-    }
-
-    function cardHTML(row, extrasRightHTML="") {
-      const band = colorFor(row);
-      const warn = countCoaches(row.Coach) > 2 ? `<span class="pill">⚠️ ${countCoaches(row.Coach)} coacher</span>` : "";
-      const time = (row.Start||"") && (row.Slut||"") ? `${row.Start}–${row.Slut}` : (row.Start||row.Slut||"");
-      return `<div class="card" style="--band:${band}">
-        <h4 class="card-title">${emojiFor(row)} ${row.Aktivitet||"Aktivitet"} ${warn}</h4>
-        <div class="row"><label>🕒 Tid</label><div>${time||"-"}</div></div>
-        <div class="row"><label>👥 Deltagare</label><div>${row.Deltagare||"-"}</div></div>
-        <div class="row"><label>🧑‍🏫 Coach</label><div>${row.Coach||"-"} ${extrasRightHTML||""}</div></div>
-      </div>`;
-    }
-
-    function sectionHTML(dateKey, rows, extraForRow=null){
-      const label = new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(dateKey));
-      let html = `<div class="day-section"><div class="day-heading">${label.charAt(0).toUpperCase()+label.slice(1)}</div>`;
-      html += `<div class="cards">`;
-      rows.forEach((r,i)=> {
-        const extra = extraForRow ? extraForRow(r,i,"card") : "";
-        html += cardHTML(r, extra);
-      });
-      html += `</div><table><thead><tr><th>Start</th><th>Slut</th><th>Aktivitet</th><th>Deltagare</th><th>Coach</th></tr></thead><tbody>`;
-      rows.forEach((r,i)=> html += tableRowHTML(extraForRow ? extraForRow(r,i,"table") : r));
-      html += `</tbody></table></div>`;
-      return html;
-    }
-
-    /* === Dagens, Coach och Sjukschema render === */
-    function renderDaily(data){
-      const today = dayKey(getSEDate().toISOString());
-      const todays = data.filter(r=> dayKey(r.Datum)===today).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
-      document.getElementById("schemaContainer").innerHTML = todays.length?sectionHTML(today,todays):`<p>Inga aktiviteter idag.</p>`;
-    }
-
-    function setupCoachSelect(data){
-      const select=document.getElementById("coachSelect");
-      select.innerHTML=`<option value="">-- Välj coach --</option>`;
-      const coaches=[...new Set(data.map(r=>parseCoaches(r.Coach)).flat())].sort();
-      coaches.forEach(c=>{
-        const o=document.createElement("option");
-        o.value=c;o.textContent=c;select.appendChild(o);
-      });
-      select.onchange=()=>{const v=select.value;if(v)renderCoachWeek(DATA,v);}
-    }
-
-    function renderCoachWeek(data,coach){
-      const rows=data.filter(r=>{
-        const cs=parseCoaches(r.Coach);
-        return cs.includes(coach)||(r.Coach||"").trim().toLowerCase()==="alla";
-      }).sort((a,b)=>(dayKey(a.Datum)===dayKey(b.Datum)?(a.Start||"").localeCompare(b.Start||""):dayKey(a.Datum).localeCompare(dayKey(b.Datum))));
-      const grouped=groupByDate(rows);
-      let html="";
-      Object.keys(grouped).forEach(k=>html+=sectionHTML(k,grouped[k]));
-      document.getElementById("schemaContainer").innerHTML=rows.length?html:`<p>Inga aktiviteter hittades för ${coach}.</p>`;
-    }
-
-    function setupSickList(data){
-      const c=document.getElementById("sickList");
-      c.innerHTML="";
-      const coaches=[...new Set(data.map(r=>parseCoaches(r.Coach)).flat())].sort();
-      coaches.forEach(co=>{
-        const id="sick_"+co.replace(/\s+/g,"_");
-        c.insertAdjacentHTML("beforeend",`<label><input type="checkbox" value="${co}" id="${id}"> ${co}</label>`);
-      });
-    }
-    function getSelectedSick(){return[...document.querySelectorAll("#sickList input:checked")].map(e=>e.value)}
-
+    function renderDaily(data){const today=dayKey(getSEDate().toISOString());const todays=data.filter(r=>dayKey(r.Datum)===today).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));document.getElementById("schemaContainer").innerHTML=todays.length?sectionHTML(today,todays):`<p>Inga aktiviteter idag.</p>`;}
+    function setupCoachSelect(data){const s=document.getElementById("coachSelect");s.innerHTML=`<option value="">-- Välj coach --</option>`;[...new Set(data.map(r=>parseCoaches(r.Coach)).flat())].sort().forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;s.appendChild(o);});s.onchange=()=>{const v=s.value;if(v)renderCoachWeek(DATA,v);};}
+    function renderCoachWeek(data,coach){document.getElementById("viewTitle").textContent="Coachschema – "+coach;const rows=data.filter(r=>{const cs=parseCoaches(r.Coach);return cs.includes(coach)||(r.Coach||"").trim().toLowerCase()==="alla";}).sort((a,b)=>(dayKey(a.Datum)===dayKey(b.Datum)?(a.Start||"").localeCompare(b.Start||""):dayKey(a.Datum).localeCompare(dayKey(b.Datum))));const grouped=groupByDate(rows);let html="";Object.keys(grouped).forEach(k=>html+=sectionHTML(k,grouped[k],null,false));document.getElementById("schemaContainer").innerHTML=rows.length?html:`<p>Inga aktiviteter hittades för ${coach}.</p>`;}
+    function setupSickList(data){const c=document.getElementById("sickList");c.innerHTML="";[...new Set(data.map(r=>parseCoaches(r.Coach)).flat())].sort().forEach(co=>{const id="sick_"+co.replace(/\s+/g,"_");c.insertAdjacentHTML("beforeend",`<label><input type="checkbox" value="${co}" id="${id}"> ${co}</label>`);});}
+    function getSelectedSick(){return[...document.querySelectorAll("#sickList input:checked")].map(e=>e.value);}
     function renderSickSchedule(data,sickCoaches){
-      const {mon,fri}=getThisWeekMonFri();
-      const sK=dayKey(mon.toISOString()),eK=dayKey(fri.toISOString());
+      document.getElementById("viewTitle").textContent="🩺 Sjukschema";
+      const {mon,fri}=getThisWeekMonFri(),sK=dayKey(mon.toISOString()),eK=dayKey(fri.toISOString());
       const weekRows=data.filter(r=>dayKey(r.Datum)>=sK&&dayKey(r.Datum)<=eK);
       const sickRows=weekRows.filter(r=>sickCoaches.some(s=>parseCoaches(r.Coach).includes(s))).sort((a,b)=>(dayKey(a.Datum)===dayKey(b.Datum)?(a.Start||"").localeCompare(b.Start||""):dayKey(a.Datum).localeCompare(dayKey(b.Datum))));
       const allCoaches=[...new Set(weekRows.map(r=>parseCoaches(r.Coach)).flat())];
@@ -283,32 +136,28 @@
           const cRows=weekRows.filter(x=>parseCoaches(x.Coach).includes(c)&&dayKey(x.Datum)===dK);
           return!cRows.some(x=>overlap(x.Start||"00:00",x.Slut||"23:59",tS,tE));
         });
-        return avail.length?`<span class="okpill">Ersättare: ${avail.join(", ")}</span>`:`<span class="pill">Inga ersättare funna</span>`;
+        return avail.length?`<span class="okpill">Ersättare: ${avail.join(", ")}</span>`:`<span class="pill">Inga ersättare</span>`;
       };
-      const grouped=groupByDate(sickRows);
-      let html="";
+      const grouped=groupByDate(sickRows);let html="";
       Object.keys(grouped).forEach(k=>{
         const rows=grouped[k].map(r=>{
-          const cs=parseCoaches(r.Coach);
-          const sick=cs.filter(c=>sickCoaches.includes(c));
-          const others=cs.filter(c=>!sickCoaches.includes(c));
+          const cs=parseCoaches(r.Coach),sick=cs.filter(c=>sickCoaches.includes(c)),others=cs.filter(c=>!sickCoaches.includes(c));
           const coachText=[sick.length?`Sjuk: ${sick.join(", ")}`:"",others.length?`Övriga: ${others.join(", ")}`:""].filter(Boolean).join(" • ");
           return {...r,Coach:coachText};
         });
-        html+=sectionHTML(k,rows,extraForRow);
+        html+=sectionHTML(k,rows,extraForRow,true);
       });
-      document.getElementById("schemaContainer").innerHTML=sickRows.length?html:`<p>Inga pass för valda coacher under mån–fre denna vecka.</p>`;
+      document.getElementById("schemaContainer").innerHTML=sickRows.length?html:`<p>Inga pass för valda coacher under denna vecka.</p>`;
     }
 
-    document.getElementById("btnDaily").onclick=()=>{document.getElementById("coachSelect").style.display="none";document.getElementById("sickPanel").style.display="none";renderDaily(DATA);}
-    document.getElementById("btnCoach").onclick=()=>{document.getElementById("sickPanel").style.display="none";document.getElementById("coachSelect").style.display="inline-block";const v=document.getElementById("coachSelect").value;if(v)renderCoachWeek(DATA,v);}
-    document.getElementById("btnSick").onclick=()=>{document.getElementById("coachSelect").style.display="none";document.getElementById("sickPanel").style.display="block";document.getElementById("schemaContainer").innerHTML=`<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`;}
-    document.getElementById("btnShowSick").onclick=()=>{const s=getSelectedSick();if(!s.length){document.getElementById("sickMsg").textContent="Välj minst en coach.";return;}document.getElementById("sickMsg").textContent="";renderSickSchedule(DATA,s);}
-    document.getElementById("btnClearSick").onclick=()=>{document.querySelectorAll("#sickList input").forEach(cb=>cb.checked=false);document.getElementById("sickMsg").textContent="";document.getElementById("schemaContainer").innerHTML=`<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`;}
+    document.getElementById("btnDaily").onclick=()=>{document.getElementById("coachSelect").style.display="none";document.getElementById("sickPanel").style.display="none";document.getElementById("viewTitle").textContent="Gemensamt schema";renderDaily(DATA);};
+    document.getElementById("btnCoach").onclick=()=>{document.getElementById("sickPanel").style.display="none";document.getElementById("coachSelect").style.display="inline-block";document.getElementById("viewTitle").textContent="Coachschema";};
+    document.getElementById("btnSick").onclick=()=>{document.getElementById("coachSelect").style.display="none";document.getElementById("sickPanel").style.display="block";document.getElementById("schemaContainer").innerHTML=`<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`;};
+    document.getElementById("btnShowSick").onclick=()=>{const s=getSelectedSick();if(!s.length){document.getElementById("sickMsg").textContent="Välj minst en coach.";return;}document.getElementById("sickMsg").textContent="";renderSickSchedule(DATA,s);};
+    document.getElementById("btnClearSick").onclick=()=>{document.querySelectorAll("#sickList input").forEach(cb=>cb.checked=false);document.getElementById("sickMsg").textContent="";document.getElementById("schemaContainer").innerHTML=`<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`;};
 
     loadData();
     setInterval(loadData,15*60*1000);
   </script>
 </body>
 </html>
-
