@@ -57,9 +57,10 @@
   <div id="schemaContainer">Laddar schema...</div>
 
   <script>
-    // 🔗 Byt till din egen web app-länk
+    // 🔗 Länk till Google Apps Script-webbappen
     const url = "https://script.google.com/macros/s/AKfycbxB9ZR9UnDf1rrEmeATZD9y4r5qM4yRySo574CLWYTkXt9-dpS2eOM14T2fpqZg-2x1/exec";
 
+    // 🎨 Färger och emojis per aktivitet
     const aktivitetFarger = {
       "Måndagsmöte": {color:"#AED6F1", emoji:"📅"},
       "Gruppmöte": {color:"#7FB3D5", emoji:"👥"},
@@ -85,10 +86,12 @@
       "Musikdokumentär": {color:"#D2B4DE", emoji:"🎶"}
     };
 
+    // 🕐 Svensk tid
     function getStockholmDate() {
       return new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Stockholm" }));
     }
 
+    // 🕒 Klockan
     function updateClock() {
       const now = getStockholmDate();
       const options = {
@@ -101,6 +104,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
+    // 📦 Hämta schema
     async function loadSchema() {
       const res = await fetch(url + "?t=" + Date.now());
       const json = await res.json();
@@ -110,6 +114,7 @@
       setupWeekly(data);
     }
 
+    // 📅 Dagens schema
     function renderDaily(data) {
       document.getElementById("viewTitle").textContent = "Dagens gemensamma schema";
       document.getElementById("coachSelect").classList.add("hidden");
@@ -138,6 +143,7 @@
       document.getElementById("schemaContainer").innerHTML = html;
     }
 
+    // 👥 Coachlista
     function setupWeekly(data) {
       const coaches = [...new Set(data.map(r => r.Coach.split(",")).flat().map(c => c.trim()).filter(c => c && c!=="Alla"))].sort();
       const select = document.getElementById("coachSelect");
@@ -145,6 +151,7 @@
       select.onchange = () => renderWeekly(data, select.value);
     }
 
+    // 📆 Veckoschema per coach
     function renderWeekly(data, coach) {
       document.getElementById("viewTitle").textContent = "Coachschema" + (coach ? ` – ${coach}` : "");
       document.getElementById("coachSelect").classList.remove("hidden");
@@ -177,6 +184,29 @@
       document.getElementById("schemaContainer").innerHTML = html;
     }
 
+    // 🟢 Uppdatera statusikoner lokalt
+    function updateStatusColors() {
+      const now = getStockholmDate().toTimeString().slice(0,5);
+      document.querySelectorAll("tbody tr").forEach(tr => {
+        const start = tr.children[0]?.textContent;
+        const end = tr.children[1]?.textContent;
+        const aktivitetCell = tr.querySelector(".aktivitet");
+
+        if (!start || !end || !aktivitetCell) return;
+
+        let status = "";
+        if (end <= now) status = "❌";
+        else if (start <= now && end >= now) status = "🟢";
+
+        // Ta bort gammal status
+        aktivitetCell.textContent = aktivitetCell.textContent.replace(/^❌|🟢/, "").trim();
+        if (status) aktivitetCell.textContent = status + " " + aktivitetCell.textContent;
+
+        tr.classList.toggle("ended", end <= now);
+      });
+    }
+
+    // 🔘 Knapphantering
     document.getElementById("showDaily").onclick = () => loadSchema();
     document.getElementById("showWeekly").onclick = () => {
       document.getElementById("coachSelect").classList.remove("hidden");
@@ -185,7 +215,15 @@
         .then(json => setupWeekly(json.data));
     };
 
+    // 🚀 Start
     loadSchema();
+
+    // 🔄 Uppdatera status var minut
+    setInterval(updateStatusColors, 60000);
+
+    // 🔁 Hämta nytt schema var 15:e minut
+    setInterval(loadSchema, 15 * 60 * 1000);
   </script>
 </body>
 </html>
+
