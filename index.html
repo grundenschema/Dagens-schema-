@@ -22,26 +22,22 @@
     #clock { font-family: monospace; margin-bottom: 15px; }
 
     select, button {
-      margin: 5px 0;
-      padding: 6px 10px;
-      border-radius: 6px;
+      margin: 5px 5px 15px 0;
+      padding: 8px 12px;
+      border-radius: 8px;
       border: 1px solid #ccc;
       font-size: 14px;
+      background-color: #f7f7f7;
+      cursor: pointer;
     }
+    button:hover { background-color: #e0e0e0; }
 
     table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
     th { background: #f2f2f2; }
-
     .ended { opacity: 0.6; }
-
     .aktivitet { font-weight: bold; }
-
-    .view-toggle {
-      margin-top: 15px;
-      display: flex;
-      gap: 10px;
-    }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
@@ -49,42 +45,43 @@
     <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
   </header>
 
-  <h1 id="viewTitle">Dagens schema</h1>
+  <h1 id="viewTitle">Dagens gemensamma schema</h1>
   <div id="clock"></div>
 
-  <div class="view-toggle">
-    <button id="showDaily">Dagens schema</button>
-    <button id="showWeekly">Veckoschema</button>
-    <select id="coachSelect" style="display:none;"></select>
+  <div>
+    <button id="showDaily">Gemensamt schema</button>
+    <button id="showWeekly">Coachschema</button>
+    <select id="coachSelect" class="hidden"></select>
   </div>
 
-  <div id="schemaContainer"></div>
+  <div id="schemaContainer">Laddar schema...</div>
 
   <script>
+    // 🔗 Byt till din egen web app-länk
     const url = "https://script.google.com/macros/s/AKfycbxB9ZR9UnDf1rrEmeATZD9y4r5qM4yRySo574CLWYTkXt9-dpS2eOM14T2fpqZg-2x1/exec";
 
     const aktivitetFarger = {
-      "Måndagsmöte":     {color:"#AED6F1", emoji:"📅"},
-      "Gruppmöte":       {color:"#7FB3D5", emoji:"👥"},
-      "Lunch":           {color:"#F9E79F", emoji:"🍲"},
-      "Frukost":         {color:"#FAD7A0", emoji:"🥐"},
-      "Ateljé":          {color:"#F5CBA7", emoji:"🎨"},
-      "Musik":           {color:"#D2B4DE", emoji:"🎶"},
-      "Pod":             {color:"#A9CCE3", emoji:"🎙️"},
-      "Padel":           {color:"#82E0AA", emoji:"🏓"},
-      "Lite av varje":   {color:"#FADBD8", emoji:"✨"},
-      "Yoga":            {color:"#D5F5E3", emoji:"🧘"},
-      "Gym":             {color:"#A3E4D7", emoji:"🏋️‍♂️"},
-      "Film":            {color:"#E6B0AA", emoji:"🎬"},
-      "Föreningsgruppen":{color:"#D6DBDF", emoji:"🤝"},
-      "Trummor":         {color:"#F1948A", emoji:"🥁"},
-      "Återkoppling":    {color:"#85C1E9", emoji:"🔄"},
-      "Medicin":         {color:"#E59866", emoji:"💊"},
-      "Biljard":         {color:"#A9DFBF", emoji:"🎱"},
-      "Spelgruppen":     {color:"#F8C471", emoji:"🎲"},
-      "Sömnad":          {color:"#F5EEF8", emoji:"🧵"},
-      "Filmgruppen":     {color:"#E6B0AA", emoji:"🎬"},
-      "Musikquizz":      {color:"#D2B4DE", emoji:"🎶"},
+      "Måndagsmöte": {color:"#AED6F1", emoji:"📅"},
+      "Gruppmöte": {color:"#7FB3D5", emoji:"👥"},
+      "Lunch": {color:"#F9E79F", emoji:"🍲"},
+      "Frukost": {color:"#FAD7A0", emoji:"🥐"},
+      "Ateljé": {color:"#F5CBA7", emoji:"🎨"},
+      "Musik": {color:"#D2B4DE", emoji:"🎶"},
+      "Pod": {color:"#A9CCE3", emoji:"🎙️"},
+      "Padel": {color:"#82E0AA", emoji:"🏓"},
+      "Lite av varje": {color:"#FADBD8", emoji:"✨"},
+      "Yoga": {color:"#D5F5E3", emoji:"🧘"},
+      "Gym": {color:"#A3E4D7", emoji:"🏋️‍♂️"},
+      "Film": {color:"#E6B0AA", emoji:"🎬"},
+      "Föreningsgruppen": {color:"#D6DBDF", emoji:"🤝"},
+      "Trummor": {color:"#F1948A", emoji:"🥁"},
+      "Återkoppling": {color:"#85C1E9", emoji:"🔄"},
+      "Medicin": {color:"#E59866", emoji:"💊"},
+      "Biljard": {color:"#A9DFBF", emoji:"🎱"},
+      "Spelgruppen": {color:"#F8C471", emoji:"🎲"},
+      "Sömnad": {color:"#F5EEF8", emoji:"🧵"},
+      "Filmgruppen": {color:"#E6B0AA", emoji:"🎬"},
+      "Musikquizz": {color:"#D2B4DE", emoji:"🎶"},
       "Musikdokumentär": {color:"#D2B4DE", emoji:"🎶"}
     };
 
@@ -109,13 +106,13 @@
       const json = await res.json();
       const data = json.data;
 
-      renderDaily(data); // visa dagsvy som standard
-      setupWeekly(data); // förbered veckovy
+      renderDaily(data);
+      setupWeekly(data);
     }
 
     function renderDaily(data) {
-      document.getElementById("viewTitle").textContent = "Dagens schema";
-      document.getElementById("coachSelect").style.display = "none";
+      document.getElementById("viewTitle").textContent = "Dagens gemensamma schema";
+      document.getElementById("coachSelect").classList.add("hidden");
 
       const todayStr = getStockholmDate().toISOString().split("T")[0];
       const todays = data.filter(r => r.Datum === todayStr);
@@ -145,13 +142,12 @@
       const coaches = [...new Set(data.map(r => r.Coach.split(",")).flat().map(c => c.trim()).filter(c => c && c!=="Alla"))].sort();
       const select = document.getElementById("coachSelect");
       select.innerHTML = "<option value=''>-- Välj coach --</option>" + coaches.map(c => `<option value="${c}">${c}</option>`).join("");
-
       select.onchange = () => renderWeekly(data, select.value);
     }
 
     function renderWeekly(data, coach) {
-      document.getElementById("viewTitle").textContent = "Veckoschema" + (coach ? ` – ${coach}` : "");
-      document.getElementById("coachSelect").style.display = "inline-block";
+      document.getElementById("viewTitle").textContent = "Coachschema" + (coach ? ` – ${coach}` : "");
+      document.getElementById("coachSelect").classList.remove("hidden");
 
       let filtered = data;
       if (coach) {
@@ -181,10 +177,9 @@
       document.getElementById("schemaContainer").innerHTML = html;
     }
 
-    // knappar
     document.getElementById("showDaily").onclick = () => loadSchema();
     document.getElementById("showWeekly").onclick = () => {
-      document.getElementById("coachSelect").style.display = "inline-block";
+      document.getElementById("coachSelect").classList.remove("hidden");
       fetch(url + "?t=" + Date.now())
         .then(r => r.json())
         .then(json => setupWeekly(json.data));
