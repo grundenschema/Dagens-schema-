@@ -1,120 +1,130 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Grunden DV – Schema</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
-      margin: 0;
-      background: #fafafa;
       max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
+      background: #fafafa;
       position: relative;
     }
-
-    header h1 { margin: 0; }
+    header { position: relative; margin-bottom: 10px; }
+    header h1 { margin: 0 0 6px 0; }
     header img {
       height: 60px;
       position: absolute;
       top: 0;
       right: 0;
     }
+    #clock { font-family: monospace; font-size: 16px; margin: 6px 0 10px; }
+    #updated { font-size: 0.9em; color: #555; margin-bottom: 10px; }
 
-    #clock {
-      font-family: monospace;
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-
-    nav {
-      margin-bottom: 15px;
-      display: flex;
-      gap: 10px;
-    }
-
+    nav { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
     button {
       background: #3498db;
-      color: white;
+      color: #fff;
       border: none;
-      border-radius: 6px;
-      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      padding: 8px 12px;
       cursor: pointer;
     }
-
-    button.active {
-      background: #1abc9c;
-    }
-
+    button.active { background: #1abc9c; }
     select {
-      padding: 0.4rem;
-      border-radius: 6px;
+      display: none;
+      padding: 8px;
       border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fff;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: left;
-    }
-
+    .table-container { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
+    table { border-collapse: collapse; width: 100%; background: #fff; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
     th { background: #f2f2f2; }
     td.aktivitet { font-weight: bold; }
     .ended { opacity: 0.6; }
 
-    .day-section {
-      margin-top: 25px;
+    .list-container { display: none; max-height: 70vh; overflow-y: auto; }
+    .list-item {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #fff;
     }
+    .list-item strong { display: block; margin-bottom: 4px; }
 
+    .day-section { margin-top: 22px; }
     .day-section h2 {
+      margin: 0 0 6px 0;
       background: #f2f2f2;
       padding: 8px;
-      border-radius: 6px;
+      border-radius: 8px;
     }
 
-    @media (max-width: 700px) {
-      table, th, td { font-size: 0.9rem; }
+    @media (max-width: 600px) {
+      .table-container { display: none; }
+      .list-container { display: block; }
       header img { height: 40px; }
+      h1 { font-size: 20px; }
+      #clock { font-size: 14px; }
     }
   </style>
 </head>
 <body>
   <header>
     <h1>Grunden DV – Schema</h1>
-    <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
+    <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga"/>
   </header>
 
   <div id="clock"></div>
+  <div id="updated"></div>
 
   <nav>
     <button id="btn-daily" class="active">📅 Dagens schema</button>
     <button id="btn-week">🗓️ Veckoschema</button>
-    <select id="coach-filter" style="display:none;">
+    <select id="coach-filter">
       <option value="">Välj coach...</option>
     </select>
   </nav>
 
-  <div id="content"></div>
+  <h2 id="view-title" style="margin:6px 0 10px;"></h2>
+
+  <!-- Dagens vy -->
+  <div id="daily-view">
+    <div class="table-container">
+      <table id="schema">
+        <thead>
+          <tr>
+            <th>Start</th>
+            <th>Slut</th>
+            <th>Aktivitet</th>
+            <th>Deltagare</th>
+            <th>Coach</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="list-container" id="schema-list"></div>
+  </div>
+
+  <!-- Veckovy -->
+  <div id="week-view" style="display:none;">
+    <div id="week-content"></div>
+  </div>
 
 <script>
-// --- INSTÄLLNINGAR ---
-const BASE_URL = "https://script.google.com/macros/s/AKfycbzT1dSJN9tVLLw_BcIrMBt3Rw0q3mwHWZT-o-phPpaf5PR8PDt-7yuk3yO2gxJGT5to/exec";
+/* ===================== KONFIG ===================== */
+const BASE_URL = "https://script.google.com/macros/s/AKfycbzGiAZqUnJsB27AB6Bs0XoNDA4_HOD7NH2OThtLJbjwG1NDTM9KKq5wEZGRspILfkp6/exec";
 
+/* Färger (som i din gamla version). Vi färglägger efter aktivitetsNAMN,
+   därför strippar vi bort emoji när vi slår upp färgen. */
 const aktivitetFarger = {
   "Måndagsmöte":     {color:"#AED6F1", emoji:"📅"},
   "Gruppmöte":       {color:"#7FB3D5", emoji:"👥"},
@@ -150,123 +160,229 @@ const aktivitetFarger = {
   "Musikdokumentär": {color:"#D2B4DE", emoji:"🎶"}
 };
 
-// --- Hjälpfunktioner ---
+/* ===================== HJÄLP ===================== */
 function getStockholmDate() {
   return new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Stockholm" }));
 }
 
-function setActiveButton(mode) {
-  btnDaily.classList.toggle("active", mode === "daily");
-  btnWeek.classList.toggle("active", mode === "week");
+/* Tar bort ledande emoji/ikoner så vi kan slå upp färg på rena aktivitetsnamnet */
+function normalizeActivity(label) {
+  if (!label) return "";
+  return String(label).replace(/^[^\wÅÄÖåäö0-9]+/u, "").trim();
 }
 
-// --- Visa dagens schema ---
+/* Dagens namn på svenska (index: 0=sön ... 6=lör) */
+const svDays = ["Söndag","Måndag","Tisdag","Onsdag","Torsdag","Fredag","Lördag"];
+
+/* Roterar en array så att index 'start' hamnar först */
+function rotate(arr, start) {
+  return arr.slice(start).concat(arr.slice(0, start));
+}
+
+/* ===================== DAGENS SCHEMA ===================== */
 async function showDaily() {
-  setActiveButton("daily");
-  coachFilter.style.display = "none";
-  content.innerHTML = "<p>Laddar dagens schema...</p>";
+  setMode("daily");
+  setTitle(""); // rubrik sätts av JSON
+  setUpdated("");
 
-  const res = await fetch(`${BASE_URL}?mode=daily&t=${Date.now()}`);
-  const json = await res.json();
-  const now = getStockholmDate();
-  const nowStr = now.toTimeString().slice(0,5);
+  const tbody = document.querySelector("#schema tbody");
+  const listContainer = document.getElementById("schema-list");
+  tbody.innerHTML = "";
+  listContainer.innerHTML = "";
 
-  let html = `<h2>${json.date}</h2>
-              <table>
-              <thead><tr><th>Start</th><th>Slut</th><th>Aktivitet</th><th>Deltagare</th><th>Coach</th></tr></thead><tbody>`;
+  document.getElementById("view-title").textContent = "Laddar dagens schema...";
 
-  let firstGreen = null;
+  try {
+    const res = await fetch(`${BASE_URL}?mode=daily&t=${Date.now()}`);
+    const json = await res.json();
 
-  json.data.forEach(a => {
-    const fargEmoji = aktivitetFarger[a.aktivitet] || {color:"#fff", emoji:""};
-    const aktivitetText = `${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${a.aktivitet}`;
-    let status = "";
-    if (a.slut <= nowStr) status = "❌";
-    else if (a.start <= nowStr && a.slut >= nowStr) status = "🟢";
+    document.getElementById("view-title").textContent = json.date || "Dagens schema";
+    if (json.updatedAt) setUpdated(`Senast uppdaterad: ${json.updatedAt}`);
 
-    const cls = status === "❌" ? "ended" : "";
-    html += `<tr class="${cls}" style="background:${fargEmoji.color}">
-               <td>${a.start}</td>
-               <td>${a.slut}</td>
-               <td class="aktivitet">${status} ${aktivitetText}</td>
-               <td>${a.deltagare}</td>
-               <td>${a.coach}</td>
-             </tr>`;
-  });
+    const now = getStockholmDate();
+    const nowStr = now.toTimeString().slice(0,5);
 
-  html += "</tbody></table>";
-  content.innerHTML = html;
+    const aktiviteter = (json.data || []).map(row => {
+      let status = "";
+      if (row.slut <= nowStr) status = "❌";
+      else if (row.start <= nowStr && row.slut >= nowStr) status = "🟢";
+      return { ...row, status };
+    });
+
+    // sortera tidigt → sent
+    aktiviteter.sort((a,b) => (a.start || "").localeCompare(b.start || ""));
+
+    // bygg tabell + mobilkort
+    aktiviteter.forEach(act => {
+      const rena = normalizeActivity(act.aktivitet);
+      const farg = (aktivitetFarger[rena] || {}).color || "#fff";
+
+      const tr = document.createElement("tr");
+      if (act.status === "❌") tr.classList.add("ended");
+      tr.style.background = farg;
+      tr.innerHTML = `
+        <td>${act.start || ""}</td>
+        <td>${act.slut || ""}</td>
+        <td class="aktivitet">${act.status || ""} ${act.aktivitet || ""}</td>
+        <td>${act.deltagare || ""}</td>
+        <td>${act.coach || ""}</td>
+      `;
+      tbody.appendChild(tr);
+
+      const div = document.createElement("div");
+      div.className = "list-item" + (act.status === "❌" ? " ended" : "");
+      div.style.background = farg;
+      div.innerHTML = `
+        <strong>${act.start || ""}–${act.slut || ""} ${act.status || ""} ${act.aktivitet || ""}</strong>
+        <div>👥 ${act.deltagare || ""}</div>
+        <div>🎓 ${act.coach || ""}</div>
+      `;
+      listContainer.appendChild(div);
+    });
+  } catch (err) {
+    document.getElementById("view-title").textContent = "Fel: kunde inte hämta schemat";
+    console.error(err);
+  }
 }
 
-// --- Visa veckoschema ---
+/* ===================== VECKOSCHEMA (per coach) ===================== */
 async function showWeek(selectedCoach = "") {
-  setActiveButton("week");
-  coachFilter.style.display = "inline-block";
-  content.innerHTML = "<p>Laddar veckoschema...</p>";
+  setMode("week");
+  setTitle("Veckoschema");
+  setUpdated("");
 
-  const res = await fetch(`${BASE_URL}?mode=week&t=${Date.now()}`);
-  const json = await res.json();
+  const container = document.getElementById("week-content");
+  container.innerHTML = "<p>Laddar veckoschema...</p>";
 
-  // lista alla coacher
-  const allCoaches = new Set();
-  json.days.forEach(d => d.data.forEach(r => {
-    r[4].split(",").forEach(c => allCoaches.add(c.trim()));
-  }));
-  coachFilter.innerHTML = `<option value="">Välj coach...</option>`;
-  [...allCoaches].sort().forEach(c => { if (c) coachFilter.innerHTML += `<option value="${c}">${c}</option>`; });
-  if (selectedCoach) coachFilter.value = selectedCoach;
+  try {
+    const res = await fetch(`${BASE_URL}?mode=week&t=${Date.now()}`);
+    const json = await res.json();
 
-  let html = "";
-  json.days.forEach(day => {
-    const filtered = day.data.filter(r => {
-      const coachList = r[4].split(",").map(x => x.trim().toLowerCase());
-      return !selectedCoach || coachList.includes(selectedCoach.toLowerCase()) || coachList.includes("alla");
+    if (json.updatedAt) setUpdated(`Senast uppdaterad: ${json.updatedAt}`);
+
+    // Bygg coach-listan
+    const allCoaches = new Set();
+    (json.days || []).forEach(d => (d.data || []).forEach(r => {
+      (String(r[4]||"").split(/,|&| och /i)).forEach(n => {
+        const t = n.trim();
+        if (t) allCoaches.add(t);
+      });
+    }));
+    const coachFilter = document.getElementById("coach-filter");
+    coachFilter.innerHTML = `<option value="">Välj coach...</option>`;
+    [...allCoaches].sort((a,b)=>a.localeCompare(b,'sv')).forEach(c => {
+      coachFilter.innerHTML += `<option value="${c}">${c}</option>`;
     });
-    if (filtered.length === 0) return;
-    html += `<div class="day-section"><h2>${day.date}</h2>
-             <table><thead><tr><th>Start</th><th>Slut</th><th>Aktivitet</th><th>Deltagare</th><th>Coach</th></tr></thead><tbody>`;
-    filtered.forEach(r => {
-      const fargEmoji = aktivitetFarger[r[2]] || {color:"#fff", emoji:""};
-      const aktivitetText = `${fargEmoji.emoji ? fargEmoji.emoji+" " : ""}${r[2]}`;
-      html += `<tr style="background:${fargEmoji.color}">
-                 <td>${r[0]}</td>
-                 <td>${r[1]}</td>
-                 <td class="aktivitet">${aktivitetText}</td>
-                 <td>${r[3]}</td>
-                 <td>${r[4]}</td>
-               </tr>`;
-    });
-    html += "</tbody></table></div>";
-  });
+    if (selectedCoach) coachFilter.value = selectedCoach;
 
-  content.innerHTML = html || "<p>Inget schema hittades för vald coach.</p>";
+    // Ordning på dagar: vardag → dagens dag först; helg → börja på Måndag
+    const today = getStockholmDate();
+    const jsDay = today.getDay(); // 0=sön ... 6=lör
+    const weekOrder = ["Måndag","Tisdag","Onsdag","Torsdag","Fredag"];
+    const startIdx = (jsDay === 0 || jsDay === 6) ? 0 : (jsDay - 1); // helg → 0, annars måndag=0, tis=1...
+    const displayOrder = rotate(weekOrder, startIdx);
+
+    // render
+    const daysByName = Object.fromEntries((json.days||[]).map(d => [d.date, d.data || []]));
+    container.innerHTML = "";
+
+    let showedAny = false;
+    displayOrder.forEach(dayName => {
+      const rows = (daysByName[dayName] || []).slice().sort((a,b) => (a[0]||"").localeCompare(b[0]||""));
+      // filtrera per coach (visa alltid “Alla”)
+      const filtered = rows.filter(r => {
+        if (!selectedCoach) return true;
+        const tokens = String(r[4]||"").toLowerCase().split(/,|&| och /i).map(s => s.trim());
+        return tokens.includes(selectedCoach.toLowerCase()) || tokens.includes("alla");
+      });
+      if (filtered.length === 0) return;
+
+      showedAny = true;
+      const section = document.createElement("div");
+      section.className = "day-section";
+      section.innerHTML = `
+        <h2>${dayName}${selectedCoach ? ` – ${selectedCoach}` : ""}</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr><th>Start</th><th>Slut</th><th>Aktivitet</th><th>Deltagare</th><th>Coach</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      `;
+      const tbody = section.querySelector("tbody");
+
+      filtered.forEach(r => {
+        const aktivitet = r[2] || "";
+        const rena = normalizeActivity(aktivitet);
+        const farg = (aktivitetFarger[rena] || {}).color || "#fff";
+        const tr = document.createElement("tr");
+        tr.style.background = farg;
+        tr.innerHTML = `
+          <td>${r[0]||""}</td>
+          <td>${r[1]||""}</td>
+          <td class="aktivitet">${aktivitet}</td>
+          <td>${r[3]||""}</td>
+          <td>${r[4]||""}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      container.appendChild(section);
+    });
+
+    if (!showedAny) container.innerHTML = "<p>Inget schema hittades för vald coach.</p>";
+  } catch (err) {
+    container.innerHTML = "<p>Fel: kunde inte hämta veckoschemat.</p>";
+    console.error(err);
+  }
 }
 
-// --- Klocka ---
+/* ===================== UI-styrning ===================== */
+function setMode(mode) {
+  const btnDaily = document.getElementById("btn-daily");
+  const btnWeek  = document.getElementById("btn-week");
+  const dailyView = document.getElementById("daily-view");
+  const weekView  = document.getElementById("week-view");
+  const coachFilter = document.getElementById("coach-filter");
+
+  const isDaily = (mode === "daily");
+  btnDaily.classList.toggle("active", isDaily);
+  btnWeek.classList.toggle("active", !isDaily);
+  dailyView.style.display = isDaily ? "block" : "none";
+  weekView.style.display = isDaily ? "none" : "block";
+  coachFilter.style.display = !isDaily ? "inline-block" : "none";
+}
+
+function setTitle(text) {
+  document.getElementById("view-title").textContent = text || "";
+}
+function setUpdated(text) {
+  document.getElementById("updated").textContent = text || "";
+}
+
+/* ===================== KLOCKA ===================== */
 function updateClock() {
   const now = getStockholmDate();
-  const options = { weekday:"long", year:"numeric", month:"long", day:"numeric",
-                    hour:"2-digit", minute:"2-digit", second:"2-digit",
-                    timeZone:"Europe/Stockholm" };
+  const options = {
+    weekday:"long", year:"numeric", month:"long", day:"numeric",
+    hour:"2-digit", minute:"2-digit", second:"2-digit", timeZone:"Europe/Stockholm"
+  };
   document.getElementById("clock").textContent =
     new Intl.DateTimeFormat("sv-SE", options).format(now);
 }
-
 setInterval(updateClock, 1000);
 updateClock();
 
-// --- Händelser ---
-const btnDaily = document.getElementById("btn-daily");
-const btnWeek = document.getElementById("btn-week");
-const coachFilter = document.getElementById("coach-filter");
-const content = document.getElementById("content");
+/* ===================== HÄNDELSER ===================== */
+document.getElementById("btn-daily").addEventListener("click", showDaily);
+document.getElementById("btn-week").addEventListener("click", () => showWeek());
+document.getElementById("coach-filter").addEventListener("change", e => showWeek(e.target.value));
 
-btnDaily.addEventListener("click", showDaily);
-btnWeek.addEventListener("click", () => showWeek());
-coachFilter.addEventListener("change", e => showWeek(e.target.value));
-
+/* Startvy + auto-uppdatering för dagens schema */
 showDaily();
-setInterval(showDaily, 30*60*1000);
+setInterval(showDaily, 30 * 60 * 1000); // var 30:e minut
 </script>
 </body>
 </html>
