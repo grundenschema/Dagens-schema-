@@ -7,38 +7,43 @@
   <style>
     body {
       font-family: sans-serif;
-      max-width: 900px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 16px;
+      padding: 30px 20px 20px;
       position: relative;
     }
 
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
     header img {
-      height: 50px;
-      position: absolute;
-      top: 16px;
-      right: 16px;
+      height: 60px;
+      margin-left: 20px;
     }
 
     h1 {
-      margin-bottom: 5px;
-      font-size: 1.4rem;
+      margin: 0;
+      font-size: 1.8rem;
     }
 
     #clock {
       font-family: monospace;
-      margin-bottom: 6px;
+      margin: 6px 0 10px;
       font-size: 0.9rem;
     }
 
     #updated {
       font-size: 0.8rem;
       color: #666;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
 
     select, button {
-      margin: 5px 5px 12px 0;
+      margin: 5px 5px 15px 0;
       padding: 8px 12px;
       border-radius: 8px;
       border: 1px solid #ccc;
@@ -49,10 +54,21 @@
 
     button:hover { background-color: #e0e0e0; }
 
-    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-    th { background: #f2f2f2; font-size: 0.9rem; }
-    td { font-size: 0.9rem; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #f2f2f2;
+    }
 
     .ended { opacity: 0.6; }
     .aktivitet { font-weight: bold; }
@@ -65,42 +81,6 @@
       flex-wrap: wrap;
     }
 
-    .status-dot {
-      font-size: 12px;
-    }
-
-    /* 💡 Mobilanpassning */
-    @media (max-width: 700px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
-        width: 100%;
-      }
-      thead {
-        display: none;
-      }
-      tr {
-        background: #fff;
-        margin-bottom: 10px;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      }
-      td {
-        border: none;
-        display: flex;
-        justify-content: space-between;
-        padding: 6px 8px;
-        font-size: 0.95rem;
-      }
-      td::before {
-        content: attr(data-label);
-        font-weight: bold;
-        color: #555;
-      }
-    }
-
-    /* 🗓️ Rubrik för dagar i coachschema */
     .day-heading {
       background-color: #f0f6ff;
       color: #2c3e50;
@@ -108,24 +88,24 @@
       border-radius: 8px;
       font-size: 1.1rem;
       font-weight: 600;
-      margin-top: 20px;
+      margin-top: 25px;
     }
   </style>
 </head>
 <body>
   <header>
+    <div>
+      <h1 id="viewTitle">Dagens gemensamma schema</h1>
+      <div id="clock"></div>
+      <div id="updated">Senast uppdaterad: –</div>
+    </div>
     <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
   </header>
-
-  <h1 id="viewTitle">Dagens gemensamma schema</h1>
-  <div id="clock"></div>
-  <div id="updated">Senast uppdaterad: –</div>
 
   <div class="toolbar">
     <button id="showDaily">Gemensamt schema</button>
     <button id="showWeekly">Coachschema</button>
     <select id="coachSelect" class="hidden"></select>
-    <span class="status-dot">🟢/❌ auto</span>
   </div>
 
   <div id="schemaContainer">Laddar schema...</div>
@@ -200,11 +180,11 @@
         const f = aktivitetFarger[row.Aktivitet] || {color:"#fff", emoji:""};
         const status = (row.Slut <= now) ? "❌" : (row.Start <= now && row.Slut >= now) ? "🟢" : "";
         html += `<tr style="background:${f.color}" class="${status==='❌'?'ended':''}">
-          <td data-label="Start">${row.Start}</td>
-          <td data-label="Slut">${row.Slut}</td>
-          <td data-label="Aktivitet" class="aktivitet">${status ? status + " " : ""}${f.emoji||""} ${row.Aktivitet}</td>
-          <td data-label="Deltagare">${row.Deltagare}</td>
-          <td data-label="Coach">${row.Coach}</td>
+          <td>${row.Start}</td>
+          <td>${row.Slut}</td>
+          <td class="aktivitet">${status ? status + " " : ""}${f.emoji||""} ${row.Aktivitet}</td>
+          <td>${row.Deltagare}</td>
+          <td>${row.Coach}</td>
         </tr>`;
       });
       if (!todays.length) html += `<tr><td colspan="5">Inga aktiviteter idag.</td></tr>`;
@@ -256,11 +236,11 @@
         grouped[dateKey].forEach(r=>{
           const f=aktivitetFarger[r.Aktivitet]||{color:"#fff",emoji:""};
           html += `<tr style="background:${f.color}">
-            <td data-label="Start">${r.Start}</td>
-            <td data-label="Slut">${r.Slut}</td>
-            <td data-label="Aktivitet" class="aktivitet">${f.emoji||""} ${r.Aktivitet}</td>
-            <td data-label="Deltagare">${r.Deltagare}</td>
-            <td data-label="Coach">${r.Coach}</td>
+            <td>${r.Start}</td>
+            <td>${r.Slut}</td>
+            <td class="aktivitet">${f.emoji||""} ${r.Aktivitet}</td>
+            <td>${r.Deltagare}</td>
+            <td>${r.Coach}</td>
           </tr>`;
         });
         html += "</tbody></table>";
