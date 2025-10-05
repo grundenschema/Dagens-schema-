@@ -11,6 +11,7 @@
       margin: 0 auto;
       padding: 20px;
       position: relative;
+      background-color: #fafafa;
     }
 
     header {
@@ -18,10 +19,12 @@
       justify-content: space-between;
       align-items: flex-start;
       margin-bottom: 15px;
+      flex-wrap: wrap;
     }
 
     header img {
       height: 60px;
+      margin-top: 5px;
     }
 
     #clock {
@@ -33,11 +36,18 @@
     #updated {
       font-size: 0.8rem;
       color: #666;
+      margin-bottom: 10px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
       margin-bottom: 15px;
     }
 
-    select {
-      margin: 5px 0 15px 0;
+    select, button {
       padding: 8px 12px;
       border-radius: 8px;
       border: 1px solid #ccc;
@@ -45,6 +55,8 @@
       background-color: #f7f7f7;
       cursor: pointer;
     }
+
+    button:hover { background-color: #e0e0e0; }
 
     table {
       border-collapse: collapse;
@@ -58,10 +70,7 @@
       text-align: left;
     }
 
-    th {
-      background: #f2f2f2;
-    }
-
+    th { background: #f2f2f2; }
     .ended { opacity: 0.6; }
     .aktivitet { font-weight: bold; }
 
@@ -72,7 +81,7 @@
       border-radius: 8px;
       font-size: 1.1rem;
       font-weight: 600;
-      margin-top: 20px;
+      margin-top: 25px;
     }
 
     /* 💡 Mobilvänlig kortvy */
@@ -81,21 +90,29 @@
         display: block;
         width: 100%;
       }
+
       thead { display: none; }
+
       tr {
         background: #fff;
-        margin-bottom: 10px;
+        margin: 0 auto 12px auto;
         border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 10px;
+        border-radius: 12px;
+        padding: 10px 12px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        max-width: 95%;
       }
+
       td {
         border: none;
         padding: 5px 0;
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.95rem;
       }
+
       td::before {
-        content: attr(data-label) ": ";
+        content: attr(data-label);
         font-weight: bold;
         color: #333;
       }
@@ -107,12 +124,17 @@
     <div>
       <div id="clock"></div>
       <div id="updated">Senast uppdaterad: –</div>
-      <select id="coachSelect">
-        <option value="">Gemensamt schema</option>
-      </select>
     </div>
     <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
   </header>
+
+  <div class="toolbar">
+    <button id="showDaily">Gemensamt schema</button>
+    <select id="coachSelect">
+      <option value="">-- Välj coach --</option>
+    </select>
+    <button id="showCoach">Välj coach</button>
+  </div>
 
   <div id="schemaContainer">Laddar schema...</div>
 
@@ -163,7 +185,7 @@
         const json = await res.json();
         GLOBAL_DATA = json.data || [];
         document.getElementById("updated").textContent = "Senast uppdaterad: " + (json.updated || "–");
-        setupWeekly(GLOBAL_DATA);
+        setupCoaches(GLOBAL_DATA);
         renderDaily(GLOBAL_DATA);
       } catch {
         document.getElementById("schemaContainer").textContent = "Kunde inte hämta schema.";
@@ -195,7 +217,7 @@
       document.getElementById("schemaContainer").innerHTML = html;
     }
 
-    function setupWeekly(data) {
+    function setupCoaches(data) {
       const select = document.getElementById("coachSelect");
       const coaches = [...new Set(
         data.map(r => (r.Coach || "").split(",")).flat().map(c => c.trim()).filter(c => c && c!=="Alla")
@@ -207,11 +229,6 @@
         opt.textContent = c;
         select.appendChild(opt);
       });
-
-      select.onchange = () => {
-        if (select.value === "") renderDaily(GLOBAL_DATA);
-        else renderWeekly(GLOBAL_DATA, select.value);
-      };
     }
 
     function renderWeekly(data, coach) {
@@ -273,6 +290,13 @@
         tr.classList.toggle("ended",e<=now);
       });
     }
+
+    document.getElementById("showDaily").onclick=()=>renderDaily(GLOBAL_DATA);
+    document.getElementById("showCoach").onclick=()=>{
+      const c = document.getElementById("coachSelect").value;
+      if (c === "") renderDaily(GLOBAL_DATA);
+      else renderWeekly(GLOBAL_DATA, c);
+    };
 
     loadSchema();
     setInterval(updateStatusColors,60000);
