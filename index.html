@@ -40,10 +40,10 @@ button:hover{background:#ececec;}
   font-weight:700;margin:20px 0 12px 0;
 }
 
-/* 📱💻 KORTLAYOUT – responsivt rutnät */
+/* 📱💻 Vertikal kortlayout – bredare på desktop */
 .cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 18px;
   margin-bottom: 25px;
 }
@@ -52,8 +52,11 @@ button:hover{background:#ececec;}
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: var(--pad);
+  padding: 18px;
   box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
   transition: transform 0.1s ease-in-out;
 }
 .card:hover { transform: translateY(-3px); }
@@ -64,12 +67,12 @@ button:hover{background:#ececec;}
   border-bottom-left-radius:var(--radius);
 }
 .card-title{
-  font-weight:800;font-size:1.05rem;margin:0 0 8px 0;
+  font-weight:800;font-size:1.1rem;margin:0 0 8px 0;
   display:flex;align-items:center;gap:8px;
 }
 .row{
   display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
-  font-size:.95rem;padding:3px 0;
+  font-size:1rem;padding:4px 0;
 }
 .row label{color:#333;font-weight:700;}
 .pill{
@@ -250,3 +253,4 @@ setInterval(loadData,15*60*1000);
 </script>
 </body>
 </html>
+
