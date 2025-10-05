@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -179,8 +180,19 @@ function renderSchema() {
 
   let aktiviteter = allaAktiviteter;
   if (valdCoach !== "alla") {
-    // 🧩 visa aktivitet om någon av coacherna matchar vald
-    aktiviteter = aktiviteter.filter(a => a.coachLista.includes(valdCoach));
+    // 🧩 Aktiviteter som ALLA ska se
+    const gemensammaAktiviteter = [
+      "Måndagsmöte",
+      "Gruppmöte",
+      "Återkoppling",
+      "Föreningsgruppen"
+    ];
+
+    aktiviteter = aktiviteter.filter(a =>
+      a.coachLista.includes(valdCoach) ||
+      a.coachStr.toLowerCase().includes("alla") ||
+      gemensammaAktiviteter.includes(a.aktivitet)
+    );
   }
 
   const ended = aktiviteter.filter(a => a.status === "❌").sort((a,b)=>a.start.localeCompare(b.start));
@@ -248,5 +260,3 @@ setInterval(loadSchema, 30*60*1000);
 </script>
 </body>
 </html>
-
-
