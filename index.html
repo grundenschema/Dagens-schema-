@@ -111,33 +111,14 @@ async function loadData(){
 function dayKey(v){
   if(!v)return"";
   const d=new Date(v);
-  return d.toISOString().slice(0,10);
+  if(isNaN(d))return"";
+  return d.toISOString().split("T")[0];
 }
 function parseCoaches(coachStr){
   const ignore=["","-",".","ingen","ingen coach","eget arbete","självständigt","utan coach"];
   return (coachStr||"").split(",").map(c=>c.trim()).filter(c=>c&&!ignore.includes(c.toLowerCase())&&c.toLowerCase()!=="alla");
 }
 function overlap(aStart,aEnd,bStart,bEnd){return !(aEnd<=bStart||aStart>=bEnd);}
-
-/* 🗓️ Ny version – visar nästa vecka på helgen */
-function getThisWeekMonFri(){
-  const today=getSEDate();
-  const day=today.getDay(); // 0=sön, 1=mån ...
-  const monday=new Date(today);
-
-  // Om det är lördag (6) eller söndag (0) → visa nästa vecka
-  if(day===0||day===6){
-    monday.setDate(today.getDate()-((day+6)%7)+7);
-  } else {
-    monday.setDate(today.getDate()-((day+6)%7));
-  }
-
-  monday.setHours(0,0,0,0);
-  const friday=new Date(monday);
-  friday.setDate(monday.getDate()+4);
-  return {mon:monday,fri:friday};
-}
-
 function groupByDate(rows){
   const g={};
   rows.forEach(r=>{
@@ -196,15 +177,20 @@ function setupCoachSelect(data){
   s.onchange=()=>{const v=s.value;if(v)renderCoachWeek(DATA,v);};
 }
 
+/* 🧑‍🏫 Coachschema – visar alla aktiviteter för vald coach */
 function renderCoachWeek(data, coach){
   document.getElementById("viewTitle").textContent="Coachschema – "+coach;
-  const {mon,fri}=getThisWeekMonFri();
-  const startKey=dayKey(mon),endKey=dayKey(fri);
+
   const rows=data.filter(r=>{
     const cs=parseCoaches(r.Coach);
-    const dateKey=dayKey(r.Datum);
-    return (cs.includes(coach)||(r.Coach||"").trim().toLowerCase()==="alla")&&dateKey>=startKey&&dateKey<=endKey;
-  }).sort((a,b)=>dayKey(a.Datum)===dayKey(b.Datum)?(a.Start||"").localeCompare(b.Start||""):dayKey(a.Datum).localeCompare(dayKey(b.Datum)));
+    return cs.includes(coach)||(r.Coach||"").trim().toLowerCase()==="alla";
+  }).sort((a,b)=>{
+    if(dayKey(a.Datum)===dayKey(b.Datum)){
+      return (a.Start||"").localeCompare(b.Start||"");
+    }
+    return dayKey(a.Datum).localeCompare(dayKey(b.Datum));
+  });
+
   const grouped=groupByDate(rows);
   let html="";
   Object.keys(grouped).forEach(k=>html+=sectionHTML(k,grouped[k],null,false));
@@ -223,9 +209,8 @@ function setupSickList(data){
 function getSelectedSick(){return[...document.querySelectorAll("#sickList input:checked")].map(e=>e.value);}
 function renderSickSchedule(data,sickCoaches){
   document.getElementById("viewTitle").textContent="🩺 Sjukschema";
-  const {mon,fri}=getThisWeekMonFri(),sK=dayKey(mon),eK=dayKey(fri);
-  const weekRows=data.filter(r=>dayKey(r.Datum)>=sK&&dayKey(r.Datum)<=eK);
-  const sickRows=weekRows.filter(r=>sickCoaches.some(s=>parseCoaches(r.Coach).includes(s))).sort((a,b)=>(dayKey(a.Datum)===dayKey(b.Datum)?(a.Start||"").localeCompare(b.Start||""):dayKey(a.Datum).localeCompare(dayKey(b.Datum))));
+  const weekRows=data;
+  const sickRows=weekRows.filter(r=>sickCoaches.some(s=>parseCoaches(r.Coach).includes(s))).sort((a,b)=>dayKey(a.Datum)===dayKey(b.Datum)?(a.Start||"").localeCompare(b.Start||""):dayKey(a.Datum).localeCompare(dayKey(b.Datum)));
   const allCoaches=[...new Set(weekRows.map(r=>parseCoaches(r.Coach)).flat())];
   const extraForRow=(r)=>{
     const tS=r.Start||"00:00",tE=r.Slut||"23:59",dK=dayKey(r.Datum);
@@ -258,5 +243,3 @@ setInterval(loadData,15*60*1000);
 </script>
 </body>
 </html>
-
-
