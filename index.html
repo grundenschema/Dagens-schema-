@@ -110,7 +110,6 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Global cache av data för att slippa hämta i onödan mellan vybyten
     let GLOBAL_DATA = [];
     let GLOBAL_UPDATED = "";
 
@@ -122,12 +121,8 @@
         GLOBAL_DATA = Array.isArray(json.data) ? json.data : [];
         GLOBAL_UPDATED = json.updated || "";
 
-        // Skriv ”senast uppdaterad”
-        if (GLOBAL_UPDATED) {
-          document.getElementById("updated").textContent = "Senast uppdaterad: " + GLOBAL_UPDATED;
-        } else {
-          document.getElementById("updated").textContent = "Senast uppdaterad: –";
-        }
+        document.getElementById("updated").textContent =
+          GLOBAL_UPDATED ? "Senast uppdaterad: " + GLOBAL_UPDATED : "Senast uppdaterad: –";
 
         renderDaily(GLOBAL_DATA);
         setupWeekly(GLOBAL_DATA);
@@ -143,10 +138,8 @@
       document.getElementById("viewTitle").textContent = "Dagens gemensamma schema";
       document.getElementById("coachSelect").classList.add("hidden");
 
-      const todayStr = getStockholmDate().toISOString().split("T")[0]; // "yyyy-MM-dd"
-      // Datum kan komma som "yyyy-MM-dd" eller som "yyyy-MM-dd 00:00:00" → startsWith
+      const todayStr = getStockholmDate().toISOString().split("T")[0];
       const todays = data.filter(r => String(r.Datum).startsWith(todayStr));
-
       const now = getStockholmDate().toTimeString().slice(0,5);
 
       let html = `<table><thead>
@@ -176,13 +169,8 @@
     // 👥 Coachlista
     function setupWeekly(data) {
       const select = document.getElementById("coachSelect");
-      // Extrahera coacher (hantera flera coacher separerade med komma)
       const coaches = [...new Set(
-        data
-          .map(r => (r.Coach || "").split(","))
-          .flat()
-          .map(c => c.trim())
-          .filter(c => c && c !== "Alla")
+        data.map(r => (r.Coach || "").split(",")).flat().map(c => c.trim()).filter(c => c && c !== "Alla")
       )].sort();
 
       select.innerHTML = "<option value=''>-- Välj coach --</option>" +
@@ -191,9 +179,10 @@
       select.onchange = () => renderWeekly(data, select.value);
     }
 
-    // 📆 Veckoschema per coach
+    // 📆 Veckoschema per coach (grupperat per dag)
     function renderWeekly(data, coach) {
-      document.getElementById("viewTitle").textContent = "Coachschema" + (coach ? ` – ${coach}` : "");
+      document.getElementById("viewTitle").textContent =
+        "Coachschema" + (coach ? ` – ${coach}` : "");
       document.getElementById("coachSelect").classList.remove("hidden");
 
       let filtered = data;
@@ -204,33 +193,56 @@
         });
       }
 
-      let html = `<table><thead>
-        <tr><th>Datum</th><th>Start</th><th>Slut</th><th>Aktivitet</th><th>Deltagare</th><th>Coach</th></tr>
-      </thead><tbody>`;
+      // Sortera på datum + start
+      filtered.sort((a, b) => {
+        const dA = String(a.Datum).slice(0, 10);
+        const dB = String(b.Datum).slice(0, 10);
+        if (dA === dB) return (a.Start || "").localeCompare(b.Start || "");
+        return dA.localeCompare(dB);
+      });
 
+      // Gruppera per dag
+      const grouped = {};
       filtered.forEach(row => {
-        const f = aktivitetFarger[row.Aktivitet] || {color:"#fff", emoji:""};
-        // Tvinga datum som text om det råkar komma annorlunda
-        const datumText = String(row.Datum).slice(0, 10); // yyyy-MM-dd
-        html += `<tr style="background:${f.color}">
-          <td>${datumText}</td>
-          <td>${row.Start || ""}</td>
-          <td>${row.Slut || ""}</td>
-          <td class="aktivitet">${f.emoji||""} ${row.Aktivitet || ""}</td>
-          <td>${row.Deltagare || ""}</td>
-          <td>${row.Coach || ""}</td>
-        </tr>`;
+        const dateKey = String(row.Datum).slice(0, 10);
+        if (!grouped[dateKey]) grouped[dateKey] = [];
+        grouped[dateKey].push(row);
+      });
+
+      let html = "";
+      const formatter = new Intl.DateTimeFormat("sv-SE", {
+        weekday: "long", day: "numeric", month: "long"
+      });
+
+      Object.keys(grouped).forEach(dateKey => {
+        const fDate = formatter.format(new Date(dateKey));
+        html += `<h3 style="margin-top:20px;">${fDate.charAt(0).toUpperCase() + fDate.slice(1)}</h3>`;
+        html += `<table><thead>
+          <tr><th>Start</th><th>Slut</th><th>Aktivitet</th><th>Deltagare</th><th>Coach</th></tr>
+        </thead><tbody>`;
+
+        grouped[dateKey].forEach(row => {
+          const f = aktivitetFarger[row.Aktivitet] || {color:"#fff", emoji:""};
+          html += `<tr style="background:${f.color}">
+            <td>${row.Start || ""}</td>
+            <td>${row.Slut || ""}</td>
+            <td class="aktivitet">${f.emoji||""} ${row.Aktivitet || ""}</td>
+            <td>${row.Deltagare || ""}</td>
+            <td>${row.Coach || ""}</td>
+          </tr>`;
+        });
+
+        html += "</tbody></table>";
       });
 
       if (filtered.length === 0) {
-        html += `<tr><td colspan="6">Inga aktiviteter hittades${coach ? " för " + coach : ""}.</td></tr>`;
+        html = `<p>Inga aktiviteter hittades${coach ? " för " + coach : ""}.</p>`;
       }
 
-      html += "</tbody></table>";
       document.getElementById("schemaContainer").innerHTML = html;
     }
 
-    // 🟢 Uppdatera statusikoner lokalt (utan nätverksanrop)
+    // 🟢 Uppdatera status lokalt
     function updateStatusColors() {
       const now = getStockholmDate().toTimeString().slice(0,5);
       document.querySelectorAll("tbody tr").forEach(tr => {
@@ -243,7 +255,6 @@
         if (end <= now) status = "❌";
         else if (start <= now && end >= now) status = "🟢";
 
-        // Ta bort ev. gammal status i början
         aktivitetCell.textContent = aktivitetCell.textContent.replace(/^(?:🟢|❌)\s*/, "");
         if (status) aktivitetCell.textContent = `${status} ${aktivitetCell.textContent}`;
         tr.classList.toggle("ended", end <= now);
@@ -252,10 +263,8 @@
 
     // 🔘 Knapphantering
     document.getElementById("showDaily").onclick = () => renderDaily(GLOBAL_DATA);
-    document.getElementById("showWeekly").onclick = () => {
-      document.getElementById("coachSelect").classList.remove("hidden");
+    document.getElementById("showWeekly").onclick = () =>
       renderWeekly(GLOBAL_DATA, document.getElementById("coachSelect").value || "");
-    };
 
     // 🚀 Start
     loadSchema();
@@ -263,7 +272,7 @@
     // 🔄 Uppdatera status var minut
     setInterval(updateStatusColors, 60 * 1000);
 
-    // 🔁 Hämta nytt schema var 15:e minut (snäll mot Google)
+    // 🔁 Hämta nytt schema var 15:e minut
     setInterval(loadSchema, 15 * 60 * 1000);
   </script>
 </body>
