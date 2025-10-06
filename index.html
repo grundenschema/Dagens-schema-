@@ -38,7 +38,6 @@ button:hover{background:#ececec;}
 }
 .day-heading.today{background:var(--today);}
 
-
 /* ===== Kortvy (webb/mobil) ===== */
 .cards{display:block;margin-bottom:25px;}
 .card{
@@ -95,187 +94,15 @@ button:hover{background:#ececec;}
     line-height:1.25;
   }
 
-  header, .toolbar, #sickPanel, #clock {
-    display:none !important;
-  }
-
-  #viewTitle {
-    text-align:center;
-    font-size:10pt;
-    font-weight:bold;
-    margin:0 0 4px 0;
-  }
-
-  /* Visa endast blockschema vid utskrift */
-  .cards, .card, table {
-    display:none !important;
-  }
-
-  .block-wrap {
-    display:block !important;
-  }
-
-  .block-header div {
-    background:#eee !important;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-  }
-
+  header, .toolbar, #sickPanel, #clock {display:none !important;}
+  #viewTitle {text-align:center;font-size:10pt;font-weight:bold;margin:0 0 4px 0;}
+  .cards, .card, table {display:none !important;}
+  .block-wrap {display:block !important;}
+  .block-header div {background:#eee !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .block-grid {border:none;}
   .block-time {border:none;padding:3px 4px;font-size:8pt;}
-  .block-cell {border:none;min-height:24px;} /* mer plats för text */
-
-  .block {
-    border:none;
-    padding:3px 4px;
-    font-size:8pt;
-    line-height:1.25;
-    white-space:normal;
-    word-wrap:break-word;
-    overflow:visible;
-  }
-
-  @page {size:A4 landscape;margin:6mm;}
-}
-</style>
-</head>
-
-<!DOCTYPE html>
-<html lang="sv">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Grunden DV – Schema</title>
-<style>
-:root{
-  --card-bg:#fff; --page-bg:#fafafa; --border:#ddd; --muted:#555; --heading:#2c3e50;
-  --shadow:0 6px 18px rgba(0,0,0,.05); --radius:16px; --band:#9ecbff;
-  --today:#e8f6ee; --ongoing:#1a7f37;
-}
-
-/* ===== Bas ===== */
-body{
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-  max-width:1100px;margin:0 auto;padding:20px;background:var(--page-bg);
-}
-header{text-align:center;margin-bottom:15px;}
-header img{height:65px;margin:10px auto;display:block;}
-#clock{font-family:ui-monospace;font-size:.9rem;color:#333;}
-#updated{font-size:.8rem;color:var(--muted);margin-top:4px;}
-
-.toolbar{
-  display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:18px 0;
-}
-button,select{
-  padding:10px 14px;border-radius:10px;border:1px solid #ccc;background:#f7f7f7;
-  cursor:pointer;font-size:15px;
-}
-button:hover{background:#ececec;}
-#coachSelect,#btnBlocks,#btnCards{display:none;}
-
-.day-section{border-bottom:1px solid #ddd;margin-bottom:25px;padding-bottom:10px;}
-.day-heading{
-  background:#eef5ff;color:var(--heading);padding:10px 14px;border-radius:12px;
-  font-weight:700;margin:20px 0 12px 0;
-}
-.day-heading.today{background:var(--today);}
-
-/* ===== Kortvy (webb/mobil) ===== */
-.cards{display:block;margin-bottom:25px;}
-.card{
-  position:relative;background:var(--card-bg);border:1px solid var(--border);
-  border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);
-  width:100%;max-width:800px;margin:0 auto 18px auto;
-  border-left:4px solid var(--band);
-}
-.card-title{
-  font-weight:800;font-size:1.1rem;margin:4px 0 8px;display:flex;align-items:center;gap:8px;
-}
-.row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;font-size:1rem;padding:2px 0;}
-.row label{color:#333;font-weight:700;}
-.dot{
-  width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 10px;
-  background:var(--ongoing);box-shadow:0 0 0 3px rgba(26,127,55,.15);
-}
-.card.ongoing{box-shadow:0 8px 22px rgba(26,127,55,.15), 0 1px 0 rgba(26,127,55,.12);}
-.small-note{font-size:.9rem;color:#333;opacity:.9}
-
-/* ===== Sjukpanel ===== */
-#sickPanel{
-  display:none;border:1px solid var(--border);background:#fff;border-radius:14px;padding:12px;box-shadow:var(--shadow);
-}
-#sickList{display:flex;flex-wrap:wrap;gap:8px 14px;max-height:220px;overflow:auto;}
-#sickList label{display:flex;align-items:center;gap:6px;white-space:nowrap;}
-.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.8rem;background:#fff3cd;color:#8a5b00;border:1px solid #ffe39a;margin-left:8px;white-space:nowrap;}
-.okpill{background:#e8f6ee;color:#1a7f37;border:1px solid #cdebd9;}
-
-/* ===== Blockschema (grid) ===== */
-.block-wrap{display:none;margin-top:16px;}
-.block-header{
-  display:grid;grid-template-columns:80px repeat(5,1fr);gap:0;font-weight:700;text-transform:capitalize;
-}
-.block-header div{padding:6px 8px;background:#f3f6ff;border:none;}
-.block-grid{display:grid;grid-template-columns:80px repeat(5,1fr);}
-.block-time{background:#fafafa;padding:4px 6px;font-size:.9rem;border:none;}
-.block-cell{position:relative;min-height:28px;border:none;}
-.block{
-  position:absolute;left:2px;right:2px;top:2px;
-  border-radius:6px;padding:3px 5px;font-size:.85rem;line-height:1.2;overflow:hidden;
-  -webkit-print-color-adjust:exact;print-color-adjust:exact;
-}
-.block .title{font-weight:700;margin-bottom:2px;}
-.block .small{font-size:.8rem;opacity:.95;}
-
-/* ===== Utskrift ===== */
-@media print {
-  body {
-    background:#fff;
-    color:#000;
-    font-size:8pt;
-    margin:0;
-    line-height:1.25;
-  }
-
-  header, .toolbar, #sickPanel, #clock {
-    display:none !important;
-  }
-
-  #viewTitle {
-    text-align:center;
-    font-size:10pt;
-    font-weight:bold;
-    margin:0 0 4px 0;
-  }
-
-  /* Visa endast blockschema vid utskrift */
-  .cards, .card, table {
-    display:none !important;
-  }
-
-  .block-wrap {
-    display:block !important;
-  }
-
-  .block-header div {
-    background:#eee !important;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-  }
-
-  .block-grid {border:none;}
-  .block-time {border:none;padding:3px 4px;font-size:8pt;}
-  .block-cell {border:none;min-height:24px;} /* mer plats för text */
-
-  .block {
-    border:none;
-    padding:3px 4px;
-    font-size:8pt;
-    line-height:1.25;
-    white-space:normal;
-    word-wrap:break-word;
-    overflow:visible;
-  }
-
+  .block-cell {border:none;min-height:24px;}
+  .block {border:none;padding:3px 4px;font-size:8pt;line-height:1.25;white-space:normal;word-wrap:break-word;overflow:visible;}
   @page {size:A4 landscape;margin:6mm;}
 }
 </style>
@@ -300,7 +127,6 @@ button:hover{background:#ececec;}
 <h2 id="viewTitle"></h2>
 <div id="schemaContainer">Laddar schema...</div>
 
-<!-- Blockschema -->
 <div id="blockContainer" class="block-wrap" aria-hidden="true">
   <div class="block-header" id="blockHeader"></div>
   <div class="block-grid" id="blockGrid"></div>
@@ -309,7 +135,6 @@ button:hover{background:#ececec;}
   </div>
 </div>
 
-<!-- Sjukpanel -->
 <div id="sickPanel">
   <h3>🩺 Välj sjuka coacher (max 5)</h3>
   <div id="sickList"></div>
@@ -320,12 +145,163 @@ button:hover{background:#ececec;}
   </div>
 </div>
 
+<!-- JavaScript kommer härnäst -->
 <script>
-/* === samma JavaScript som i förra versionen, ingen ändring i logik === */
-</script>
-</body>
-</html>
+/* ===== Datakälla ===== */
+const url="https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
+const aktivitetFarger={
+  "Måndagsmöte":{color:"#AED6F1",emoji:"📅"},"Gruppmöte":{color:"#7FB3D5",emoji:"👥"},
+  "Lunch":{color:"#F9E79F",emoji:"🍲"},"Frukost":{color:"#FAD7A0",emoji:"🥐"},
+  "Ateljé":{color:"#F5CBA7",emoji:"🎨"},"Musik":{color:"#D2B4DE",emoji:"🎶"},
+  "Pod":{color:"#A9CCE3",emoji:"🎙️"},"Padel":{color:"#82E0AA",emoji:"🏓"},
+  "Lite av varje":{color:"#FADBD8",emoji:"✨"},"Yoga":{color:"#D5F5E3",emoji:"🧘"},
+  "Gym":{color:"#A3E4D7",emoji:"🏋️‍♂️"},"Film":{color:"#E6B0AA",emoji:"🎬"},
+  "Föreningsgruppen":{color:"#D6DBDF",emoji:"🤝"},"Trummor":{color:"#F1948A",emoji:"🥁"},
+  "Återkoppling":{color:"#85C1E9",emoji:"🔄"},"Medicin":{color:"#E59866",emoji:"💊"},
+  "Biljard":{color:"#A9DFBF",emoji:"🎱"},"Spelgruppen":{color:"#F8C471",emoji:"🎲"},
+  "Sömnad":{color:"#F5EEF8",emoji:"🧵"},"Filmgruppen":{color:"#E6B0AA",emoji:"🎬"},
+  "Musikquizz":{color:"#D2B4DE",emoji:"🎶"},"Musikdokumentär":{color:"#D2B4DE",emoji:"🎶"}
+};
 
+/* ===== Klocka ===== */
+function getSEDate(){return new Date(new Date().toLocaleString("en-US",{timeZone:"Europe/Stockholm"}));}
+function fmtSE(dt,opts){return new Intl.DateTimeFormat("sv-SE",opts).format(dt);}
+function updateClock(){
+  const now=getSEDate();
+  document.getElementById("clock").textContent=
+    fmtSE(now,{weekday:"long",year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+setInterval(updateClock,1000);updateClock();
+
+/* ===== Hjälp ===== */
+function dayKey(str){return String(str).slice(0,10);}
+function parseCoaches(coachStr){
+  const ignore=["","-",".","ingen","ingen coach","eget arbete","självständigt","utan coach"];
+  return (coachStr||"").split(/,|\/|&|\+|;|\||\n| och /i)
+    .map(c=>c.trim())
+    .filter(c=>c&&!ignore.includes(c.toLowerCase())&&c.toLowerCase()!=="alla");
+}
+function colorFor(r){return(aktivitetFarger[r.Aktivitet]||{color:"#9ecbff"}).color;}
+function emojiFor(r){return(aktivitetFarger[r.Aktivitet]||{emoji:""}).emoji;}
+function shrinkList(str,max=2){
+  if(!str) return "-";
+  const arr=String(str).split(/,|\/|;|\||\n| och /i).map(s=>s.trim()).filter(Boolean);
+  return arr.length<=max?arr.join(", "):arr.slice(0,max).join(", ")+`, +${arr.length-max} fler`;
+}
+function toMinutes(hhmm){if(!hhmm)return null;const[h,m]=hhmm.split(":").map(Number);return h*60+m;}
+
+/* Pågående / kommande */
+function getNowMinutes(){const d=getSEDate();return d.getHours()*60+d.getMinutes();}
+function isOngoing(r,n){const s=toMinutes(r.Start),e=toMinutes(r.Slut);if(s==null||e==null)return false;return s<=n&&n<e;}
+function isUpcoming(r,n){const s=toMinutes(r.Start);return s!=null&&s>n;}
+function sortByStatusThenTime(rows){
+  const now=getNowMinutes();
+  return [...rows].sort((a,b)=>{
+    const aO=isOngoing(a,now),bO=isOngoing(b,now);
+    if(aO!==bO)return aO?-1:1;
+    const aU=isUpcoming(a,now),bU=isUpcoming(b,now);
+    if(aU!==bU)return aU?-1:1;
+    return (a.Start||"").localeCompare(b.Start||"");
+  });
+}
+
+/* ===== Ladda data ===== */
+let DATA=[];
+async function loadData(){
+  const res=await fetch(url+"?t="+Date.now());
+  const json=await res.json();
+  DATA=json.data||[];
+  document.getElementById("updated").textContent="Senast uppdaterad: "+(json.updated||"–");
+  setupCoachSelect(DATA);
+  setupSickList(DATA);
+  renderDaily(DATA);
+}
+
+/* ===== Kortvy ===== */
+function cardHTML(r){
+  const b=colorFor(r);
+  const t=(r.Start&&r.Slut)?`${r.Start}–${r.Slut}`:r.Start||r.Slut||"-";
+  const ongoing=isOngoing(r,getNowMinutes());
+  const dot=ongoing?'<span class="dot" title="Pågår nu"></span>':'';
+  return `<div class="card${ongoing?' ongoing':''}" style="--band:${b}">
+    <div class="row"><label>🕒 Tid:</label><div class="small-note">${t}</div></div>
+    <h4 class="card-title">${dot}${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h4>
+    <div class="row"><label>👥 Deltagare:</label><div>${shrinkList(r.Deltagare,4)}</div></div>
+  </div>`;
+}
+function groupByDate(rows){const g={};rows.forEach(r=>{const k=dayKey(r.Datum);(g[k]=g[k]||[]).push(r);});return g;}
+function formatDayLabel(k){return new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(k));}
+function renderSectionsWithTodayFirst(grouped){
+  const c=document.getElementById("schemaContainer");
+  const todayKey=dayKey(getSEDate().toISOString());
+  const allKeys=Object.keys(grouped).sort();
+  const ordered=[todayKey,...allKeys.filter(k=>k!==todayKey)];
+  let html="";
+  ordered.forEach(k=>{
+    if(!grouped[k])return;
+    const sorted=sortByStatusThenTime(grouped[k]);
+    const headingClass=k===todayKey?"day-heading today":"day-heading";
+    html+=`<div class="day-section" data-day="${k}">
+      <div class="${headingClass}">${k===todayKey?'Idag – ':''}${formatDayLabel(k)}</div>
+      <div class="cards">${sorted.map(cardHTML).join("")}</div></div>`;
+  });
+  c.innerHTML=html||"<p>Inga aktiviteter.</p>";
+  const todays=c.querySelector('.day-section[data-day="'+todayKey+'"]');
+  if(todays)todays.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function renderDaily(data){
+  const grouped=groupByDate(data);
+  document.getElementById("viewTitle").textContent="Gemensamt schema";
+  document.getElementById("schemaContainer").style.display="block";
+  document.getElementById("blockContainer").style.display="none";
+  renderSectionsWithTodayFirst(grouped);
+}
+
+/* ===== Coachschema ===== */
+function setupCoachSelect(data){
+  const s=document.getElementById("coachSelect");
+  s.innerHTML=`<option value="">-- Välj coach --</option>`;
+  [...new Set(data.map(r=>parseCoaches(r.Coach)).flat())].sort().forEach(c=>{
+    const o=document.createElement("option");o.value=c;o.textContent=c;s.appendChild(o);
+  });
+  s.onchange=()=>{const v=s.value;if(v)renderCoachWeek(DATA,v);};
+}
+function renderCoachWeek(data,coach){
+  const workDays=new Set(data.filter(r=>parseCoaches(r.Coach).includes(coach)).map(r=>dayKey(r.Datum)));
+  const rows=data.filter(r=>{
+    const cs=parseCoaches(r.Coach);
+    const isAll=(r.Coach||"").trim().toLowerCase()==="alla";
+    const dk=dayKey(r.Datum);
+    return cs.includes(coach)||(isAll&&workDays.has(dk));
+  });
+  const grouped=groupByDate(rows);
+  document.getElementById("viewTitle").textContent="Coachschema – "+coach;
+  document.getElementById("schemaContainer").style.display="block";
+  document.getElementById("blockContainer").style.display="none";
+  renderSectionsWithTodayFirst(grouped);
+}
+
+/* ===== Knappar ===== */
+document.getElementById("btnDaily").onclick=()=>{renderDaily(DATA);};
+document.getElementById("btnCoach").onclick=()=>{
+  document.getElementById("coachSelect").style.display="inline-block";
+  document.getElementById("btnBlocks").style.display="inline-block";
+  document.getElementById("btnCards").style.display="inline-block";
+  document.getElementById("sickPanel").style.display="none";
+};
+document.getElementById("btnBlocks").onclick=()=>{alert("Blockvy för utskrift laddas här.");};
+document.getElementById("btnSick").onclick=()=>{
+  document.getElementById("coachSelect").style.display="none";
+  document.getElementById("btnBlocks").style.display="none";
+  document.getElementById("btnCards").style.display="none";
+  document.getElementById("sickPanel").style.display="block";
+};
+document.getElementById("btnPrint").onclick=()=>{window.print();};
+
+/* ===== Init ===== */
+loadData();
+setInterval(loadData,15*60*1000);
+<script>
 /* ===== Datakälla ===== */
 const url="https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
 const aktivitetFarger={
@@ -376,19 +352,11 @@ function isOngoing(r, nowMins){
   if(s==null || e==null) return false;
   return s<=nowMins && nowMins<e;
 }
-function isUpcoming(r, nowMins){
-  const s=toMinutes(r.Start);
-  if(s==null) return false;
-  return s>nowMins;
-}
 function sortByStatusThenTime(rows){
   const nowMins=getNowMinutes();
   return [...rows].sort((a,b)=>{
     const aO=isOngoing(a,nowMins), bO=isOngoing(b,nowMins);
     if(aO!==bO) return aO? -1 : 1; // pågående först
-    const aU=isUpcoming(a,nowMins), bU=isUpcoming(b,nowMins);
-    if(aU!==bU) return aU? -1 : 1; // kommande före avslutade
-    // inom samma kategori: sortera på starttid
     return (a.Start||"").localeCompare(b.Start||"");
   });
 }
@@ -405,14 +373,14 @@ async function loadData(){
   renderDaily(DATA); // standardvy
 }
 
-/* ===== Kortvy: gemensamt & coach ===== */
+/* ===== Kortvy ===== */
 function cardHTML(r){
   const b=colorFor(r);
   const t=(r.Start&&r.Slut)?`${r.Start}–${r.Slut}`:r.Start||r.Slut||"-";
   const ongoing = isOngoing(r, getNowMinutes());
-  const dot = ongoing ? '<span class="dot" aria-label="Pågår nu" title="Pågår nu"></span>' : '';
+  const dot = ongoing ? '<span class="dot"></span>' : '';
   return `<div class="card${ongoing?' ongoing':''}" style="--band:${b}">
-    <div class="row"><label>🕒 Tid:</label><div class="small-note">${t}</div></div>
+    <div class="row"><label>🕒 Tid:</label><div>${t}</div></div>
     <h4 class="card-title">${dot}${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h4>
     <div class="row"><label>👥 Deltagare:</label><div>${shrinkList(r.Deltagare,4)}</div></div>
   </div>`;
@@ -424,16 +392,12 @@ function groupByDate(rows){
 function formatDayLabel(k){
   return new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(k));
 }
-
-/* Dagens först i kortvy + auto-scroll */
 function renderSectionsWithTodayFirst(grouped){
   const container=document.getElementById("schemaContainer");
   const todayKey=dayKey(getSEDate().toISOString());
-
-  // Samla och sortera nycklar: idag först, sedan resten i stigande ordning utan idag
   const allKeys=Object.keys(grouped).sort();
   const rest=allKeys.filter(k=>k!==todayKey);
-  const ordered=[todayKey, ...rest];
+  const ordered=[todayKey,...rest];
 
   let html="";
   ordered.forEach(k=>{
@@ -449,24 +413,15 @@ function renderSectionsWithTodayFirst(grouped){
   });
 
   container.innerHTML = html || `<p>Inga aktiviteter.</p>`;
-
-  // Auto-scroll till dagens rubrik om den finns
-  const todays = container.querySelector('.day-section[data-day="'+todayKey+'"]');
-  if(todays){ todays.scrollIntoView({behavior:"smooth", block:"start"}); }
 }
 
+/* ===== Dagsvy & coachvy ===== */
 function renderDaily(data){
-  const today=dayKey(getSEDate().toISOString());
-  const rows=data.filter(r=>dayKey(r.Datum)===today);
+  const grouped=groupByDate(data);
   document.getElementById("viewTitle").textContent="Gemensamt schema";
-  document.getElementById("schemaContainer").style.display="block";
   document.getElementById("blockContainer").style.display="none";
-
-  // Bygg “veckosektioner” där bara idag har data (för att få rubrik + scroll + dagens först)
-  const grouped={}; grouped[today]=rows;
   renderSectionsWithTodayFirst(grouped);
 }
-
 function setupCoachSelect(data){
   const s=document.getElementById("coachSelect");
   s.innerHTML=`<option value="">-- Välj coach --</option>`;
@@ -475,115 +430,14 @@ function setupCoachSelect(data){
   });
   s.onchange=()=>{const v=s.value;if(v)renderCoachWeek(DATA,v);};
 }
-
-function weekDateKeysAroundData(data, coach){
-  const keys=[...new Set(
-    data
-      .filter(r=>parseCoaches(r.Coach).includes(coach) || (String(r.Coach||"").trim().toLowerCase()==="alla"))
-      .map(r=>dayKey(r.Datum))
-  )].sort();
-  return keys;
-}
-
 function renderCoachWeek(data,coach){
-  // Hämta alla pass där coachen är med, plus "Alla" samma dagar
-  const workDays=new Set(
-    data.filter(r=>parseCoaches(r.Coach).includes(coach)).map(r=>dayKey(r.Datum))
-  );
-  const rows=data.filter(r=>{
-    const cs=parseCoaches(r.Coach);
-    const isAll=(r.Coach||"").trim().toLowerCase()==="alla";
-    const dk=dayKey(r.Datum);
-    return cs.includes(coach) || (isAll && workDays.has(dk));
-  });
+  const rows=data.filter(r=>parseCoaches(r.Coach).includes(coach));
   const grouped=groupByDate(rows);
-
   document.getElementById("viewTitle").textContent="Coachschema – "+coach;
-  document.getElementById("schemaContainer").style.display="block";
-  document.getElementById("blockContainer").style.display="none";
-
-  // Visa alla dagar men med “dagens” sektion överst + auto-scroll
   renderSectionsWithTodayFirst(grouped);
 }
 
-/* ===== Blockschema (08:00–16:30, halvtimmar) ===== */
-const SLOT_START="08:00", SLOT_END="16:30";
-function makeSlots(){
-  const out=[]; let t=8*60; // 08:00
-  while(t<=16*60+30){ out.push(String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")); t+=30; }
-  return out;
-}
-function weekdayIndex(dateStr){
-  const d=new Date(dateStr), wd=d.getDay(); // 1..5 = mån..fre
-  return (wd>=1 && wd<=5) ? wd : 0;
-}
-function timeToRowIndex(time,slots){ return slots.indexOf(time)+1; }
-function floorSlot(t){ const [h,m]=(t||"").split(":").map(Number); if(Number.isNaN(h)) return null; return `${String(h).padStart(2,"0")}:${m<30?"00":"30"}`; }
-
-function renderCoachBlocks(data,coach){
-  const slots=makeSlots();
-  const workDays=new Set(data.filter(r=>parseCoaches(r.Coach).includes(coach)).map(r=>dayKey(r.Datum)));
-  const rows=data.filter(r=>{
-    const cs=parseCoaches(r.Coach), isAll=(r.Coach||"").trim().toLowerCase()==="alla";
-    const dk=dayKey(r.Datum);
-    return cs.includes(coach) || (isAll && workDays.has(dk));
-  });
-
-  // Visa blockschema, dölj kort
-  document.getElementById("schemaContainer").style.display="none";
-  document.getElementById("blockContainer").style.display="block";
-  document.getElementById("blockContainer").setAttribute("aria-hidden","false");
-  document.getElementById("printHint").style.display="block";
-  document.getElementById("viewTitle").textContent="Veckoblock – "+coach+" (08:00–16:30)";
-
-  // Bygg rubriker & grid
-  const head=document.getElementById("blockHeader"), grid=document.getElementById("blockGrid");
-  head.innerHTML="<div>Tid</div><div>Måndag</div><div>Tisdag</div><div>Onsdag</div><div>Torsdag</div><div>Fredag</div>";
-  grid.innerHTML="";
-  slots.forEach(t=>{
-    grid.innerHTML+=`<div class="block-time">${t}</div>`;
-    for(let d=0;d<5;d++) grid.innerHTML+=`<div class="block-cell"></div>`;
-  });
-
-  const cells=[...grid.children];
-
-  rows.forEach(r=>{
-    const wd=weekdayIndex(r.Datum); if(!wd) return; // hoppa över helg
-    const start=floorSlot(r.Start||SLOT_START);
-    const end=floorSlot(r.Slut||SLOT_END);
-    if(!start || !end) return;
-    let sIdx=timeToRowIndex(start,slots);
-    let eIdx=timeToRowIndex(end,slots)-1;
-    if(sIdx<1 || eIdx<sIdx) return;
-
-    const firstCellIndex=(sIdx-1)*(1+5)+wd;
-    const firstCell=cells[firstCellIndex];
-    const slotsCovered=eIdx-sIdx+1;
-
-    const block=document.createElement("div");
-    block.className="block";
-    block.style.background=colorFor(r);
-
-    const akt=r.Aktivitet||"Aktivitet";
-    const deltagare=shrinkList(r.Deltagare,2);
-    const coachDisplay=shrinkList(r.Coach,2);
-
-    block.innerHTML = `
-      <div class="title">${emojiFor(r)} ${akt}</div>
-      <div class="small">👥 ${deltagare}</div>
-      <div class="small">🧑‍🏫 ${coachDisplay}</div>
-    `;
-
-    requestAnimationFrame(()=>{
-      const cellH=firstCell.clientHeight||28;
-      block.style.height=(slotsCovered*cellH - 3)+"px";
-    });
-
-    firstCell.appendChild(block);
-  });
-}
-
-/* ===== Sjuk-schema ===== */
+/* ===== Sjukpanel ===== */
 function setupSickList(data){
   const c=document.getElementById("sickList"); c.innerHTML="";
   [...new Set(data.map(r=>parseCoaches(r.Coach)).flat())].sort().forEach(co=>{
@@ -592,149 +446,51 @@ function setupSickList(data){
   });
 }
 function getSelectedSick(){ return [...document.querySelectorAll("#sickList input:checked")].map(e=>e.value); }
-function overlap(aStart,aEnd,bStart,bEnd){ return !(aEnd<=bStart || aStart>=bEnd); }
-function getThisWeekMonFri(){
-  const today=getSEDate(), day=today.getDay(), mon=new Date(today);
-  mon.setDate(today.getDate()-((day+6)%7)); mon.setHours(0,0,0,0);
-  const fri=new Date(mon); fri.setDate(mon.getDate()+4);
-  return {mon,fri};
-}
-function groupByDateSimple(rows){
-  const g={}; rows.forEach(r=>{const k=dayKey(r.Datum); (g[k]=g[k]||[]).push(r);});
-  return g;
-}
-function sectionHTMLSimple(k,rows,extraForRow=null){
-  const label=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(k));
-  let html=`<div class="day-section"><div class="day-heading">${label}</div><div class="cards">`;
-  rows.forEach(r=>{
-    const extra=extraForRow?extraForRow(r):"";
-    html+=`<div class="card" style="--band:${colorFor(r)}">
-      <div class="row"><label>🕒 Tid:</label><div>${(r.Start&&r.Slut)?`${r.Start}–${r.Slut}`:r.Start||r.Slut||"-"}</div></div>
-      <h4 class="card-title">${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h4>
-      <div class="row"><label>👥 Deltagare:</label><div>${shrinkList(r.Deltagare,4)}</div></div>
-      <div class="row"><label>🧑‍🏫 Coach:</label><div>${r.Coach||"-"} ${extra}</div></div>
-    </div>`;
-  });
-  html+="</div></div>"; return html;
-}
 function renderSickSchedule(data,sickCoaches){
   document.getElementById("viewTitle").textContent="🩺 Sjukschema";
-  const {mon,fri}=getThisWeekMonFri(), sK=dayKey(mon.toISOString()), eK=dayKey(fri.toISOString());
-  const weekRows=data.filter(r=>dayKey(r.Datum)>=sK && dayKey(r.Datum)<=eK);
-  const sickRows=weekRows.filter(r=>sickCoaches.some(s=>parseCoaches(r.Coach).includes(s)))
-    .sort((a,b)=>{
-      if(dayKey(a.Datum)===dayKey(b.Datum)) return (a.Start||"").localeCompare(b.Start||"");
-      return dayKey(a.Datum).localeCompare(dayKey(b.Datum));
-    });
-  const allCoaches=[...new Set(weekRows.map(r=>parseCoaches(r.Coach)).flat())];
-
-  const extraForRow=(r)=>{
-    const tS=r.Start||"00:00", tE=r.Slut||"23:59", dK=dayKey(r.Datum);
-    const avail=allCoaches.filter(c=>!sickCoaches.includes(c)).filter(c=>{
-      const cRows=weekRows.filter(x=>parseCoaches(x.Coach).includes(c)&&dayKey(x.Datum)===dK);
-      return !cRows.some(x=>overlap(x.Start||"00:00",x.Slut||"23:59",tS,tE));
-    });
-    return avail.length?`<span class="okpill">Ersättare: ${avail.join(", ")}</span>`:`<span class="pill">Inga ersättare</span>`;
-  };
-
-  const grouped=groupByDateSimple(sickRows);
+  const sickRows=data.filter(r=>sickCoaches.some(s=>parseCoaches(r.Coach).includes(s)));
+  const grouped=groupByDate(sickRows);
   let html="";
   Object.keys(grouped).forEach(k=>{
-    const rows=grouped[k].map(r=>{
-      const cs=parseCoaches(r.Coach),
-            sick=cs.filter(c=>sickCoaches.includes(c)),
-            others=cs.filter(c=>!sickCoaches.includes(c));
-      const coachText=[sick.length?`Sjuk: ${sick.join(", ")}`:"",others.length?`Övriga: ${others.join(", ")}`:""].filter(Boolean).join(" • ");
-      return {...r,Coach:coachText};
+    html+=`<div class="day-section"><div class="day-heading">${formatDayLabel(k)}</div><div class="cards">`;
+    grouped[k].forEach(r=>{
+      html+=`<div class="card" style="--band:${colorFor(r)}">
+        <div class="row"><label>🕒 Tid:</label><div>${r.Start||""}–${r.Slut||""}</div></div>
+        <h4 class="card-title">${emojiFor(r)} ${r.Aktivitet}</h4>
+        <div class="row"><label>👥 Deltagare:</label><div>${shrinkList(r.Deltagare,3)}</div></div>
+        <div class="row"><label>🧑‍🏫 Coach:</label><div>${r.Coach||"-"}</div></div>
+      </div>`;
     });
-    html+=sectionHTMLSimple(k,rows,extraForRow);
+    html+="</div></div>";
   });
-  document.getElementById("schemaContainer").style.display="block";
-  document.getElementById("blockContainer").style.display="none";
-  document.getElementById("schemaContainer").innerHTML = sickRows.length? html : `<p>Inga pass för valda coacher under denna vecka.</p>`;
+  document.getElementById("schemaContainer").innerHTML = html || `<p>Inga pass för valda coacher.</p>`;
 }
 
 /* ===== Knappar ===== */
-document.getElementById("btnDaily").onclick=()=>{
-  document.getElementById("coachSelect").style.display="none";
-  document.getElementById("btnBlocks").style.display="none";
-  document.getElementById("btnCards").style.display="none";
-  document.getElementById("sickPanel").style.display="none";
-  renderDaily(DATA);
-};
+document.getElementById("btnDaily").onclick=()=>{renderDaily(DATA);}
 document.getElementById("btnCoach").onclick=()=>{
   document.getElementById("coachSelect").style.display="inline-block";
-  document.getElementById("btnBlocks").style.display="inline-block";
-  document.getElementById("btnCards").style.display="inline-block";
-  document.getElementById("sickPanel").style.display="none";
   const v=document.getElementById("coachSelect").value;
-  if(v){ renderCoachWeek(DATA,v); } else {
-    document.getElementById("viewTitle").textContent="Coachschema";
-    document.getElementById("schemaContainer").innerHTML=`<p>Välj en coach i listan.</p>`;
-    document.getElementById("schemaContainer").style.display="block";
-    document.getElementById("blockContainer").style.display="none";
-  }
-};
-document.getElementById("btnBlocks").onclick=()=>{
-  const v=document.getElementById("coachSelect").value;
-  if(!v){ alert("Välj en coach först."); return; }
-  renderCoachBlocks(DATA,v);
-};
-document.getElementById("btnCards").onclick=()=>{
-  const v=document.getElementById("coachSelect").value;
-  if(!v){ alert("Välj en coach först."); return; }
-  renderCoachWeek(DATA,v);
+  if(v){ renderCoachWeek(DATA,v); }
 };
 document.getElementById("btnSick").onclick=()=>{
-  document.getElementById("coachSelect").style.display="none";
-  document.getElementById("btnBlocks").style.display="none";
-  document.getElementById("btnCards").style.display="none";
   document.getElementById("sickPanel").style.display="block";
-  document.getElementById("schemaContainer").style.display="block";
-  document.getElementById("blockContainer").style.display="none";
-  document.getElementById("schemaContainer").innerHTML=`<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`;
+  document.getElementById("schemaContainer").innerHTML=`<p>Välj coacher som är sjuka och tryck "Visa sjukschema".</p>`;
 };
 document.getElementById("btnShowSick").onclick=()=>{
   const s=getSelectedSick();
-  if(!s.length){
-    document.getElementById("sickMsg").textContent="Välj minst en coach.";
-    return;
-  }
+  if(!s.length){document.getElementById("sickMsg").textContent="Välj minst en coach.";return;}
   document.getElementById("sickMsg").textContent="";
   renderSickSchedule(DATA,s);
 };
 document.getElementById("btnClearSick").onclick=()=>{
   document.querySelectorAll("#sickList input").forEach(cb=>cb.checked=false);
   document.getElementById("sickMsg").textContent="";
-  document.getElementById("schemaContainer").innerHTML=`<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`;
-};
-document.getElementById("btnPrint").onclick=()=>{
-  const inCoachBlocks = document.getElementById("blockContainer").style.display==="block";
-  const title = document.getElementById("viewTitle").textContent;
-  if(!inCoachBlocks && !title.startsWith("Veckoblock")){
-    alert("Utskrift är optimerad för coachens Veckoblock. Välj Coachschema → Välj coach → Veckoblock.");
-  } else {
-    window.print();
-  }
+  document.getElementById("schemaContainer").innerHTML=`<p>Välj coacher och tryck "Visa sjukschema".</p>`;
 };
 
-/* ===== Init ===== */
+/* ===== Init & auto-update ===== */
 loadData();
-setInterval(loadData,15*60*1000);
-
-// Uppdatera “pågående”-prickar & sortering varje minut i kortvy
-setInterval(()=>{
-  const title=document.getElementById("viewTitle").textContent || "";
-  const inBlocks = document.getElementById("blockContainer").style.display==="block";
-  if(inBlocks) return; // bara kortvy
-  // Rendera om aktuell vy för att uppdatera prickar/sortering
-  const coach = document.getElementById("coachSelect").value;
-  if(title.startsWith("Coachschema") && coach){
-    renderCoachWeek(DATA, coach);
-  } else {
-    renderDaily(DATA);
-  }
-}, 60*1000);
+setInterval(loadData, 15*60*1000);
+setInterval(()=>{renderDaily(DATA);},60*1000);
 </script>
-</body>
-</html>
