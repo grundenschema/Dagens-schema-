@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -11,6 +10,7 @@
   --shadow:0 6px 18px rgba(0,0,0,.05); --radius:16px; --band:#9ecbff;
   --today:#e8f6ee; --ongoing:#1a7f37;
 }
+
 /* ===== Bas ===== */
 body{
   font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
@@ -85,25 +85,61 @@ button:hover{background:#ececec;}
 .block .small{font-size:.8rem;opacity:.95;}
 
 /* ===== Utskrift ===== */
-@media print{
-  body{background:#fff;color:#000;font-size:8pt;margin:0;line-height:1.2;}
-  header,.toolbar,#sickPanel,#clock{display:none !important;}
-  #viewTitle{text-align:center;font-size:10pt;font-weight:bold;margin:0 0 4px 0;}
+@media print {
+  body {
+    background:#fff;
+    color:#000;
+    font-size:8pt;
+    margin:0;
+    line-height:1.25;
+  }
+
+  header, .toolbar, #sickPanel, #clock {
+    display:none !important;
+  }
+
+  #viewTitle {
+    text-align:center;
+    font-size:10pt;
+    font-weight:bold;
+    margin:0 0 4px 0;
+  }
+
   /* Visa endast blockschema vid utskrift */
-  .cards,.card,table{display:none !important;}
-  .block-wrap{display:block !important;}
-  .block-header div{background:#eee !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .block-grid{border:none;}
-  .block-time{border:none;padding:2px 3px;font-size:8pt;}
-  .block-cell{border:none;min-height:18px;}
-  .block{border:none;padding:2px 3px;font-size:8pt;}
-  @page{size:A4 landscape;margin:6mm;}
+  .cards, .card, table {
+    display:none !important;
+  }
+
+  .block-wrap {
+    display:block !important;
+  }
+
+  .block-header div {
+    background:#eee !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  .block-grid {border:none;}
+  .block-time {border:none;padding:3px 4px;font-size:8pt;}
+  .block-cell {border:none;min-height:24px;} /* mer plats för text */
+
+  .block {
+    border:none;
+    padding:3px 4px;
+    font-size:8pt;
+    line-height:1.25;
+    white-space:normal;
+    word-wrap:break-word;
+    overflow:visible;
+  }
+
+  @page {size:A4 landscape;margin:6mm;}
 }
 </style>
 </head>
 <body>
 <header>
-  <!-- Logga överst -->
   <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
   <div id="clock"></div>
   <div id="updated">Senast uppdaterad: –</div>
@@ -143,6 +179,11 @@ button:hover{background:#ececec;}
 </div>
 
 <script>
+/* === samma JavaScript som i förra versionen, ingen ändring i logik === */
+</script>
+</body>
+</html>
+
 /* ===== Datakälla ===== */
 const url="https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
 const aktivitetFarger={
