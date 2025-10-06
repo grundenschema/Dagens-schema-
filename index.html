@@ -75,7 +75,7 @@ button:hover{background:#ececec;}
   position:absolute;left:2px;right:2px;top:2px;
   border-radius:6px;padding:3px 5px;font-size:.85rem;line-height:1.2;overflow:hidden;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
-  border:1pt solid #666; /* tydlig ram runt hela blocket */
+  border:1pt solid #666; /* tydlig ram */
 }
 .block .title{font-weight:700;margin-bottom:2px;}
 .block .small{font-size:.8rem;opacity:.95;}
@@ -205,8 +205,8 @@ function cardHTML(r){
   return `<div class="card" style="--band:${b}">
     <div class="row"><label>🕒 Tid:</label><div>${t}</div></div>
     <h4 class="card-title">${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h4>
-    <div class="row"><label>👥 Deltagare:</label><div>${shrinkList(r.Deltagare,4)}</div></div>
-    <div class="row"><label>🧑‍🏫 Coach:</label><div>${shrinkList(r.Coach,3)}</div></div>
+    <div class="row"><label>👥 Deltagare:</label><div>${shrinkList(r.Deltagare,2)}</div></div>
+    <div class="row"><label>🧑‍🏫 Coach:</label><div>${shrinkList(r.Coach,2)}</div></div>
   </div>`;
 }
 function groupByDate(rows){
@@ -235,6 +235,8 @@ function setupCoachSelect(data){
   });
   s.onchange=()=>{const v=s.value;if(v)renderCoachWeek(DATA,v);};
 }
+
+/* ===== Lunchregel (begränsad till Mio/Anders & aktuell coach) + veckoschema ===== */
 function renderCoachWeek(data,coach){
   const workDays=new Set(
     data.filter(r=>parseCoaches(r.Coach).includes(coach)).map(r=>dayKey(r.Datum))
@@ -244,28 +246,21 @@ function renderCoachWeek(data,coach){
     const isAll=(r.Coach||"").trim().toLowerCase()==="alla";
     const dk=dayKey(r.Datum);
 
-   /* 🍽️ Lunch trumfar Alla (coachvy) — justerad för Mio & Anders B */
-const isLunch = (r.Aktivitet || "").toLowerCase().includes("lunch");
-const isAllRow = isAll || (r.Deltagare || "").trim().toLowerCase() === "alla";
-if (isLunch && isAllRow) {
-  const overlappingSpecific = data.some(x => {
-    const sameDay = dayKey(x.Datum) === dk;
-    const sameTime = x.Start === r.Start && x.Slut === r.Slut;
-    const sameActivity = (x.Aktivitet || "").toLowerCase().includes("lunch");
-    const specificForThisCoach = parseCoaches(x.Coach).includes(coach);
-    const specificForMioOrAnders =
-      /mio/i.test(x.Deltagare || "") || /anders b/i.test(x.Deltagare || "");
-    return (
-      sameDay &&
-      sameTime &&
-      sameActivity &&
-      specificForThisCoach &&
-      specificForMioOrAnders
-    );
-  });
-  if (overlappingSpecific) return false;
-}
-
+    /* 🍽️ Lunch trumfar Alla (coachvy) — endast om specifik lunch gäller denna coach & (Mio eller Anders B) */
+    const isLunch=(r.Aktivitet||"").toLowerCase().includes("lunch");
+    const isAllRow=isAll || (r.Deltagare||"").trim().toLowerCase()==="alla";
+    if(isLunch && isAllRow){
+      const overlappingSpecific=data.some(x=>{
+        const sameDay=dayKey(x.Datum)===dk;
+        const sameTime=(x.Start===r.Start && x.Slut===r.Slut);
+        const sameActivity=(x.Aktivitet||"").toLowerCase().includes("lunch");
+        const specificForThisCoach=parseCoaches(x.Coach).includes(coach);
+        const specificForMioOrAnders=/\bmio\b/i.test(x.Deltagare||"") || /\banders b\b/i.test(x.Deltagare||"");
+        const notAll=(x.Coach||"").trim().toLowerCase()!=="alla" && (x.Deltagare||"").trim().toLowerCase()!=="alla";
+        return sameDay && sameTime && sameActivity && specificForThisCoach && specificForMioOrAnders && notAll;
+      });
+      if(overlappingSpecific) return false;
+    }
 
     return cs.includes(coach) || (isAll && workDays.has(dk));
   }).sort((a,b)=>{
@@ -282,17 +277,9 @@ if (isLunch && isAllRow) {
 /* ===== Blockschema (08:00–16:30, halvtimmar) – utskrift ===== */
 const SLOT_START="08:00", SLOT_END="16:30";
 function makeSlots(){
-  const out=[]; let t=8*60; // 08:00
-  while(t<=16*60+30){ // 16:30
-    out.push(String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"));
-    t+=30;
-  }
-  return out;
+  const out=[]; let t=8*60; while(t<=16*60+30){out.push(String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"));t+=30;} return out;
 }
-function weekdayIndex(dateStr){
-  const d=new Date(dateStr), wd=d.getDay(); // 1..5 = mån..fre
-  return (wd>=1 && wd<=5) ? wd : 0;
-}
+function weekdayIndex(dateStr){const d=new Date(dateStr), wd=d.getDay(); return (wd>=1 && wd<=5) ? wd : 0;}
 function timeToRowIndex(time,slots){ return slots.indexOf(time)+1; }
 function floorSlot(t){ const [h,m]=t.split(":").map(Number); return `${String(h).padStart(2,"0")}:${m<30?"00":"30"}`; }
 
@@ -303,29 +290,24 @@ function renderCoachBlocks(data,coach){
     const cs=parseCoaches(r.Coach), isAll=(r.Coach||"").trim().toLowerCase()==="alla";
     const dk=dayKey(r.Datum);
 
-   
-    /* 🍽️ Lunch trumfar Alla (blockvy) — justerad för Mio & Anders B */
-const isLunch = (r.Aktivitet || "").toLowerCase().includes("lunch");
-const isAllRow = isAll || (r.Deltagare || "").trim().toLowerCase() === "alla";
-if (isLunch && isAllRow) {
-  const overlappingSpecific = data.some(x => {
-    const sameDay = dayKey(x.Datum) === dk;
-    const sameTime = x.Start === r.Start && x.Slut === r.Slut;
-    const sameActivity = (x.Aktivitet || "").toLowerCase().includes("lunch");
-    const specificForThisCoach = parseCoaches(x.Coach).includes(coach);
-    const specificForMioOrAnders =
-      /mio/i.test(x.Deltagare || "") || /anders b/i.test(x.Deltagare || "");
-    return (
-      sameDay &&
-      sameTime &&
-      sameActivity &&
-      specificForThisCoach &&
-      specificForMioOrAnders
-    );
-  });
-  if (overlappingSpecific) return false;
-}
+    /* 🍽️ Lunch trumfar Alla (blockvy) — endast om specifik lunch gäller denna coach & (Mio eller Anders B) */
+    const isLunch=(r.Aktivitet||"").toLowerCase().includes("lunch");
+    const isAllRow=isAll || (r.Deltagare||"").trim().toLowerCase()==="alla";
+    if(isLunch && isAllRow){
+      const overlappingSpecific=data.some(x=>{
+        const sameDay=dayKey(x.Datum)===dk;
+        const sameTime=(x.Start===r.Start && x.Slut===r.Slut);
+        const sameActivity=(x.Aktivitet||"").toLowerCase().includes("lunch");
+        const specificForThisCoach=parseCoaches(x.Coach).includes(coach);
+        const specificForMioOrAnders=/\bmio\b/i.test(x.Deltagare||"") || /\banders b\b/i.test(x.Deltagare||"");
+        const notAll=(x.Coach||"").trim().toLowerCase()!=="alla" && (x.Deltagare||"").trim().toLowerCase()!=="alla";
+        return sameDay && sameTime && sameActivity && specificForThisCoach && specificForMioOrAnders && notAll;
+      });
+      if(overlappingSpecific) return false;
+    }
 
+    return cs.includes(coach) || (isAll && workDays.has(dk));
+  });
 
   // Visa blockschema, dölj kort
   document.getElementById("schemaContainer").style.display="none";
@@ -334,11 +316,12 @@ if (isLunch && isAllRow) {
   document.getElementById("printHint").style.display="block";
   document.getElementById("viewTitle").textContent="Veckoblock – "+coach+" (08:00–16:30)";
 
-  // Bygg rubriker & grid
+  // Rubriker & grid
   const head=document.getElementById("blockHeader"), grid=document.getElementById("blockGrid");
   head.innerHTML="<div>Tid</div><div>Måndag</div><div>Tisdag</div><div>Onsdag</div><div>Torsdag</div><div>Fredag</div>";
   grid.innerHTML="";
-  slots.forEach(t=>{
+  const slotsArr=slots;
+  slotsArr.forEach(t=>{
     grid.innerHTML+=`<div class="block-time">${t}</div>`;
     for(let d=0;d<5;d++) grid.innerHTML+=`<div class="block-cell"></div>`;
   });
@@ -346,34 +329,34 @@ if (isLunch && isAllRow) {
   const cells=[...grid.children];
 
   rows.forEach(r=>{
-    const wd=weekdayIndex(r.Datum); if(!wd) return; // hoppa över helg
+    const wd=weekdayIndex(r.Datum); if(!wd) return;
     const start=floorSlot(r.Start||SLOT_START);
     const end=floorSlot(r.Slut||SLOT_END);
-    let sIdx=timeToRowIndex(start,slots);
-    let eIdx=timeToRowIndex(end,slots)-1; // slutar innan slutslott → ingen överlapp
+    let sIdx=timeToRowIndex(start,slotsArr);
+    let eIdx=timeToRowIndex(end,slotsArr)-1;
     if(sIdx<1 || eIdx<sIdx) return;
 
-    const firstCellIndex=(sIdx-1)*(1+5)+wd; // 1 tidscell + 5 dagceller per rad
+    const firstCellIndex=(sIdx-1)*(1+5)+wd;
     const firstCell=cells[firstCellIndex];
     const slotsCovered=eIdx-sIdx+1;
 
-    const toMin = t=>{const [h,m]=t.split(":").map(Number);return h*60+m;};
-    const durationMin = toMin(r.Slut||SLOT_END) - toMin(r.Start||SLOT_START);
-    const isShort = durationMin <= 30; // halvtimme = kort aktivitet
+    const toMin=t=>{const [h,m]=t.split(":").map(Number);return h*60+m;};
+    const durationMin=toMin(r.Slut||SLOT_END)-toMin(r.Start||SLOT_START);
+    const isShort=durationMin<=30;
 
     const block=document.createElement("div");
     block.className="block";
-    block.style.background=colorFor(r);  // ingen emoji i block
+    block.style.background=colorFor(r);
     block.style.fontSize=isShort?"0.7rem":"0.85rem";
 
     const akt=r.Aktivitet||"Aktivitet";
-    const deltagare=shrinkList(r.Deltagare,3);
+    const deltagare=shrinkList(r.Deltagare,2);
     const coachDisplay=shrinkList(r.Coach,2);
 
     if(isShort){
-      block.innerHTML = `<div><b>${akt}</b> – ${deltagare}</div>`;
+      block.innerHTML=`<div><b>${akt}</b> – ${deltagare}</div>`;
     }else{
-      block.innerHTML = `
+      block.innerHTML=`
         <div class="title">${akt}</div>
         <div class="small">👥 ${deltagare}</div>
         <div class="small">🧑‍🏫 ${coachDisplay}</div>
@@ -417,8 +400,8 @@ function sectionHTMLSimple(k,rows,extraForRow=null){
     html+=`<div class="card" style="--band:${colorFor(r)}">
       <div class="row"><label>🕒 Tid:</label><div>${(r.Start&&r.Slut)?`${r.Start}–${r.Slut}`:r.Start||r.Slut||"-"}</div></div>
       <h4 class="card-title">${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h4>
-      <div class="row"><label>👥 Deltagare:</label><div>${shrinkList(r.Deltagare,4)}</div></div>
-      <div class="row"><label>🧑‍🏫 Coach:</label><div>${r.Coach||"-"} ${extra}</div></div>
+      <div class="row"><label>👥 Deltagare:</label><div>${shrinkList(r.Deltagare,2)}</div></div>
+      <div class="row"><label>🧑‍🏫 Coach:</label><div>${shrinkList(r.Coach,2)} ${extra}</div></div>
     </div>`;
   });
   html+="</div></div>"; return html;
@@ -530,6 +513,7 @@ setInterval(loadData,15*60*1000);
 </script>
 </body>
 </html>
+
 
 
 
