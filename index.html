@@ -9,7 +9,6 @@
   --card-bg:#fff; --page-bg:#fafafa; --border:#ddd; --muted:#555; --heading:#2c3e50;
   --shadow:0 6px 18px rgba(0,0,0,.05); --radius:16px; --band:#9ecbff;
 }
-
 /* ===== Bas ===== */
 body{
   font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
@@ -36,7 +35,7 @@ button:hover{background:#ececec;}
   font-weight:700;margin:20px 0 12px 0;
 }
 
-/* ===== Kortvy ===== */
+/* ===== Kortvy (webb/mobil) ===== */
 .cards{display:flex;flex-direction:column;gap:18px;margin-bottom:25px;}
 .card{
   position:relative;background:var(--card-bg);border:1px solid var(--border);
@@ -62,7 +61,7 @@ button:hover{background:#ececec;}
 .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.8rem;background:#fff3cd;color:#8a5b00;border:1px solid #ffe39a;margin-left:8px;white-space:nowrap;}
 .okpill{background:#e8f6ee;color:#1a7f37;border:1px solid #cdebd9;}
 
-/* ===== Blockschema ===== */
+/* ===== Blockschema (grid) ===== */
 .block-wrap{display:none;margin-top:16px;}
 .block-header{
   display:grid;grid-template-columns:80px repeat(5,1fr);gap:0;font-weight:700;text-transform:capitalize;
@@ -81,19 +80,16 @@ button:hover{background:#ececec;}
 
 /* ===== Utskrift ===== */
 @media print{
-  @page{size:A4 landscape;margin:4mm;}
-  body{background:#fff;color:#000;font-size:9pt;margin:0;line-height:1.25;}
+  body{background:#fff;color:#000;font-size:8pt;margin:0;line-height:1.2;}
   header,.toolbar,#sickPanel,#clock{display:none !important;}
-  #viewTitle{text-align:center;font-size:11pt;font-weight:bold;margin:0 0 6px 0;}
+  #viewTitle{text-align:center;font-size:10pt;font-weight:bold;margin:0 0 4px 0;}
   .cards,.card,table{display:none !important;}
   .block-wrap{display:block !important;}
-  .block-header div{background:#e9eef8 !important;font-size:9pt;padding:3px 4px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .block-time{background:#f9f9f9 !important;border:none;padding:3px 5px;font-size:8.5pt;}
-  .block-cell{border:none;min-height:22px;background:#fff;}
-  .block{border:0.5pt solid #888;padding:2px 3px;border-radius:4px;overflow:hidden;font-size:8pt;line-height:1.2;margin-bottom:1px;}
-  .block .title{font-weight:700;margin-bottom:1px;}
-  .block .small{font-size:7pt;}
-  #printHint{display:none !important;}
+  .block-header div{background:#eee !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .block-time{border:none;padding:2px 3px;font-size:8pt;}
+  .block-cell{border:none;min-height:18px;}
+  .block{border:none;padding:2px 3px;font-size:8pt;}
+  @page{size:A4 landscape;margin:6mm;}
 }
 </style>
 </head>
@@ -141,26 +137,28 @@ button:hover{background:#ececec;}
 /* ===== Datakälla ===== */
 const url="https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
 const aktivitetFarger={
-  "Måndagsmöte":{color:"#AED6F1"},"Gruppmöte":{color:"#7FB3D5"},
-  "Lunch":{color:"#F9E79F"},"Frukost":{color:"#FAD7A0"},
-  "Ateljé":{color:"#F5CBA7"},"Musik":{color:"#D2B4DE"},
-  "Pod":{color:"#A9CCE3"},"Padel":{color:"#82E0AA"},
-  "Lite av varje":{color:"#FADBD8"},"Yoga":{color:"#D5F5E3"},
-  "Gym":{color:"#A3E4D7"},"Film":{color:"#E6B0AA"},
-  "Föreningsgruppen":{color:"#D6DBDF"},"Trummor":{color:"#F1948A"},
-  "Återkoppling":{color:"#85C1E9"},"Medicin":{color:"#E59866"},
-  "Biljard":{color:"#A9DFBF"},"Spelgruppen":{color:"#F8C471"},
-  "Sömnad":{color:"#F5EEF8"},"Filmgruppen":{color:"#E6B0AA"},
-  "Musikquizz":{color:"#D2B4DE"},"Musikdokumentär":{color:"#D2B4DE"}
+  "Måndagsmöte":{color:"#AED6F1",emoji:"📅"},"Gruppmöte":{color:"#7FB3D5",emoji:"👥"},
+  "Lunch":{color:"#F9E79F",emoji:"🍲"},"Frukost":{color:"#FAD7A0",emoji:"🥐"},
+  "Ateljé":{color:"#F5CBA7",emoji:"🎨"},"Musik":{color:"#D2B4DE",emoji:"🎶"},
+  "Pod":{color:"#A9CCE3",emoji:"🎙️"},"Padel":{color:"#82E0AA",emoji:"🏓"},
+  "Lite av varje":{color:"#FADBD8",emoji:"✨"},"Yoga":{color:"#D5F5E3",emoji:"🧘"},
+  "Gym":{color:"#A3E4D7",emoji:"🏋️‍♂️"},"Film":{color:"#E6B0AA",emoji:"🎬"},
+  "Föreningsgruppen":{color:"#D6DBDF",emoji:"🤝"},"Trummor":{color:"#F1948A",emoji:"🥁"},
+  "Återkoppling":{color:"#85C1E9",emoji:"🔄"},"Medicin":{color:"#E59866",emoji:"💊"},
+  "Biljard":{color:"#A9DFBF",emoji:"🎱"},"Spelgruppen":{color:"#F8C471",emoji:"🎲"},
+  "Sömnad":{color:"#F5EEF8",emoji:"🧵"},"Filmgruppen":{color:"#E6B0AA",emoji:"🎬"},
+  "Musikquizz":{color:"#D2B4DE",emoji:"🎶"},"Musikdokumentär":{color:"#D2B4DE",emoji:"🎶"}
 };
+function emojiFor(r){return(aktivitetFarger[r.Aktivitet]||{emoji:""}).emoji;}
 
-/* ===== Hjälpfunktioner ===== */
+/* ===== Hjälp ===== */
 function getSEDate(){return new Date(new Date().toLocaleString("en-US",{timeZone:"Europe/Stockholm"}));}
 function dayKey(str){return String(str).slice(0,10);}
 function parseCoaches(coachStr){
   const ignore=["","-",".","ingen","ingen coach","eget arbete","självständigt","utan coach"];
   return (coachStr||"").split(/,|\/|&|\+|;|\||\n| och /i)
-    .map(c=>c.trim()).filter(c=>c&&!ignore.includes(c.toLowerCase())&&c.toLowerCase()!=="alla");
+    .map(c=>c.trim())
+    .filter(c=>c&&!ignore.includes(c.toLowerCase())&&c.toLowerCase()!=="alla");
 }
 function colorFor(r){return(aktivitetFarger[r.Aktivitet]||{color:"#fff"}).color;}
 function shrinkList(str,max=2){
@@ -185,7 +183,7 @@ function cardHTML(r){
   const t=(r.Start&&r.Slut)?`${r.Start}–${r.Slut}`:r.Start||r.Slut||"-";
   return `<div class="card" style="--band:${b}">
     <div class="row"><label>🕒 Tid:</label><div>${t}</div></div>
-    <h4 class="card-title">${r.Aktivitet||"Aktivitet"}</h4>
+    <h4 class="card-title">${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h4>
     <div class="row"><label>👥 Deltagare:</label><div>${shrinkList(r.Deltagare,4)}</div></div>
     <div class="row"><label>🧑‍🏫 Coach:</label><div>${shrinkList(r.Coach,3)}</div></div>
   </div>`;
@@ -196,7 +194,7 @@ function renderDaily(data){
   document.getElementById("schemaContainer").innerHTML=rows.length?rows.map(cardHTML).join(""):`<p>Inga aktiviteter idag.</p>`;
 }
 
-/* ===== Blockschema – uppdaterad version ===== */
+/* ===== Blockschema – förbättrad men samma logik ===== */
 const SLOT_START="08:00",SLOT_END="16:30";
 function makeSlots(){const out=[];let t=8*60;while(t<=16*60+30){out.push(String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"));t+=30;}return out;}
 function weekdayIndex(dateStr){const d=new Date(dateStr),wd=d.getDay();return(wd>=1&&wd<=5)?wd:0;}
@@ -214,8 +212,8 @@ function renderCoachBlocks(data,coach){
 
   document.getElementById("schemaContainer").style.display="none";
   document.getElementById("blockContainer").style.display="block";
-  document.getElementById("printHint").style.display="block";
   document.getElementById("viewTitle").textContent="Veckoblock – "+coach+" (08:00–16:30)";
+  document.getElementById("printHint").style.display="block";
 
   const head=document.getElementById("blockHeader"),grid=document.getElementById("blockGrid");
   head.innerHTML="<div>Tid</div><div>Mån</div><div>Tis</div><div>Ons</div><div>Tors</div><div>Fre</div>";
@@ -250,13 +248,11 @@ function renderCoachBlocks(data,coach){
     const akt=r.Aktivitet||"Aktivitet";
     const deltagare=shrinkList(r.Deltagare,3);
     const coachDisplay=shrinkList(r.Coach,2);
-
     const textSize=isShort?"0.75rem":"0.85rem";
-    const smallCls=isShort?"style='font-size:0.7rem;line-height:1.1;'":"class='small'";
 
     block.innerHTML=`
       <div class="title" style="font-size:${textSize};font-weight:700;">${akt}</div>
-      <div ${smallCls}>👥 ${deltagare}</div>
+      <div style="font-size:${isShort?"0.7rem":"0.8rem"};">👥 ${deltagare}</div>
       ${isShort?"":`<div class="small">🧑‍🏫 ${coachDisplay}</div>`}
     `;
 
@@ -275,5 +271,6 @@ setInterval(loadData,15*60*1000);
 </script>
 </body>
 </html>
+
 
 
