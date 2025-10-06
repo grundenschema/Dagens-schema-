@@ -244,19 +244,28 @@ function renderCoachWeek(data,coach){
     const isAll=(r.Coach||"").trim().toLowerCase()==="alla";
     const dk=dayKey(r.Datum);
 
-    /* 🍽️ Lunch trumfar Alla (coachvy) */
-    const isLunch=(r.Aktivitet||"").toLowerCase().includes("lunch");
-    const isAllRow=isAll || (r.Deltagare||"").trim().toLowerCase()==="alla";
-    if(isLunch && isAllRow){
-      const overlappingSpecific=data.some(x=>{
-        const sameDay=dayKey(x.Datum)===dk;
-        const sameTime=(x.Start===r.Start && x.Slut===r.Slut);
-        const sameActivity=(x.Aktivitet||"").toLowerCase().includes("lunch");
-        const notAll=(x.Coach||"").trim().toLowerCase()!=="alla" && (x.Deltagare||"").trim().toLowerCase()!=="alla";
-        return sameDay && sameTime && sameActivity && notAll;
-      });
-      if(overlappingSpecific) return false;
-    }
+   /* 🍽️ Lunch trumfar Alla (coachvy) — justerad för Mio & Anders B */
+const isLunch = (r.Aktivitet || "").toLowerCase().includes("lunch");
+const isAllRow = isAll || (r.Deltagare || "").trim().toLowerCase() === "alla";
+if (isLunch && isAllRow) {
+  const overlappingSpecific = data.some(x => {
+    const sameDay = dayKey(x.Datum) === dk;
+    const sameTime = x.Start === r.Start && x.Slut === r.Slut;
+    const sameActivity = (x.Aktivitet || "").toLowerCase().includes("lunch");
+    const specificForThisCoach = parseCoaches(x.Coach).includes(coach);
+    const specificForMioOrAnders =
+      /mio/i.test(x.Deltagare || "") || /anders b/i.test(x.Deltagare || "");
+    return (
+      sameDay &&
+      sameTime &&
+      sameActivity &&
+      specificForThisCoach &&
+      specificForMioOrAnders
+    );
+  });
+  if (overlappingSpecific) return false;
+}
+
 
     return cs.includes(coach) || (isAll && workDays.has(dk));
   }).sort((a,b)=>{
@@ -294,22 +303,29 @@ function renderCoachBlocks(data,coach){
     const cs=parseCoaches(r.Coach), isAll=(r.Coach||"").trim().toLowerCase()==="alla";
     const dk=dayKey(r.Datum);
 
-    /* 🍽️ Lunch trumfar Alla (blockvy) */
-    const isLunch=(r.Aktivitet||"").toLowerCase().includes("lunch");
-    const isAllRow=isAll || (r.Deltagare||"").trim().toLowerCase()==="alla";
-    if(isLunch && isAllRow){
-      const overlappingSpecific=data.some(x=>{
-        const sameDay=dayKey(x.Datum)===dk;
-        const sameTime=(x.Start===r.Start && x.Slut===r.Slut);
-        const sameActivity=(x.Aktivitet||"").toLowerCase().includes("lunch");
-        const notAll=(x.Coach||"").trim().toLowerCase()!=="alla" && (x.Deltagare||"").trim().toLowerCase()!=="alla";
-        return sameDay && sameTime && sameActivity && notAll;
-      });
-      if(overlappingSpecific) return false;
-    }
-
-    return cs.includes(coach) || (isAll && workDays.has(dk));
+   
+    /* 🍽️ Lunch trumfar Alla (blockvy) — justerad för Mio & Anders B */
+const isLunch = (r.Aktivitet || "").toLowerCase().includes("lunch");
+const isAllRow = isAll || (r.Deltagare || "").trim().toLowerCase() === "alla";
+if (isLunch && isAllRow) {
+  const overlappingSpecific = data.some(x => {
+    const sameDay = dayKey(x.Datum) === dk;
+    const sameTime = x.Start === r.Start && x.Slut === r.Slut;
+    const sameActivity = (x.Aktivitet || "").toLowerCase().includes("lunch");
+    const specificForThisCoach = parseCoaches(x.Coach).includes(coach);
+    const specificForMioOrAnders =
+      /mio/i.test(x.Deltagare || "") || /anders b/i.test(x.Deltagare || "");
+    return (
+      sameDay &&
+      sameTime &&
+      sameActivity &&
+      specificForThisCoach &&
+      specificForMioOrAnders
+    );
   });
+  if (overlappingSpecific) return false;
+}
+
 
   // Visa blockschema, dölj kort
   document.getElementById("schemaContainer").style.display="none";
