@@ -246,101 +246,136 @@ function renderCoachWeek(data,coach){
   document.getElementById("schemaContainer").innerHTML=Object.keys(grouped).map(k=>sectionHTML(k,grouped[k])).join("") || `<p>Inga aktiviteter hittades för ${coach}.</p>`;
 }
 
-/* ===== Blockschema (08:00–16:30, halvtimmar) – UPPDATERAD ===== */
-const SLOT_START="08:00", SLOT_END="16:30";
-function makeSlots(){
-  const out=[]; let t=8*60; // 08:00
-  while(t<=16*60+30){ // 16:30
-    out.push(String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"));
-    t+=30;
+/* ===== Blockschema (08:00–16:30, halvtimmar) – NY VERSION MED HELA BLOCK ===== */
+const SLOT_START = "08:00", SLOT_END = "16:30";
+
+function makeSlots() {
+  const out = [];
+  let t = 8 * 60; // 08:00
+  while (t <= 16 * 60 + 30) {
+    out.push(
+      String(Math.floor(t / 60)).padStart(2, "0") +
+        ":" +
+        String(t % 60).padStart(2, "0")
+    );
+    t += 30;
   }
   return out;
 }
-function weekdayIndex(dateStr){
-  const d=new Date(dateStr), wd=d.getDay(); // 1..5 = mån..fre
-  return (wd>=1 && wd<=5) ? wd : 0;
-}
-function timeToRowIndex(time,slots){ return slots.indexOf(time)+1; }
-function floorSlot(t){ const [h,m]=t.split(":").map(Number); return `${String(h).padStart(2,"0")}:${m<30?"00":"30"}`; }
 
-function renderCoachBlocks(data,coach){
-  const slots=makeSlots();
-  const workDays=new Set(data.filter(r=>parseCoaches(r.Coach).includes(coach)).map(r=>dayKey(r.Datum)));
-  const rows=data.filter(r=>{
-    const cs=parseCoaches(r.Coach), isAll=(r.Coach||"").trim().toLowerCase()==="alla";
-    const dk=dayKey(r.Datum);
+function weekdayIndex(dateStr) {
+  const d = new Date(dateStr),
+    wd = d.getDay(); // 1..5 = mån..fre
+  return wd >= 1 && wd <= 5 ? wd : 0;
+}
+
+function timeToRowIndex(time, slots) {
+  return slots.indexOf(time) + 1;
+}
+
+function floorSlot(t) {
+  const [h, m] = t.split(":").map(Number);
+  return `${String(h).padStart(2, "0")}:${m < 30 ? "00" : "30"}`;
+}
+
+function renderCoachBlocks(data, coach) {
+  const slots = makeSlots();
+  const workDays = new Set(
+    data
+      .filter((r) => parseCoaches(r.Coach).includes(coach))
+      .map((r) => dayKey(r.Datum))
+  );
+  const rows = data.filter((r) => {
+    const cs = parseCoaches(r.Coach),
+      isAll = (r.Coach || "").trim().toLowerCase() === "alla";
+    const dk = dayKey(r.Datum);
     return cs.includes(coach) || (isAll && workDays.has(dk));
   });
 
   // Visa blockschema, dölj kort
-  document.getElementById("schemaContainer").style.display="none";
-  document.getElementById("blockContainer").style.display="block";
-  document.getElementById("blockContainer").setAttribute("aria-hidden","false");
-  document.getElementById("printHint").style.display="block";
-  document.getElementById("viewTitle").textContent="Veckoblock – "+coach+" (08:00–16:30)";
+  document.getElementById("schemaContainer").style.display = "none";
+  document.getElementById("blockContainer").style.display = "block";
+  document
+    .getElementById("blockContainer")
+    .setAttribute("aria-hidden", "false");
+  document.getElementById("printHint").style.display = "block";
+  document.getElementById("viewTitle").textContent =
+    "Veckoblock – " + coach + " (08:00–16:30)";
 
   // Bygg rubriker & grid
-  const head=document.getElementById("blockHeader"), grid=document.getElementById("blockGrid");
-  head.innerHTML="<div>Tid</div><div>Måndag</div><div>Tisdag</div><div>Onsdag</div><div>Torsdag</div><div>Fredag</div>";
-  grid.innerHTML="";
-  // Zebra-bakgrund (varannan tidsrad)
-  slots.forEach((t,i)=>{
-    const zebra = i % 2 === 0 ? ' style="background:#f9f9f9;"' : '';
-    grid.innerHTML+=`<div class="block-time"${zebra}>${t}</div>`;
-    for(let d=0;d<5;d++) grid.innerHTML+=`<div class="block-cell"${zebra}></div>`;
+  const head = document.getElementById("blockHeader"),
+    grid = document.getElementById("blockGrid");
+  head.innerHTML =
+    "<div>Tid</div><div>Måndag</div><div>Tisdag</div><div>Onsdag</div><div>Torsdag</div><div>Fredag</div>";
+  grid.innerHTML = "";
+
+  // Inga zebra-rader — helt vit bakgrund
+  slots.forEach((t) => {
+    grid.innerHTML += `<div class="block-time">${t}</div>`;
+    for (let d = 0; d < 5; d++) grid.innerHTML += `<div class="block-cell"></div>`;
   });
 
-  const cells=[...grid.children];
+  const cells = [...grid.children];
 
-  rows.forEach(r=>{
-    const wd=weekdayIndex(r.Datum); if(!wd) return; // hoppa över helg
-    const startRaw=r.Start||SLOT_START;
-    const endRaw=r.Slut||SLOT_END;
-    const start=floorSlot(startRaw);
-    const end=floorSlot(endRaw);
+  rows.forEach((r) => {
+    const wd = weekdayIndex(r.Datum);
+    if (!wd) return; // hoppa över helg
+    const startRaw = r.Start || SLOT_START;
+    const endRaw = r.Slut || SLOT_END;
+    const start = floorSlot(startRaw);
+    const end = floorSlot(endRaw);
 
-    let sIdx=timeToRowIndex(start,slots);
-    let eIdx=timeToRowIndex(end,slots)-1; // slutar innan slutslott → ingen överlapp
-    if(sIdx<1 || eIdx<sIdx) return;
+    let sIdx = timeToRowIndex(start, slots);
+    let eIdx = timeToRowIndex(end, slots) - 1;
+    if (sIdx < 1 || eIdx < sIdx) return;
 
-    const firstCellIndex=(sIdx-1)*(1+5)+wd; // 1 tidscell + 5 dagceller per rad
-    const firstCell=cells[firstCellIndex];
-    const slotsCovered=eIdx-sIdx+1;
+    const firstCellIndex = (sIdx - 1) * (1 + 5) + wd;
+    const firstCell = cells[firstCellIndex];
+    const slotsCovered = eIdx - sIdx + 1;
 
-    // KORT/LÅNG logik (≤ 60 min = kort)
-    const toMin = t=>{const [h,m]=t.split(":").map(Number);return h*60+m;};
+    const toMin = (t) => {
+      const [h, m] = t.split(":").map(Number);
+      return h * 60 + m;
+    };
     const durationMin = toMin(endRaw) - toMin(startRaw);
-    const isShort = durationMin <= 60;
+    const isShort = durationMin <= 30; // halvtimme = kort aktivitet
 
-    const block=document.createElement("div");
-    block.className="block";
-    block.style.background=colorFor(r);
-    // tydligare separering
-    block.style.border="0.5pt solid #aaa";
-    block.style.marginBottom="1px";
+    const block = document.createElement("div");
+    block.className = "block";
+    block.style.background = colorFor(r);
+    block.style.border = "1pt solid #666";
+    block.style.borderRadius = "6px";
+    block.style.padding = isShort ? "2px 4px" : "3px 5px";
+    block.style.fontSize = isShort ? "0.7rem" : "0.85rem";
+    block.style.lineHeight = "1.1";
+    block.style.boxSizing = "border-box";
+    block.style.marginBottom = "1px";
 
-    const akt=r.Aktivitet||"Aktivitet";
-    const deltagare=shrinkList(r.Deltagare,3);
-    const coachDisplay=shrinkList(r.Coach,2);
+    const akt = r.Aktivitet || "Aktivitet";
+    const deltagare = shrinkList(r.Deltagare, 3);
+    const coachDisplay = shrinkList(r.Coach, 2);
 
-    // INGA EMOJIS i blockschemat
-    const titleSize = isShort ? "0.75rem" : "0.85rem";
-    const subStyle  = isShort ? "style='font-size:0.7rem;line-height:1.1;'" : "class='small'";
+    // Ingen emoji
+    if (isShort) {
+      block.innerHTML = `<div><b>${akt}</b> – ${deltagare}</div>`;
+    } else {
+      block.innerHTML = `
+        <div class="title">${akt}</div>
+        <div class="small">👥 ${deltagare}</div>
+        <div class="small">🧑‍🏫 ${coachDisplay}</div>
+      `;
+    }
 
-    block.innerHTML = `
-      <div class="title" style="font-size:${titleSize};font-weight:700;">${akt}</div>
-      <div ${subStyle}>👥 ${deltagare}</div>
-      ${isShort ? "" : `<div class="small">🧑‍🏫 ${coachDisplay}</div>`}
-    `;
-
-    requestAnimationFrame(()=>{
-      const cellH=firstCell.clientHeight||28;
-      block.style.height=(slotsCovered*cellH - 3)+"px";
+    requestAnimationFrame(() => {
+      const cellH = firstCell.clientHeight || 28;
+      block.style.height = slotsCovered * cellH - 3 + "px";
     });
 
     firstCell.appendChild(block);
   });
 }
+
+
 
 /* ===== Sjuk-schema ===== */
 function setupSickList(data){
