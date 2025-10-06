@@ -138,6 +138,147 @@ button:hover{background:#ececec;}
 }
 </style>
 </head>
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Grunden DV – Schema</title>
+<style>
+:root{
+  --card-bg:#fff; --page-bg:#fafafa; --border:#ddd; --muted:#555; --heading:#2c3e50;
+  --shadow:0 6px 18px rgba(0,0,0,.05); --radius:16px; --band:#9ecbff;
+  --today:#e8f6ee; --ongoing:#1a7f37;
+}
+
+/* ===== Bas ===== */
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  max-width:1100px;margin:0 auto;padding:20px;background:var(--page-bg);
+}
+header{text-align:center;margin-bottom:15px;}
+header img{height:65px;margin:10px auto;display:block;}
+#clock{font-family:ui-monospace;font-size:.9rem;color:#333;}
+#updated{font-size:.8rem;color:var(--muted);margin-top:4px;}
+
+.toolbar{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:18px 0;
+}
+button,select{
+  padding:10px 14px;border-radius:10px;border:1px solid #ccc;background:#f7f7f7;
+  cursor:pointer;font-size:15px;
+}
+button:hover{background:#ececec;}
+#coachSelect,#btnBlocks,#btnCards{display:none;}
+
+.day-section{border-bottom:1px solid #ddd;margin-bottom:25px;padding-bottom:10px;}
+.day-heading{
+  background:#eef5ff;color:var(--heading);padding:10px 14px;border-radius:12px;
+  font-weight:700;margin:20px 0 12px 0;
+}
+.day-heading.today{background:var(--today);}
+
+/* ===== Kortvy (webb/mobil) ===== */
+.cards{display:block;margin-bottom:25px;}
+.card{
+  position:relative;background:var(--card-bg);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);
+  width:100%;max-width:800px;margin:0 auto 18px auto;
+  border-left:4px solid var(--band);
+}
+.card-title{
+  font-weight:800;font-size:1.1rem;margin:4px 0 8px;display:flex;align-items:center;gap:8px;
+}
+.row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;font-size:1rem;padding:2px 0;}
+.row label{color:#333;font-weight:700;}
+.dot{
+  width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 10px;
+  background:var(--ongoing);box-shadow:0 0 0 3px rgba(26,127,55,.15);
+}
+.card.ongoing{box-shadow:0 8px 22px rgba(26,127,55,.15), 0 1px 0 rgba(26,127,55,.12);}
+.small-note{font-size:.9rem;color:#333;opacity:.9}
+
+/* ===== Sjukpanel ===== */
+#sickPanel{
+  display:none;border:1px solid var(--border);background:#fff;border-radius:14px;padding:12px;box-shadow:var(--shadow);
+}
+#sickList{display:flex;flex-wrap:wrap;gap:8px 14px;max-height:220px;overflow:auto;}
+#sickList label{display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.8rem;background:#fff3cd;color:#8a5b00;border:1px solid #ffe39a;margin-left:8px;white-space:nowrap;}
+.okpill{background:#e8f6ee;color:#1a7f37;border:1px solid #cdebd9;}
+
+/* ===== Blockschema (grid) ===== */
+.block-wrap{display:none;margin-top:16px;}
+.block-header{
+  display:grid;grid-template-columns:80px repeat(5,1fr);gap:0;font-weight:700;text-transform:capitalize;
+}
+.block-header div{padding:6px 8px;background:#f3f6ff;border:none;}
+.block-grid{display:grid;grid-template-columns:80px repeat(5,1fr);}
+.block-time{background:#fafafa;padding:4px 6px;font-size:.9rem;border:none;}
+.block-cell{position:relative;min-height:28px;border:none;}
+.block{
+  position:absolute;left:2px;right:2px;top:2px;
+  border-radius:6px;padding:3px 5px;font-size:.85rem;line-height:1.2;overflow:hidden;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.block .title{font-weight:700;margin-bottom:2px;}
+.block .small{font-size:.8rem;opacity:.95;}
+
+/* ===== Utskrift ===== */
+@media print {
+  body {
+    background:#fff;
+    color:#000;
+    font-size:8pt;
+    margin:0;
+    line-height:1.25;
+  }
+
+  header, .toolbar, #sickPanel, #clock {
+    display:none !important;
+  }
+
+  #viewTitle {
+    text-align:center;
+    font-size:10pt;
+    font-weight:bold;
+    margin:0 0 4px 0;
+  }
+
+  /* Visa endast blockschema vid utskrift */
+  .cards, .card, table {
+    display:none !important;
+  }
+
+  .block-wrap {
+    display:block !important;
+  }
+
+  .block-header div {
+    background:#eee !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  .block-grid {border:none;}
+  .block-time {border:none;padding:3px 4px;font-size:8pt;}
+  .block-cell {border:none;min-height:24px;} /* mer plats för text */
+
+  .block {
+    border:none;
+    padding:3px 4px;
+    font-size:8pt;
+    line-height:1.25;
+    white-space:normal;
+    word-wrap:break-word;
+    overflow:visible;
+  }
+
+  @page {size:A4 landscape;margin:6mm;}
+}
+</style>
+</head>
 <body>
 <header>
   <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
