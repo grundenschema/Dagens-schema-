@@ -1,15 +1,14 @@
-
 <!DOCTYPE html>
 <html lang="sv">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Grunden DV – Schema</title>
+<link rel="icon" href="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png">
 </head>
 <body>
 <header>
-  <!-- Logga överst -->
-  <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga" style="height:65px;margin:10px auto;display:block;">
+  <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga" height="65">
   <div id="clock"></div>
   <div id="updated">Senast uppdaterad: –</div>
 </header>
@@ -22,13 +21,12 @@
   <button id="btnCards">Kortvy</button>
   <button id="btnSick">Sjukschema</button>
   <button id="btnPrint">🖨️ Skriv ut</button>
-  <button id="btnReload">🔄 Uppdatera nu</button>
 </div>
 
 <h2 id="viewTitle"></h2>
-<div id="schemaContainer">Laddar schema...</div>
+<div id="schemaContainer">Laddar schema…</div>
 
-<!-- Blockschema -->
+<!-- Blockschema (för utskrift) -->
 <div id="blockContainer" class="block-wrap" aria-hidden="true">
   <div class="block-header" id="blockHeader"></div>
   <div class="block-grid" id="blockGrid"></div>
@@ -47,133 +45,206 @@
     <button id="btnClearSick">Rensa</button>
   </div>
 </div>
+
+<!-- Här kommer Del 2 (CSS) och Del 3 (JavaScript) -->
+</body>
+</html>
 <style>
-:root {
-  --card-bg: #fff;
-  --page-bg: #fafafa;
-  --border: #ddd;
-  --muted: #555;
-  --heading: #2c3e50;
-  --shadow: 0 6px 18px rgba(0,0,0,.05);
-  --radius: 16px;
-  --band: #9ecbff;
+:root{
+  --card-bg:#fff;
+  --page-bg:#fafafa;
+  --border:#ddd;
+  --muted:#555;
+  --heading:#2c3e50;
+  --shadow:0 6px 18px rgba(0,0,0,.05);
+  --radius:16px;
+  --band:#9ecbff;
 }
 
 /* ===== Bas ===== */
-body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 20px;
-  background: var(--page-bg);
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  max-width:1100px;
+  margin:0 auto;
+  padding:20px;
+  background:var(--page-bg);
 }
-header { text-align: center; margin-bottom: 15px; }
-#clock { font-family: ui-monospace; font-size: .9rem; color: #333; }
-#updated { font-size: .8rem; color: var(--muted); margin-top: 4px; }
+header{text-align:center;margin-bottom:15px;}
+header img{height:65px;margin:10px auto;display:block;}
+#clock{font-family:ui-monospace;font-size:.9rem;color:#333;}
+#updated{font-size:.8rem;color:var(--muted);margin-top:4px;}
 
-.toolbar {
-  display: flex; flex-wrap: wrap; justify-content: center;
-  gap: 10px; margin: 18px 0;
+.toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px;
+  margin:18px 0;
 }
-button, select {
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  background: #f7f7f7;
-  cursor: pointer;
-  font-size: 15px;
+button,select{
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  background:#f7f7f7;
+  cursor:pointer;
+  font-size:15px;
 }
-button:hover { background: #ececec; }
+button:hover{background:#ececec;}
+#coachSelect,#btnBlocks,#btnCards{display:none;}
 
-/* ===== Dagavsnitt ===== */
-.day-section {
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 25px;
-  padding-bottom: 10px;
+.day-section{
+  border-bottom:1px solid #ddd;
+  margin-bottom:25px;
+  padding-bottom:10px;
 }
-.day-heading {
-  background: #eef5ff;
-  color: var(--heading);
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-weight: 700;
-  margin: 20px 0 12px 0;
+.day-heading{
+  background:#eef5ff;
+  color:var(--heading);
+  padding:10px 14px;
+  border-radius:12px;
+  font-weight:700;
+  margin:20px 0 12px 0;
 }
 
-/* ===== Kortvy ===== */
-.cards { display: flex; flex-direction: column; gap: 18px; margin-bottom: 25px; }
-.card {
-  position: relative;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
-  box-shadow: var(--shadow);
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
+/* ===== Kortvy (webb/mobil) ===== */
+.cards{display:flex;flex-direction:column;gap:18px;margin-bottom:25px;}
+.card{
+  position:relative;
+  background:var(--card-bg);
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  box-shadow:var(--shadow);
+  width:100%;
+  max-width:800px;
+  margin:0 auto;
 }
-.card::before {
-  content: "";
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 8px; background: var(--band);
-  border-top-left-radius: var(--radius);
-  border-bottom-left-radius: var(--radius);
+.card::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:8px;
+  background:var(--band);
+  border-top-left-radius:var(--radius);
+  border-bottom-left-radius:var(--radius);
 }
-.card-title {
-  font-weight: 800;
-  font-size: 1.1rem;
-  margin: 4px 0 8px;
-  display: flex; align-items: center; gap: 8px;
+.card-title{
+  font-weight:800;
+  font-size:1.1rem;
+  margin:4px 0 8px;
+  display:flex;
+  align-items:center;
+  gap:8px;
 }
-.row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 1rem;
-  padding: 2px 0;
+.row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  font-size:1rem;
+  padding:2px 0;
 }
-.row label { color: #333; font-weight: 700; }
+.row label{color:#333;font-weight:700;}
 
 /* ===== Sjukpanel ===== */
-#sickPanel {
-  display: none;
-  border: 1px solid var(--border);
-  background: #fff;
-  border-radius: 14px;
-  padding: 12px;
-  box-shadow: var(--shadow);
+#sickPanel{
+  display:none;
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:14px;
+  padding:12px;
+  box-shadow:var(--shadow);
 }
-#sickList {
-  display: flex; flex-wrap: wrap;
-  gap: 8px 14px; max-height: 220px; overflow: auto;
+#sickList{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 14px;
+  max-height:220px;
+  overflow:auto;
 }
-#sickList label { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+#sickList label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  white-space:nowrap;
+}
+.pill{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:999px;
+  font-size:.8rem;
+  background:#fff3cd;
+  color:#8a5b00;
+  border:1px solid #ffe39a;
+  margin-left:8px;
+  white-space:nowrap;
+}
+.okpill{
+  background:#e8f6ee;
+  color:#1a7f37;
+  border:1px solid #cdebd9;
+}
 
-/* ===== Blockschema (ny stil) ===== */
-.block-wrap { display: none; margin-top: 16px; }
-.block-header {
-  display: grid;
-  grid-template-columns: 80px repeat(5, 1fr);
-  gap: 0;
-  font-weight: 700;
-  text-transform: capitalize;
+/* ===== Blockschema (för utskrift) ===== */
+.block-wrap{display:none;margin-top:16px;}
+.block-header{
+  display:grid;
+  grid-template-columns:80px repeat(5,1fr);
+  gap:0;
+  font-weight:700;
+  text-transform:capitalize;
 }
-.block-header div { padding: 6px 8px; background: #f3f6ff; border: none; }
-.block-grid { display: grid; grid-template-columns: 80px repeat(5, 1fr); }
-.block-time { background: #fafafa; padding: 4px 6px; font-size: .9rem; border: none; }
-.block-cell { position: relative; min-height: 28px; border: none; }
+.block-header div{
+  padding:6px 8px;
+  background:#f3f6ff;
+  border:none;
+}
+.block-grid{display:grid;grid-template-columns:80px repeat(5,1fr);}
+.block-time{
+  background:#fafafa;
+  padding:4px 6px;
+  font-size:.9rem;
+  border:none;
+}
+.block-cell{
+  position:relative;
+  min-height:28px;
+  border:none;
+}
+.block{
+  position:absolute;
+  left:2px;
+  right:2px;
+  top:2px;
+  border-radius:6px;
+  padding:3px 5px;
+  font-size:.85rem;
+  line-height:1.2;
+  overflow:hidden;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+.block .title{font-weight:700;margin-bottom:2px;}
+.block .small{font-size:.8rem;opacity:.95;}
 
-.block {
-  position: absolute; left: 2px; right: 2px; top: 2px;
-  border: 1pt solid #666;
-  border-radius: 6px;
-  padding: 3px 5px;
-  font-size: .85rem;
-  line-height: 1.2;
-  box-sizing: border-box;<script>
+/* ===== Utskrift ===== */
+@media print{
+  body{background:#fff;color:#000;font-size:8pt;margin:0;line-height:1.2;}
+  header,.toolbar,#sickPanel,#clock{display:none !important;}
+  #viewTitle{text-align:center;font-size:10pt;font-weight:bold;margin:0 0 4px 0;}
+  .cards,.card,table{display:none !important;}
+  .block-wrap{display:block !important;}
+  .block-header div{background:#eee !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .block-grid{border:none;}
+  .block-time{border:none;padding:2px 3px;font-size:8pt;}
+  .block-cell{border:none;min-height:18px;}
+  .block{border:none;padding:2px 3px;font-size:8pt;}
+  @page{size:A4 landscape;margin:6mm;}
+}
+</style>
+<script>
 /* ===== Datakälla ===== */
 const url = "https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
 
@@ -211,13 +282,18 @@ setInterval(updateClock,1000);updateClock();
 /* ===== Ladda data ===== */
 let DATA=[];
 async function loadData(){
-  const res=await fetch(url+"?t="+Date.now());
-  const json=await res.json();
-  DATA=json.data||[];
-  document.getElementById("updated").textContent="Senast uppdaterad: "+(json.updated||"–");
-  setupCoachSelect(DATA);
-  setupSickList(DATA);
-  renderDaily(DATA);
+  try{
+    const res=await fetch(url+"?t="+Date.now());
+    const json=await res.json();
+    DATA=json.data||[];
+    document.getElementById("updated").textContent="Senast uppdaterad: "+(json.updated||"–");
+    setupCoachSelect(DATA);
+    setupSickList(DATA);
+    renderDaily(DATA);
+  }catch(e){
+    document.getElementById("schemaContainer").innerHTML="<p style='color:red'>Kunde inte hämta schemat. Kontrollera internet eller länk.</p>";
+    console.error("Fel vid hämtning:",e);
+  }
 }
 
 /* ===== Kortvy ===== */
@@ -240,7 +316,7 @@ function renderDaily(data){
   document.getElementById("schemaContainer").innerHTML=rows.length?sectionHTML(today,rows):`<p>Inga aktiviteter idag.</p>`;
 }
 
-/* ===== Coachschema ===== */
+/* ===== Coachschema + lunchregel ===== */
 function setupCoachSelect(data){
   const s=document.getElementById("coachSelect");
   s.innerHTML=`<option value="">-- Välj coach --</option>`;
@@ -249,29 +325,24 @@ function setupCoachSelect(data){
   });
   s.onchange=()=>{const v=s.value;if(v)renderCoachWeek(DATA,v);};
 }
-
-/* ===== Lunch-regel + veckoschema ===== */
 function renderCoachWeek(data,coach){
   const workDays=new Set(data.filter(r=>parseCoaches(r.Coach).includes(coach)).map(r=>dayKey(r.Datum)));
   const rows=data.filter(r=>{
     const cs=parseCoaches(r.Coach);
-    const isAll=(r.Coach||"").trim().toLowerCase()==="alla";
     const dk=dayKey(r.Datum);
-
-    // 💡 Lunch-trumfar-Alla
+    const isAll=(r.Coach||"").trim().toLowerCase()==="alla";
     const isLunch=(r.Aktivitet||"").toLowerCase().includes("lunch");
-    const isAllRow=isAll || (r.Deltagare||"").toLowerCase()==="alla";
-    if(isLunch && isAllRow){
-      const overlappingSpecific=data.some(x=>{
+    const isAllRow=isAll||(r.Deltagare||"").toLowerCase()==="alla";
+    if(isLunch&&isAllRow){
+      const overlap=data.some(x=>{
         const sameDay=dayKey(x.Datum)===dk;
-        const sameTime=(x.Start===r.Start && x.Slut===r.Slut);
+        const sameTime=(x.Start===r.Start&&x.Slut===r.Slut);
         const sameActivity=(x.Aktivitet||"").toLowerCase().includes("lunch");
-        const notAll=(x.Coach||"").toLowerCase()!=="alla" && (x.Deltagare||"").toLowerCase()!=="alla";
+        const notAll=(x.Coach||"").toLowerCase()!=="alla"&&(x.Deltagare||"").toLowerCase()!=="alla";
         return sameDay&&sameTime&&sameActivity&&notAll;
       });
-      if(overlappingSpecific)return false;
+      if(overlap)return false;
     }
-
     return cs.includes(coach)||(isAll&&workDays.has(dk));
   }).sort((a,b)=>{
     if(dayKey(a.Datum)===dayKey(b.Datum))return (a.Start||"").localeCompare(b.Start||"");
@@ -282,80 +353,12 @@ function renderCoachWeek(data,coach){
   document.getElementById("schemaContainer").innerHTML=Object.keys(grouped).map(k=>sectionHTML(k,grouped[k])).join("")||`<p>Inga aktiviteter hittades.</p>`;
 }
 
-/* ===== Blockschema (kortare pass, tydliga ramar) ===== */
-const SLOT_START="08:00",SLOT_END="16:30";
-function makeSlots(){const out=[];let t=8*60;while(t<=16*60+30){out.push(String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"));t+=30;}return out;}
-function weekdayIndex(d){const wd=new Date(d).getDay();return wd>=1&&wd<=5?wd:0;}
-function timeToRowIndex(t,s){return s.indexOf(t)+1;}
-function floorSlot(t){const[h,m]=t.split(":").map(Number);return`${String(h).padStart(2,"0")}:${m<30?"00":"30"}`;}
-function renderCoachBlocks(data,coach){
-  const slots=makeSlots();
-  const workDays=new Set(data.filter(r=>parseCoaches(r.Coach).includes(coach)).map(r=>dayKey(r.Datum)));
-  const rows=data.filter(r=>{
-    const cs=parseCoaches(r.Coach);
-    const isAll=(r.Coach||"").trim().toLowerCase()==="alla";
-    const dk=dayKey(r.Datum);
-
-    // 💡 Lunch-trumfar-Alla
-    const isLunch=(r.Aktivitet||"").toLowerCase().includes("lunch");
-    const isAllRow=isAll||(r.Deltagare||"").toLowerCase()==="alla";
-    if(isLunch && isAllRow){
-      const overlappingSpecific=data.some(x=>{
-        const sameDay=dayKey(x.Datum)===dk;
-        const sameTime=(x.Start===r.Start && x.Slut===r.Slut);
-        const sameActivity=(x.Aktivitet||"").toLowerCase().includes("lunch");
-        const notAll=(x.Coach||"").toLowerCase()!=="alla" && (x.Deltagare||"").toLowerCase()!=="alla";
-        return sameDay&&sameTime&&sameActivity&&notAll;
-      });
-      if(overlappingSpecific)return false;
-    }
-
-    return cs.includes(coach)||(isAll&&workDays.has(dk));
-  });
-
-  // Grid-layout
-  const head=document.getElementById("blockHeader"),grid=document.getElementById("blockGrid");
-  head.innerHTML="<div>Tid</div><div>Måndag</div><div>Tisdag</div><div>Onsdag</div><div>Torsdag</div><div>Fredag</div>";
-  grid.innerHTML="";
-  slots.forEach(t=>{
-    grid.innerHTML+=`<div class="block-time">${t}</div>`;
-    for(let d=0;d<5;d++)grid.innerHTML+=`<div class="block-cell"></div>`;
-  });
-  const cells=[...grid.children];
-  document.getElementById("schemaContainer").style.display="none";
-  document.getElementById("blockContainer").style.display="block";
-  document.getElementById("viewTitle").textContent="Veckoblock – "+coach+" (08:00–16:30)";
-
-  rows.forEach(r=>{
-    const wd=weekdayIndex(r.Datum);if(!wd)return;
-    const start=floorSlot(r.Start||SLOT_START),end=floorSlot(r.Slut||SLOT_END);
-    let sIdx=timeToRowIndex(start,slots),eIdx=timeToRowIndex(end,slots)-1;
-    if(sIdx<1||eIdx<sIdx)return;
-    const firstCellIndex=(sIdx-1)*(1+5)+wd,firstCell=cells[firstCellIndex];
-    const slotsCovered=eIdx-sIdx+1;
-    const durationMin=((+r.Slut?.split(":")[0])*60+(+r.Slut?.split(":")[1]||0))-((+r.Start?.split(":")[0])*60+(+r.Start?.split(":")[1]||0));
-    const isShort=durationMin<=30;
-
-    const block=document.createElement("div");
-    block.className="block";
-    block.style.background=colorFor(r);
-    block.style.fontSize=isShort?".7rem":".85rem";
-    const akt=r.Aktivitet||"Aktivitet";
-    const deltagare=shrinkList(r.Deltagare,3);
-    const coachDisplay=shrinkList(r.Coach,2);
-    block.innerHTML=isShort?`<div><b>${akt}</b> – ${deltagare}</div>`:`<div class="title">${akt}</div><div class="small">👥 ${deltagare}</div><div class="small">🧑‍🏫 ${coachDisplay}</div>`;
-    requestAnimationFrame(()=>{const h=firstCell.clientHeight||28;block.style.height=(slotsCovered*h-3)+"px";});
-    firstCell.appendChild(block);
-  });
-}
-
-/* ===== Sjukpanel, utskrift, knappar ===== */
+/* ===== Sjukpanel och utskrift ===== */
 function setupSickList(data){const c=document.getElementById("sickList");c.innerHTML="";[...new Set(data.map(r=>parseCoaches(r.Coach)).flat())].sort().forEach(co=>{const id="sick_"+co.replace(/\s+/g,"_");c.insertAdjacentHTML("beforeend",`<label><input type="checkbox" value="${co}" id="${id}"> ${co}</label>`);});}
 function getSelectedSick(){return[...document.querySelectorAll("#sickList input:checked")].map(e=>e.value);}
-document.getElementById("btnReload").onclick=loadData;
 document.getElementById("btnDaily").onclick=()=>{document.getElementById("sickPanel").style.display="none";renderDaily(DATA);};
 document.getElementById("btnCoach").onclick=()=>{document.getElementById("sickPanel").style.display="none";document.getElementById("coachSelect").style.display="inline-block";const v=document.getElementById("coachSelect").value;if(v)renderCoachWeek(DATA,v);};
-document.getElementById("btnBlocks").onclick=()=>{const v=document.getElementById("coachSelect").value;if(v)renderCoachBlocks(DATA,v);};
+document.getElementById("btnBlocks").onclick=()=>{const v=document.getElementById("coachSelect").value;if(v)renderCoachWeek(DATA,v);};
 document.getElementById("btnCards").onclick=()=>{const v=document.getElementById("coachSelect").value;if(v)renderCoachWeek(DATA,v);};
 document.getElementById("btnSick").onclick=()=>{document.getElementById("sickPanel").style.display="block";};
 document.getElementById("btnPrint").onclick=()=>{window.print();};
@@ -365,20 +368,3 @@ loadData();
 setInterval(loadData,15*60*1000);
 </script>
 
-  background: #fff;
-}
-.block .title { font-weight: 700; margin-bottom: 2px; }
-.block .small { font-size: .8rem; opacity: .95; }
-
-/* ===== Utskrift ===== */
-@media print {
-  body { background: #fff; color: #000; font-size: 9pt; margin: 0; line-height: 1.2; }
-  header, .toolbar, #sickPanel, #clock, #updated, #btnReload { display: none !important; }
-  #viewTitle { text-align: center; font-size: 10pt; font-weight: bold; margin: 0 0 4px 0; }
-  .cards, .card { display: none !important; }
-  .block-wrap { display: block !important; }
-  .block-header div { background: #eee !important; -webkit-print-color-adjust: exact; }
-  .block { font-size: 8pt; line-height: 1.1; border: 1pt solid #000; }
-  @page { size: A4 landscape; margin: 6mm; }
-}
-</style>
