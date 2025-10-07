@@ -1,105 +1,5 @@
-<!DOCTYPE html>
-<html lang="sv">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Grunden DV – Schema</title>
-
-<style>
-:root{
-  --card-bg:#fff; --page-bg:#fafafa; --border:#ddd; --muted:#555; --heading:#2c3e50;
-  --shadow:0 6px 18px rgba(0,0,0,.05); --radius:16px; --band:#9ecbff;
-}
-/* ===== Bas ===== */
-body{
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-  max-width:1100px;margin:0 auto;padding:20px;background:var(--page-bg);
-}
-header{text-align:center;margin-bottom:15px;}
-header img{height:65px;margin:10px auto;display:block;}
-#clock{font-family:ui-monospace;font-size:.9rem;color:#333;}
-#updated{font-size:.8rem;color:var(--muted);margin-top:4px;}
-
-.toolbar{
-  display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:18px 0;
-}
-button,select{
-  padding:10px 14px;border-radius:10px;border:1px solid #ccc;background:#f7f7f7;
-  cursor:pointer;font-size:15px;
-}
-button:hover{background:#ececec;}
-#coachSelect,#btnBlocks,#btnCards{display:none;}
-
-.day-section{border-bottom:1px solid #ddd;margin-bottom:25px;padding-bottom:10px;}
-.day-heading{
-  background:#eef5ff;color:var(--heading);padding:10px 14px;border-radius:12px;
-  font-weight:700;margin:20px 0 12px 0;
-}
-
-/* ===== Kortvy (webb/mobil) ===== */
-.cards{display:flex;flex-direction:column;gap:18px;margin-bottom:25px;}
-.card{
-  position:relative;background:var(--card-bg);border:1px solid var(--border);
-  border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);
-  width:100%;max-width:800px;margin:0 auto;
-}
-.card::before{
-  content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:var(--band);
-  border-top-left-radius:var(--radius);border-bottom-left-radius:var(--radius);
-}
-.card-title{
-  font-weight:800;font-size:1.1rem;margin:4px 0 8px;display:flex;align-items:center;gap:8px;
-}
-.row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;font-size:1rem;padding:2px 0;}
-.row label{color:#333;font-weight:700;}
-
-/* ===== Sjukpanel ===== */
-#sickPanel{
-  display:none;border:1px solid var(--border);background:#fff;border-radius:14px;padding:12px;box-shadow:var(--shadow);
-}
-#sickList{display:flex;flex-wrap:wrap;gap:8px 14px;max-height:220px;overflow:auto;}
-#sickList label{display:flex;align-items:center;gap:6px;white-space:nowrap;}
-.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.8rem;background:#fff3cd;color:#8a5b00;border:1px solid #ffe39a;margin-left:8px;white-space:nowrap;}
-.okpill{background:#e8f6ee;color:#1a7f37;border:1px solid #cdebd9;}
-
-/* ===== Blockschema (grid) ===== */
-.block-wrap{display:none;margin-top:16px;}
-.block-header{
-  display:grid;grid-template-columns:80px repeat(5,1fr);gap:0;font-weight:700;text-transform:capitalize;
-}
-.block-header div{padding:6px 8px;background:#f3f6ff;border:none;}
-.block-grid{display:grid;grid-template-columns:80px repeat(5,1fr);}
-.block-time{background:#fafafa;padding:4px 6px;font-size:.9rem;border:none;}
-.block-cell{position:relative;min-height:28px;border:none;}
-.block{
-  position:absolute;left:2px;right:2px;top:2px;
-  border-radius:6px;padding:3px 5px;font-size:.85rem;line-height:1.2;overflow:hidden;
-  -webkit-print-color-adjust:exact;print-color-adjust:exact;
-  border:1pt solid #666; /* tydlig ram */
-}
-.block .title{font-weight:700;margin-bottom:2px;}
-.block .small{font-size:.8rem;opacity:.95;}
-
-/* ===== Utskrift ===== */
-@media print{
-  body{background:#fff;color:#000;font-size:8pt;margin:0;line-height:1.2;}
-  header,.toolbar,#sickPanel,#clock{display:none !important;}
-  #viewTitle{text-align:center;font-size:10pt;font-weight:bold;margin:0 0 4px 0;}
-  /* Visa endast blockschema vid utskrift */
-  .cards,.card,table{display:none !important;}
-  .block-wrap{display:block !important;}
-  .block-header div{background:#eee !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .block-grid{border:none;}
-  .block-time{border:none;padding:2px 3px;font-size:8pt;}
-  .block-cell{border:none;min-height:18px;}
-  .block{border:1pt solid #000;padding:2px 3px;font-size:8pt;}
-  @page{size:A4 landscape;margin:6mm;}
-}
-</style>
-</head>
 <body>
 <header>
-  <!-- Logga överst -->
   <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
   <div id="clock"></div>
   <div id="updated">Senast uppdaterad: –</div>
@@ -118,16 +18,14 @@ button:hover{background:#ececec;}
 <h2 id="viewTitle"></h2>
 <div id="schemaContainer">Laddar schema...</div>
 
-<!-- Blockschema -->
 <div id="blockContainer" class="block-wrap" aria-hidden="true">
   <div class="block-header" id="blockHeader"></div>
   <div class="block-grid" id="blockGrid"></div>
-  <div id="printHint" style="font-size:.9rem;color:#444;margin-top:6px;display:none;text-align:center;">
+  <div id="printHint" style="font-size:.9rem;color:#444;margin-top:6px;text-align:center;">
     Förhandsvisning – använd webbläsarens <b>Skriv ut</b> (Ctrl/Cmd + P).
   </div>
 </div>
 
-<!-- Sjukpanel -->
 <div id="sickPanel">
   <h3>🩺 Välj sjuka coacher (max 5)</h3>
   <div id="sickList"></div>
@@ -137,7 +35,80 @@ button:hover{background:#ececec;}
     <button id="btnClearSick">Rensa</button>
   </div>
 </div>
+<body>
+<header>
+  <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
+  <div id="clock"></div>
+  <div id="updated">Senast uppdaterad: –</div>
+</header>
 
+<div class="toolbar">
+  <button id="btnDaily">Gemensamt schema</button>
+  <button id="btnCoach">Coachschema</button>
+  <select id="coachSelect"><option value="">-- Välj coach --</option></select>
+  <button id="btnBlocks">Veckoblock</button>
+  <button id="btnCards">Kortvy</button>
+  <button id="btnSick">Sjukschema</button>
+  <button id="btnPrint">🖨️ Skriv ut</button>
+</div>
+
+<h2 id="viewTitle"></h2>
+<div id="schemaContainer">Laddar schema...</div>
+
+<div id="blockContainer" class="block-wrap" aria-hidden="true">
+  <div class="block-header" id="blockHeader"></div>
+  <div class="block-grid" id="blockGrid"></div>
+  <div id="printHint" style="font-size:.9rem;color:#444;margin-top:6px;text-align:center;">
+    Förhandsvisning – använd webbläsarens <b>Skriv ut</b> (Ctrl/Cmd + P).
+  </div>
+</div>
+
+<div id="sickPanel">
+  <h3>🩺 Välj sjuka coacher (max 5)</h3>
+  <div id="sickList"></div>
+  <div id="sickMsg" style="font-size:.85rem;color:#666;margin-top:6px;"></div>
+  <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+    <button id="btnShowSick">Visa sjukschema</button>
+    <button id="btnClearSick">Rensa</button>
+  </div>
+</div>
+<body>
+<header>
+  <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
+  <div id="clock"></div>
+  <div id="updated">Senast uppdaterad: –</div>
+</header>
+
+<div class="toolbar">
+  <button id="btnDaily">Gemensamt schema</button>
+  <button id="btnCoach">Coachschema</button>
+  <select id="coachSelect"><option value="">-- Välj coach --</option></select>
+  <button id="btnBlocks">Veckoblock</button>
+  <button id="btnCards">Kortvy</button>
+  <button id="btnSick">Sjukschema</button>
+  <button id="btnPrint">🖨️ Skriv ut</button>
+</div>
+
+<h2 id="viewTitle"></h2>
+<div id="schemaContainer">Laddar schema...</div>
+
+<div id="blockContainer" class="block-wrap" aria-hidden="true">
+  <div class="block-header" id="blockHeader"></div>
+  <div class="block-grid" id="blockGrid"></div>
+  <div id="printHint" style="font-size:.9rem;color:#444;margin-top:6px;text-align:center;">
+    Förhandsvisning – använd webbläsarens <b>Skriv ut</b> (Ctrl/Cmd + P).
+  </div>
+</div>
+
+<div id="sickPanel">
+  <h3>🩺 Välj sjuka coacher (max 5)</h3>
+  <div id="sickList"></div>
+  <div id="sickMsg" style="font-size:.85rem;color:#666;margin-top:6px;"></div>
+  <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+    <button id="btnShowSick">Visa sjukschema</button>
+    <button id="btnClearSick">Rensa</button>
+  </div>
+</div>
 <script>
 /* ===== Datakälla ===== */
 const url="https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
@@ -209,14 +180,17 @@ function cardHTML(r){
     <div class="row"><label>🧑‍🏫 Coach:</label><div>${shrinkList(r.Coach,2)}</div></div>
   </div>`;
 }
+
 function groupByDate(rows){
   const g={};rows.forEach(r=>{const k=dayKey(r.Datum);(g[k]=g[k]||[]).push(r);});
   return Object.keys(g).sort().reduce((a,k)=>(a[k]=g[k],a),{});
 }
+
 function sectionHTML(k,rows){
   const label=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(k));
   return `<div class="day-section"><div class="day-heading">${label}</div><div class="cards">${rows.map(cardHTML).join("")}</div></div>`;
 }
+
 function renderDaily(data){
   const today=dayKey(getSEDate().toISOString());
   const rows=data.filter(r=>dayKey(r.Datum)===today).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
@@ -236,7 +210,16 @@ function setupCoachSelect(data){
   s.onchange=()=>{const v=s.value;if(v)renderCoachWeek(DATA,v);};
 }
 
-/* ===== Lunchregel (begränsad till Mio/Anders & aktuell coach) + veckoschema ===== */
+/* ===== Blockschema hjälpmetoder ===== */
+const SLOT_START="08:00", SLOT_END="16:30";
+function makeSlots(){
+  const out=[];let t=8*60;while(t<=16*60+30){
+    out.push(String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"));t+=30;
+  }return out;
+}
+function timeToRowIndex(time,slots){return slots.indexOf(time)+1;}
+function floorSlot(t){const [h,m]=t.split(":").map(Number);return `${String(h).padStart(2,"0")}:${m<30?"00":"30"}`;}
+/* ===== Coachschemavecka (kortvy) ===== */
 function renderCoachWeek(data,coach){
   const workDays=new Set(
     data.filter(r=>parseCoaches(r.Coach).includes(coach)).map(r=>dayKey(r.Datum))
@@ -246,7 +229,7 @@ function renderCoachWeek(data,coach){
     const isAll=(r.Coach||"").trim().toLowerCase()==="alla";
     const dk=dayKey(r.Datum);
 
-    /* 🍽️ Lunch trumfar Alla (coachvy) — endast om specifik lunch gäller denna coach & (Mio eller Anders B) */
+    // 🍽️ Lunch-trumfar-Alla-regel för Mio/Anders B
     const isLunch=(r.Aktivitet||"").toLowerCase().includes("lunch");
     const isAllRow=isAll || (r.Deltagare||"").trim().toLowerCase()==="alla";
     if(isLunch && isAllRow){
@@ -259,261 +242,162 @@ function renderCoachWeek(data,coach){
         const notAll=(x.Coach||"").trim().toLowerCase()!=="alla" && (x.Deltagare||"").trim().toLowerCase()!=="alla";
         return sameDay && sameTime && sameActivity && specificForThisCoach && specificForMioOrAnders && notAll;
       });
-      if(overlappingSpecific) return false;
+      if(overlappingSpecific)return false;
     }
 
-    return cs.includes(coach) || (isAll && workDays.has(dk));
+    return cs.includes(coach)||(isAll&&workDays.has(dk));
   }).sort((a,b)=>{
-    if(dayKey(a.Datum)===dayKey(b.Datum)) return (a.Start||"").localeCompare(b.Start||"");
+    if(dayKey(a.Datum)===dayKey(b.Datum))return(a.Start||"").localeCompare(b.Start||"");
     return dayKey(a.Datum).localeCompare(dayKey(b.Datum));
   });
   const grouped=groupByDate(rows);
   document.getElementById("viewTitle").textContent="Coachschema – "+coach;
   document.getElementById("schemaContainer").style.display="block";
   document.getElementById("blockContainer").style.display="none";
-  document.getElementById("schemaContainer").innerHTML=Object.keys(grouped).map(k=>sectionHTML(k,grouped[k])).join("") || `<p>Inga aktiviteter hittades för ${coach}.</p>`;
+  document.getElementById("schemaContainer").innerHTML=Object.keys(grouped).map(k=>sectionHTML(k,grouped[k])).join("")||`<p>Inga aktiviteter hittades för ${coach}.</p>`;
 }
 
-/* ===== Blockschema (08:00–16:30, halvtimmar) – utskrift ===== */
-const SLOT_START="08:00", SLOT_END="16:30";
-function makeSlots(){
-  const out=[]; let t=8*60; while(t<=16*60+30){out.push(String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"));t+=30;} return out;
-}
-function weekdayIndex(dateStr){const d=new Date(dateStr), wd=d.getDay(); return (wd>=1 && wd<=5) ? wd : 0;}
-function timeToRowIndex(time,slots){ return slots.indexOf(time)+1; }
-function floorSlot(t){ const [h,m]=t.split(":").map(Number); return `${String(h).padStart(2,"0")}:${m<30?"00":"30"}`; }
+/* ===== BLOCKSCHEMA – uppdaterad med Mio-regel och dolda lediga dagar ===== */
+function renderCoachBlocks(data, coach) {
+  const slots = makeSlots();
 
-function renderCoachBlocks(data,coach){
-  const slots=makeSlots();
-  const workDays=new Set(data.filter(r=>parseCoaches(r.Coach).includes(coach)).map(r=>dayKey(r.Datum)));
-  const rows=data.filter(r=>{
-    const cs=parseCoaches(r.Coach), isAll=(r.Coach||"").trim().toLowerCase()==="alla";
-    const dk=dayKey(r.Datum);
+  // Hitta alla dagar där coachen jobbar (exkludera frukost & lunch)
+  const activeDays = [...new Set(
+    data
+      .filter(r => parseCoaches(r.Coach).includes(coach))
+      .filter(r => !/(frukost|lunch)/i.test(r.Aktivitet || ""))
+      .map(r => dayKey(r.Datum))
+  )].sort();
 
-    /* 🍽️ Lunch trumfar Alla (blockvy) — endast om specifik lunch gäller denna coach & (Mio eller Anders B) */
-    const isLunch=(r.Aktivitet||"").toLowerCase().includes("lunch");
-    const isAllRow=isAll || (r.Deltagare||"").trim().toLowerCase()==="alla";
-    if(isLunch && isAllRow){
-      const overlappingSpecific=data.some(x=>{
-        const sameDay=dayKey(x.Datum)===dk;
-        const sameTime=(x.Start===r.Start && x.Slut===r.Slut);
-        const sameActivity=(x.Aktivitet||"").toLowerCase().includes("lunch");
-        const specificForThisCoach=parseCoaches(x.Coach).includes(coach);
-        const specificForMioOrAnders=/\bmio\b/i.test(x.Deltagare||"") || /\banders b\b/i.test(x.Deltagare||"");
-        const notAll=(x.Coach||"").trim().toLowerCase()!=="alla" && (x.Deltagare||"").trim().toLowerCase()!=="alla";
+  if (!activeDays.length) {
+    document.getElementById("viewTitle").textContent = `Veckoschema – ${coach}`;
+    document.getElementById("schemaContainer").style.display = "block";
+    document.getElementById("blockContainer").style.display = "none";
+    document.getElementById("schemaContainer").innerHTML = `<p>${coach} har inga schemalagda aktiviteter denna vecka.</p>`;
+    return;
+  }
+
+  const rows = data.filter(r => {
+    const cs = parseCoaches(r.Coach);
+    const dk = dayKey(r.Datum);
+    const isAll = (r.Coach || "").trim().toLowerCase() === "alla";
+    const isMeal = /(frukost|lunch)/i.test(r.Aktivitet || "");
+
+    // 🍽️ Lunch-trumfar-Alla-regel för Mio/Anders B
+    const isLunch = (r.Aktivitet || "").toLowerCase().includes("lunch");
+    const isAllRow = isAll || (r.Deltagare || "").trim().toLowerCase() === "alla";
+    if (isLunch && isAllRow) {
+      const overlappingSpecific = data.some(x => {
+        const sameDay = dayKey(x.Datum) === dk;
+        const sameTime = (x.Start === r.Start && x.Slut === r.Slut);
+        const sameActivity = (x.Aktivitet || "").toLowerCase().includes("lunch");
+        const specificForThisCoach = parseCoaches(x.Coach).includes(coach);
+        const specificForMioOrAnders =
+          /\bmio\b/i.test(x.Deltagare || "") || /\banders b\b/i.test(x.Deltagare || "");
+        const notAll =
+          (x.Coach || "").trim().toLowerCase() !== "alla" &&
+          (x.Deltagare || "").trim().toLowerCase() !== "alla";
         return sameDay && sameTime && sameActivity && specificForThisCoach && specificForMioOrAnders && notAll;
       });
-      if(overlappingSpecific) return false;
+      if (overlappingSpecific) return false;
     }
 
-    return cs.includes(coach) || (isAll && workDays.has(dk));
+    if (isMeal) return false;
+    return (cs.includes(coach) || isAll) && activeDays.includes(dk);
   });
 
-  // Visa blockschema, dölj kort
-  document.getElementById("schemaContainer").style.display="none";
-  document.getElementById("blockContainer").style.display="block";
-  document.getElementById("blockContainer").setAttribute("aria-hidden","false");
-  document.getElementById("printHint").style.display="block";
-  document.getElementById("viewTitle").textContent="Veckoblock – "+coach+" (08:00–16:30)";
+  // Visa blockschema, dölj kortvy
+  document.getElementById("schemaContainer").style.display = "none";
+  document.getElementById("blockContainer").style.display = "block";
+  document.getElementById("blockContainer").setAttribute("aria-hidden", "false");
+  document.getElementById("printHint").style.display = "block";
+  document.getElementById("viewTitle").textContent = `Veckoschema – ${coach}`;
 
   // Rubriker & grid
-  const head=document.getElementById("blockHeader"), grid=document.getElementById("blockGrid");
-  head.innerHTML="<div>Tid</div><div>Måndag</div><div>Tisdag</div><div>Onsdag</div><div>Torsdag</div><div>Fredag</div>";
-  grid.innerHTML="";
-  const slotsArr=slots;
-  slotsArr.forEach(t=>{
-    grid.innerHTML+=`<div class="block-time">${t}</div>`;
-    for(let d=0;d<5;d++) grid.innerHTML+=`<div class="block-cell"></div>`;
+  const head = document.getElementById("blockHeader"),
+        grid = document.getElementById("blockGrid");
+  head.innerHTML = "<div>Tid</div>" + activeDays.map(d =>
+    `<div>${new Intl.DateTimeFormat("sv-SE",{weekday:"long"}).format(new Date(d))}</div>`
+  ).join("");
+  grid.innerHTML = "";
+  grid.style.gridTemplateColumns = `80px repeat(${activeDays.length}, 1fr)`;
+
+  slots.forEach(t => {
+    grid.innerHTML += `<div class="block-time">${t}</div>`;
+    for (let d = 0; d < activeDays.length; d++) grid.innerHTML += `<div class="block-cell"></div>`;
   });
 
-  const cells=[...grid.children];
+  const cells = [...grid.children];
 
-  rows.forEach(r=>{
-    const wd=weekdayIndex(r.Datum); if(!wd) return;
-    const start=floorSlot(r.Start||SLOT_START);
-    const end=floorSlot(r.Slut||SLOT_END);
-    let sIdx=timeToRowIndex(start,slotsArr);
-    let eIdx=timeToRowIndex(end,slotsArr)-1;
-    if(sIdx<1 || eIdx<sIdx) return;
+  rows.forEach(r => {
+    const dk = dayKey(r.Datum);
+    const dayIndex = activeDays.indexOf(dk);
+    if (dayIndex === -1) return;
 
-    const firstCellIndex=(sIdx-1)*(1+5)+wd;
-    const firstCell=cells[firstCellIndex];
-    const slotsCovered=eIdx-sIdx+1;
+    const start = floorSlot(r.Start || SLOT_START);
+    const end = floorSlot(r.Slut || SLOT_END);
+    let sIdx = timeToRowIndex(start, slots);
+    let eIdx = timeToRowIndex(end, slots) - 1;
+    if (sIdx < 1 || eIdx < sIdx) return;
 
-    const toMin=t=>{const [h,m]=t.split(":").map(Number);return h*60+m;};
-    const durationMin=toMin(r.Slut||SLOT_END)-toMin(r.Start||SLOT_START);
-    const isShort=durationMin<=30;
+    const firstCellIndex = (sIdx - 1) * (1 + activeDays.length) + (dayIndex + 1);
+    const firstCell = cells[firstCellIndex];
+    const slotsCovered = eIdx - sIdx + 1;
 
-    const block=document.createElement("div");
-    block.className="block";
-    block.style.background=colorFor(r);
-    block.style.fontSize=isShort?"0.7rem":"0.85rem";
+    const toMin = t => { const [h,m] = t.split(":").map(Number); return h * 60 + m; };
+    const durationMin = toMin(r.Slut || SLOT_END) - toMin(r.Start || SLOT_START);
+    const isShort = durationMin <= 30;
 
-    const akt=r.Aktivitet||"Aktivitet";
-    const deltagare=shrinkList(r.Deltagare,2);
-    const coachDisplay=shrinkList(r.Coach,2);
+    const block = document.createElement("div");
+    block.className = "block";
+    block.style.background = colorFor(r);
+    block.style.fontSize = isShort ? "0.7rem" : "0.85rem";
 
-    if(isShort){
-      block.innerHTML=`<div><b>${akt}</b> – ${deltagare}</div>`;
-    }else{
-      block.innerHTML=`
+    const akt = r.Aktivitet || "Aktivitet";
+    const deltagare = shrinkList(r.Deltagare, 2);
+
+    if (isShort) {
+      block.innerHTML = `<div><b>${akt}</b> – ${deltagare}</div>`;
+    } else {
+      block.innerHTML = `
         <div class="title">${akt}</div>
         <div class="small">👥 ${deltagare}</div>
-        <div class="small">🧑‍🏫 ${coachDisplay}</div>
       `;
     }
 
-    requestAnimationFrame(()=>{
-      const cellH=firstCell.clientHeight||28;
-      block.style.height=(slotsCovered*cellH - 3)+"px";
+    requestAnimationFrame(() => {
+      const cellH = firstCell.clientHeight || 28;
+      block.style.height = (slotsCovered * cellH - 3) + "px";
     });
 
     firstCell.appendChild(block);
   });
 }
 
-/* ===== Sjuk-schema ===== */
-function setupSickList(data){
-  const c=document.getElementById("sickList"); c.innerHTML="";
-  [...new Set(data.map(r=>parseCoaches(r.Coach)).flat())].sort().forEach(co=>{
-    const id="sick_"+co.replace(/\s+/g,"_");
-    c.insertAdjacentHTML("beforeend",`<label><input type="checkbox" value="${co}" id="${id}"> ${co}</label>`);
-  });
-}
-function getSelectedSick(){ return [...document.querySelectorAll("#sickList input:checked")].map(e=>e.value); }
-function overlap(aStart,aEnd,bStart,bEnd){ return !(aEnd<=bStart || aStart>=bEnd); }
-function getThisWeekMonFri(){
-  const today=getSEDate(), day=today.getDay(), mon=new Date(today);
-  mon.setDate(today.getDate()-((day+6)%7)); mon.setHours(0,0,0,0);
-  const fri=new Date(mon); fri.setDate(mon.getDate()+4);
-  return {mon,fri};
-}
-function groupByDateSimple(rows){
-  const g={}; rows.forEach(r=>{const k=dayKey(r.Datum); (g[k]=g[k]||[]).push(r);});
-  return Object.keys(g).sort().reduce((a,k)=>(a[k]=g[k],a),{});
-}
-function sectionHTMLSimple(k,rows,extraForRow=null){
-  const label=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(k));
-  let html=`<div class="day-section"><div class="day-heading">${label}</div><div class="cards">`;
-  rows.forEach(r=>{
-    const extra=extraForRow?extraForRow(r):"";
-    html+=`<div class="card" style="--band:${colorFor(r)}">
-      <div class="row"><label>🕒 Tid:</label><div>${(r.Start&&r.Slut)?`${r.Start}–${r.Slut}`:r.Start||r.Slut||"-"}</div></div>
-      <h4 class="card-title">${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h4>
-      <div class="row"><label>👥 Deltagare:</label><div>${shrinkList(r.Deltagare,2)}</div></div>
-      <div class="row"><label>🧑‍🏫 Coach:</label><div>${shrinkList(r.Coach,2)} ${extra}</div></div>
-    </div>`;
-  });
-  html+="</div></div>"; return html;
-}
-function renderSickSchedule(data,sickCoaches){
-  document.getElementById("viewTitle").textContent="🩺 Sjukschema";
-  const {mon,fri}=getThisWeekMonFri(), sK=dayKey(mon.toISOString()), eK=dayKey(fri.toISOString());
-  const weekRows=data.filter(r=>dayKey(r.Datum)>=sK && dayKey(r.Datum)<=eK);
-  const sickRows=weekRows.filter(r=>sickCoaches.some(s=>parseCoaches(r.Coach).includes(s)))
-    .sort((a,b)=>{
-      if(dayKey(a.Datum)===dayKey(b.Datum)) return (a.Start||"").localeCompare(b.Start||"");
-      return dayKey(a.Datum).localeCompare(dayKey(b.Datum));
-    });
-  const allCoaches=[...new Set(weekRows.map(r=>parseCoaches(r.Coach)).flat())];
-
-  const extraForRow=(r)=>{
-    const tS=r.Start||"00:00", tE=r.Slut||"23:59", dK=dayKey(r.Datum);
-    const avail=allCoaches.filter(c=>!sickCoaches.includes(c)).filter(c=>{
-      const cRows=weekRows.filter(x=>parseCoaches(x.Coach).includes(c)&&dayKey(x.Datum)===dK);
-      return !cRows.some(x=>overlap(x.Start||"00:00",x.Slut||"23:59",tS,tE));
-    });
-    return avail.length?`<span class="okpill">Ersättare: ${avail.join(", ")}</span>`:`<span class="pill">Inga ersättare</span>`;
-  };
-
-  const grouped=groupByDateSimple(sickRows);
-  let html="";
-  Object.keys(grouped).forEach(k=>{
-    const rows=grouped[k].map(r=>{
-      const cs=parseCoaches(r.Coach),
-            sick=cs.filter(c=>sickCoaches.includes(c)),
-            others=cs.filter(c=>!sickCoaches.includes(c));
-      const coachText=[sick.length?`Sjuk: ${sick.join(", ")}`:"",others.length?`Övriga: ${others.join(", ")}`:""].filter(Boolean).join(" • ");
-      return {...r,Coach:coachText};
-    });
-    html+=sectionHTMLSimple(k,rows,extraForRow);
-  });
-  document.getElementById("schemaContainer").style.display="block";
-  document.getElementById("blockContainer").style.display="none";
-  document.getElementById("schemaContainer").innerHTML = sickRows.length? html : `<p>Inga pass för valda coacher under denna vecka.</p>`;
-}
-
-/* ===== Knappar ===== */
-document.getElementById("btnDaily").onclick=()=>{
-  document.getElementById("coachSelect").style.display="none";
-  document.getElementById("btnBlocks").style.display="none";
-  document.getElementById("btnCards").style.display="none";
-  document.getElementById("sickPanel").style.display="none";
-  renderDaily(DATA);
-};
+/* ===== Knappar, sjukpanel, initiering ===== */
+document.getElementById("btnDaily").onclick=()=>{renderDaily(DATA);};
 document.getElementById("btnCoach").onclick=()=>{
   document.getElementById("coachSelect").style.display="inline-block";
   document.getElementById("btnBlocks").style.display="inline-block";
   document.getElementById("btnCards").style.display="inline-block";
-  document.getElementById("sickPanel").style.display="none";
   const v=document.getElementById("coachSelect").value;
-  if(v){ renderCoachWeek(DATA,v); } else {
-    document.getElementById("viewTitle").textContent="Coachschema";
-    document.getElementById("schemaContainer").innerHTML=`<p>Välj en coach i listan.</p>`;
-    document.getElementById("schemaContainer").style.display="block";
-    document.getElementById("blockContainer").style.display="none";
-  }
+  if(v){renderCoachWeek(DATA,v);}
 };
 document.getElementById("btnBlocks").onclick=()=>{
   const v=document.getElementById("coachSelect").value;
-  if(!v){ alert("Välj en coach först."); return; }
+  if(!v){alert("Välj en coach först.");return;}
   renderCoachBlocks(DATA,v);
 };
 document.getElementById("btnCards").onclick=()=>{
   const v=document.getElementById("coachSelect").value;
-  if(!v){ alert("Välj en coach först."); return; }
+  if(!v){alert("Välj en coach först.");return;}
   renderCoachWeek(DATA,v);
 };
-document.getElementById("btnSick").onclick=()=>{
-  document.getElementById("coachSelect").style.display="none";
-  document.getElementById("btnBlocks").style.display="none";
-  document.getElementById("btnCards").style.display="none";
-  document.getElementById("sickPanel").style.display="block";
-  document.getElementById("schemaContainer").style.display="block";
-  document.getElementById("blockContainer").style.display="none";
-  document.getElementById("schemaContainer").innerHTML=`<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`;
-};
-document.getElementById("btnShowSick").onclick=()=>{
-  const s=getSelectedSick();
-  if(!s.length){
-    document.getElementById("sickMsg").textContent="Välj minst en coach.";
-    return;
-  }
-  document.getElementById("sickMsg").textContent="";
-  renderSickSchedule(DATA,s);
-};
-document.getElementById("btnClearSick").onclick=()=>{
-  document.querySelectorAll("#sickList input").forEach(cb=>cb.checked=false);
-  document.getElementById("sickMsg").textContent="";
-  document.getElementById("schemaContainer").innerHTML=`<p>Välj upp till 5 coacher och tryck “Visa sjukschema”.</p>`;
-};
-document.getElementById("btnPrint").onclick=()=>{
-  const inCoachBlocks = document.getElementById("blockContainer").style.display==="block";
-  const title = document.getElementById("viewTitle").textContent;
-  if(!inCoachBlocks && !title.startsWith("Veckoblock")){
-    alert("Utskrift är optimerad för coachens Veckoblock. Välj Coachschema → Välj coach → Veckoblock.");
-  } else {
-    window.print();
-  }
-};
+document.getElementById("btnPrint").onclick=()=>{window.print();};
 
-/* ===== Init ===== */
+/* Init */
 loadData();
 setInterval(loadData,15*60*1000);
 </script>
 </body>
 </html>
-
-
-
-
