@@ -307,133 +307,112 @@ document.getElementById("btnSick").onclick = () => {
 </script>
 </body>
 </html>
-/* --- Jämför scheman: Visa flera scheman bredvid varandra --- */
-document.addEventListener("click", e => {
-  if (e.target && e.target.id === "btnShowCompare") {
-    const selectedNames = [
-      ...document.querySelectorAll(".chk-delt:checked"),
-      ...document.querySelectorAll(".chk-coach:checked")
-    ].map(cb => ({ name: cb.value, isCoach: cb.classList.contains("chk-coach") }));
+/* --- DEL 3: Jämför scheman – visa flera veckoscheman bredvid varandra --- */
+document.addEventListener("click", function(e){
+  if (!(e.target && e.target.id === "btnShowCompare")) return;
 
-    if (!selectedNames.length) {
-      alert("Välj minst en person först.");
-      return;
-    }
+  const selectedNames = [
+    ...document.querySelectorAll(".chk-delt:checked"),
+    ...document.querySelectorAll(".chk-coach:checked")
+  ].map(cb => ({ name: cb.value, isCoach: cb.classList.contains("chk-coach") }));
 
-    // Behåll block-layout
-    document.getElementById("schemaContainer").style.display = "none";
-    document.getElementById("blockContainer").style.display = "block";
-    document.getElementById("viewTitle").textContent = "Jämför scheman";
-
-    // Skapa container för flera scheman
-    const gridWrap = document.createElement("div");
-    gridWrap.style.display = "flex";
-    gridWrap.style.flexWrap = "wrap";
-    gridWrap.style.gap = "25px";
-    gridWrap.style.alignItems = "flex-start";
-    gridWrap.style.justifyContent = "center";
-    gridWrap.style.marginTop = "20px";
-    gridWrap.style.width = "100%";
-
-    // Töm blockContainer och bygg nytt
-    const blockContainer = document.getElementById("blockContainer");
-    blockContainer.innerHTML = "";
-    blockContainer.appendChild(gridWrap);
-
-    selectedNames.forEach(sel => {
-      // Gör varje schema som en egen box
-      const wrap = document.createElement("div");
-      wrap.style.flex = "1 1 600px";
-      wrap.style.background = "#fff";
-      wrap.style.border = "1px solid #ddd";
-      wrap.style.borderRadius = "14px";
-      wrap.style.padding = "10px";
-      wrap.style.boxShadow = "0 3px 10px rgba(0,0,0,.05)";
-      wrap.innerHTML = `<h3 style="text-align:center;margin:0 0 6px 0;">${
-        sel.isCoach ? "🧑‍🏫 " : "👥 "
-      }${sel.name}</h3>`;
-
-      // Rendera veckoschema för varje person (återanvänd befintlig funktion)
-      const clone = document.createElement("div");
-      clone.className = "inner-block";
-      clone.innerHTML = `<div class="block-header"></div><div class="block-grid"></div>`;
-      wrap.appendChild(clone);
-      gridWrap.appendChild(wrap);
-
-      // Anropa renderingsfunktionen separat för varje
-      renderSingleSchedule(sel.name, sel.isCoach, clone.querySelector(".block-header"), clone.querySelector(".block-grid"));
-    });
+  if (!selectedNames.length) {
+    alert("Välj minst en person först.");
+    return;
   }
+
+  // Visa container för flervy
+  const blockContainer = document.getElementById("blockContainer");
+  document.getElementById("schemaContainer").style.display = "none";
+  blockContainer.style.display = "block";
+  document.getElementById("viewTitle").textContent = "Jämför scheman";
+
+  // Bygg flex-grid för flera scheman
+  blockContainer.innerHTML = "";
+  const gridWrap = document.createElement("div");
+  gridWrap.style.display = "flex";
+  gridWrap.style.flexWrap = "wrap";
+  gridWrap.style.gap = "25px";
+  gridWrap.style.alignItems = "flex-start";
+  gridWrap.style.justifyContent = "center";
+  gridWrap.style.marginTop = "20px";
+  gridWrap.style.width = "100%";
+  blockContainer.appendChild(gridWrap);
+
+  selectedNames.forEach(sel => {
+    // Box runt varje schema
+    const wrap = document.createElement("div");
+    wrap.style.flex = "1 1 600px";
+    wrap.style.background = "#fff";
+    wrap.style.border = "1px solid #ddd";
+    wrap.style.borderRadius = "14px";
+    wrap.style.padding = "10px";
+    wrap.style.boxShadow = "0 3px 10px rgba(0,0,0,.05)";
+    wrap.innerHTML = `<h3 style="text-align:center;margin:0 0 6px 0;">${sel.isCoach ? "🧑‍🏫 " : "👥 "}${sel.name}</h3>`;
+
+    const inner = document.createElement("div");
+    inner.innerHTML = `<div class="block-header"></div><div class="block-grid"></div>`;
+    wrap.appendChild(inner);
+    gridWrap.appendChild(wrap);
+
+    const headEl = inner.querySelector(".block-header");
+    const gridEl = inner.querySelector(".block-grid");
+    renderSingleSchedule(sel.name, sel.isCoach, headEl, gridEl);
+  });
 });
 
-/* Hjälpfunktion för att rita ett individuellt schema (återanvändning av renderBlocks) */
-function renderSingleSchedule(name, isCoach, headElem, gridElem) {
+/* Hjälpfunktion: ritar ett enskilt veckoschema i given header/grid */
+function renderSingleSchedule(name, isCoach, headElem, gridElem){
   const slots = makeSlots();
   const days = [...new Set(DATA.map(r => dayKey(r.Datum)))].sort();
   const field = isCoach ? "Coach" : "Deltagare";
-  const rows = DATA.filter(r => {
-    const str = (r[field] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    return (
-      str.split(/,|\/|;|\n/).map(x => x.trim().toLowerCase()).some(x => x === name.toLowerCase()) ||
-      str === "alla"
-    );
+
+  // Samma filterlogik som övriga vyer (inkl. lunchregeln)
+  const baseRows = DATA.filter(r=>{
+    const str = (r[field] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    return str.split(/,|\/|;|\n/).map(x=>x.trim().toLowerCase()).some(x=>x===name.toLowerCase()) || str==="alla";
   });
+  const rows = applyLunchRule(baseRows, name, isCoach);
 
-  headElem.innerHTML =
-    "<div>Tid</div>" +
-    days.map(
-      d =>
-        `<div>${new Intl.DateTimeFormat("sv-SE", { weekday: "short" }).format(
-          new Date(d)
-        )}</div>`
-    ).join("");
+  // Rubrikrad (Tid + vardagar)
+  headElem.innerHTML = "<div>Tid</div>" + days.map(d =>
+    `<div>${new Intl.DateTimeFormat("sv-SE",{weekday:"short"}).format(new Date(d))}</div>`
+  ).join("");
 
+  // Grid
   gridElem.innerHTML = "";
   gridElem.style.gridTemplateColumns = `80px repeat(${days.length},1fr)`;
-  slots.forEach(t => {
-    gridElem.innerHTML +=
-      `<div class="block-time">${t}</div>` +
-      days.map(() => `<div class="block-cell"></div>`).join("");
+  slots.forEach(t=>{
+    gridElem.innerHTML += `<div class="block-time">${t}</div>` + days.map(()=>`<div class="block-cell"></div>`).join("");
   });
 
   const cells = [...gridElem.children];
-  const dayMap = {};
-  days.forEach((d, i) => (dayMap[d] = i + 1));
-  const toMin = t => {
-    const [h, m] = t.split(":").map(Number);
-    return h * 60 + m;
-  };
+  const dayMap = {}; days.forEach((d,i)=> dayMap[d] = i+1);
+  const toMin = t => { const [h,m] = t.split(":").map(Number); return h*60+m; };
 
-  rows.forEach(r => {
-    const dk = dayKey(r.Datum),
-      col = dayMap[dk];
-    if (!col) return;
-    const sIdx = slots.indexOf(r.Start),
-      eIdx = slots.indexOf(r.Slut);
+  rows.forEach(r=>{
+    const dk = dayKey(r.Datum), col = dayMap[dk]; if(!col) return;
+    const sIdx = slots.indexOf(r.Start), eIdx = slots.indexOf(r.Slut);
     if (sIdx < 0 || eIdx <= sIdx) return;
-    const firstCellIndex = sIdx * (1 + days.length) + col,
-      firstCell = cells[firstCellIndex];
+
+    const firstCellIndex = sIdx * (1 + days.length) + col;
+    const firstCell = cells[firstCellIndex];
+
     const block = document.createElement("div");
     block.className = "block";
     block.style.background = colorFor(r);
+
     const duration = toMin(r.Slut) - toMin(r.Start);
     if (duration <= 30) {
-      block.innerHTML = `${
-        emojiFor(r)
-      } ${r.Aktivitet || ""} – ${isCoach ? "👥 " + (r.Deltagare || "-") : "🧑‍🏫 " + (r.Coach || "-")}`;
+      block.innerHTML = `${emojiFor(r)} ${r.Aktivitet || ""} – ${isCoach ? "👥 " + (r.Deltagare || "-") : "🧑‍🏫 " + (r.Coach || "-")}`;
     } else {
-      block.innerHTML = `${emojiFor(r)} ${r.Aktivitet || ""}<br>${r.Start || ""}–${r.Slut || ""}<br>${
-        isCoach ? "👥 Deltagare: " + (r.Deltagare || "-") : "🧑‍🏫 Coach: " + (r.Coach || "-")
-      }`;
+      block.innerHTML = `${emojiFor(r)} ${r.Aktivitet || ""}<br>${r.Start || ""}–${r.Slut || ""}<br>${isCoach ? "👥 Deltagare: " + (r.Deltagare || "-") : "🧑‍🏫 Coach: " + (r.Coach || "-")}`;
     }
-    requestAnimationFrame(() => {
+
+    requestAnimationFrame(()=>{
       const cellH = firstCell.clientHeight || 28;
       block.style.height = (eIdx - sIdx) * cellH + "px";
     });
     firstCell.appendChild(block);
   });
 }
-</script>
-</body>
-</html>
-
