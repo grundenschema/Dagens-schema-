@@ -50,6 +50,31 @@ button:hover{background:#eee;}
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
 
+/* --- Dropdown Schemahjälp --- */
+.dropdown { position: relative; display: inline-block; }
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,.15);
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 10;
+  min-width: 180px;
+}
+.dropdown-content button {
+  display: block;
+  width: 100%;
+  border: none;
+  background: #fff;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.dropdown-content button:hover { background: #f2f2f2; }
+.dropdown.show .dropdown-content { display: block; }
+
 @media print{
   body{background:#fff;color:#000;font-size:9pt;margin:0;}
   header,.toolbar{display:none !important;}
@@ -73,8 +98,15 @@ button:hover{background:#eee;}
 
   <button id="btnCards">Dagens schema</button>
   <button id="btnBlocks">Veckoschema</button>
-  <button id="btnPrint">🖨️ Skriv ut</button>
-  <button id="btnReload">🔄 Uppdatera från master</button>
+
+  <!-- 🧩 Ny Schemahjälp-meny -->
+  <div class="dropdown">
+    <button id="btnHelp">🧩 Schemahjälp</button>
+    <div id="helpMenu" class="dropdown-content">
+      <button id="btnCompare">👥 Jämför scheman</button>
+      <button id="btnSick">🩺 Sjukschema</button>
+    </div>
+  </div>
 </div>
 
 <h2 id="viewTitle"></h2>
@@ -84,7 +116,6 @@ button:hover{background:#eee;}
   <div class="block-header" id="blockHeader"></div>
   <div class="block-grid" id="blockGrid"></div>
 </div>
-
 <script>
 const url="https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
 
@@ -256,10 +287,23 @@ document.getElementById("btnBlocks").onclick=()=>{
     :document.getElementById("coachSelect").value;
   if(n)renderBlocks(n,document.getElementById("coachSelect").style.display!=="none");
 };
-document.getElementById("btnPrint").onclick=()=>{window.print();};
-document.getElementById("btnReload").onclick=()=>{loadData();};
+
+/* --- Schemahjälp dropdown --- */
+document.getElementById("btnHelp").onclick = (e) => {
+  e.stopPropagation();
+  document.querySelector(".dropdown").classList.toggle("show");
+};
+document.body.onclick = () => {
+  document.querySelector(".dropdown").classList.remove("show");
+};
+
+// Tillfälliga placeholders
+document.getElementById("btnCompare").onclick = () => {
+  alert("👥 Jämför scheman – kommer i nästa steg.");
+};
+document.getElementById("btnSick").onclick = () => {
+  alert("🩺 Sjukschema – kopplas senare.");
+};
 </script>
 </body>
 </html>
-
-
