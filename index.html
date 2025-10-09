@@ -1,88 +1,128 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deltagar- & Coachschema</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Grunden DV – Schema</title>
+
 <style>
 :root{
-  --card-bg:#fff;--border:#ddd;--shadow:0 3px 10px rgba(0,0,0,.05);
-  --radius:16px;--print-scale:1;
+  --card-bg:#fff; --page-bg:#fafafa; --border:#ddd; --muted:#555; --heading:#2c3e50;
+  --shadow:0 3px 10px rgba(0,0,0,.05); --radius:16px; --band:#9ecbff;
+  --print-scale:1;
 }
 body{
   font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-  margin:0 auto;max-width:1400px;padding:20px;background:#fafafa;
+  max-width:1100px;margin:0 auto;padding:20px;background:var(--page-bg);
 }
-header{text-align:center;margin-bottom:10px;}
-h1{margin:0;font-size:1.4rem;}
-#version{font-size:.85rem;color:#666;margin-top:4px;}
-select,button{
-  font-size:1rem;padding:10px 14px;border-radius:10px;border:1px solid #ccc;
-  background:#f8f8f8;cursor:pointer;
+header{text-align:center;margin-bottom:15px;}
+header img{height:65px;margin:10px auto;display:block;}
+#clock{font-family:ui-monospace;font-size:.9rem;color:#333;}
+#updated{font-size:.8rem;color:var(--muted);margin-top:4px;}
+
+.toolbar{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:18px 0;
 }
-select{width:220px;}
-button:hover{background:#eee;}
-.toolbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:15px;}
+button,select{
+  padding:10px 14px;border-radius:10px;border:1px solid #ccc;background:#f7f7f7;
+  cursor:pointer;font-size:15px;
+}
+button:hover{background:#ececec;}
+#coachSelect,#nameSelect,#btnBlocks,#btnCards{display:none;}
+
+.day-section{border-bottom:1px solid #ddd;margin-bottom:25px;padding-bottom:10px;}
+.day-heading{color:var(--heading);padding:6px 0;font-weight:700;margin:12px 0 8px 0;}
 
 .cards{display:flex;flex-direction:column;gap:12px;}
 .card{
-  border:1px solid var(--border);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:12px 16px;background:var(--card-bg);
-  position:relative;
+  position:relative;background:var(--card-bg);border:1px solid var(--border);
+  border-radius:var(--radius);padding:12px 16px;box-shadow:var(--shadow);
+  width:100%;max-width:800px;margin:0 auto;
 }
 .card::before{
   content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--band,#ccc);
   border-top-left-radius:var(--radius);border-bottom-left-radius:var(--radius);
 }
-.card h3{margin:0;font-size:1.1rem;}
+.card-title{font-weight:800;font-size:1.1rem;margin:2px 0 6px;display:flex;align-items:center;gap:8px;}
 .row{font-size:.95rem;margin-top:4px;}
+.row label{color:#333;font-weight:700;margin-right:6px;}
 
-#blockContainer{display:none;margin-top:10px;}
-.block-header{display:grid;grid-template-columns:80px repeat(5,1fr);font-weight:bold;}
+#sickPanel{display:none;border:1px solid var(--border);background:#fff;border-radius:14px;padding:12px;box-shadow:var(--shadow);}
+#sickList{display:flex;flex-wrap:wrap;gap:8px 14px;max-height:220px;overflow:auto;}
+#sickList label{display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.8rem;background:#fff3cd;color:#8a5b00;border:1px solid #ffe39a;margin-left:8px;white-space:nowrap;}
+.okpill{background:#e8f6ee;color:#1a7f37;border:1px solid #cdebd9;}
+
+.block-wrap{display:none;margin-top:16px;}
+.block-header{display:grid;grid-template-columns:80px repeat(5,1fr);gap:0;font-weight:700;}
+.block-header div{padding:6px 8px;border:none;}
 .block-grid{display:grid;grid-template-columns:80px repeat(5,1fr);}
-.block-time{background:#fafafa;font-size:.85rem;padding:3px 6px;}
+.block-time{background:#fafafa;padding:3px 6px;font-size:.85rem;border:none;}
 .block-cell{position:relative;min-height:28px;border:none;}
 .block{
   position:absolute;left:2px;right:2px;top:2px;
-  border-radius:8px;padding:4px 6px;line-height:1.2;
-  border:1pt solid #666;font-size:.8rem;
-  word-break:break-word;overflow:hidden;
+  border-radius:8px;padding:4px 6px;line-height:1.2;overflow:hidden;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  border:1pt solid #666;font-size:.8rem;
 }
+.block .title{font-weight:700;margin-bottom:2px;}
+.block .small{font-size:.8rem;opacity:.95;}
 
 @media print{
-  body{background:#fff;color:#000;font-size:9pt;margin:0;}
-  header,.toolbar{display:none !important;}
-  #blockContainer{display:block !important;transform:scale(var(--print-scale,1));transform-origin:top left;}
+  body{background:#fff;color:#000;font-size:9pt;margin:0;line-height:1.3;}
+  header,.toolbar,#sickPanel,#clock{display:none !important;}
+  #viewTitle{text-align:center;font-size:11pt;font-weight:bold;margin:0 0 4px 0;}
+  .cards,.card,table{display:none !important;}
+  .block-wrap{display:block !important;}
+  .block-grid{border:none;}
+  .block-time{border:none;padding:2px 3px;font-size:9pt;}
+  .block-cell{border:none;min-height:20px;}
+  .block{border:1pt solid #000;padding:2px 3px;font-size:8.5pt;}
+  #printHint{display:none !important;}
+  #blockContainer{
+    width:100vw;max-width:100%;margin:0;
+    transform:scale(var(--print-scale,1));
+    transform-origin:top left;
+  }
   @page{size:A4 landscape;margin:6mm;}
 }
 </style>
 </head>
 <body>
 <header>
-  <h1>Deltagar- & Coachschema</h1>
-  <div id="version">Version 4.2 (2025-10-09)</div>
+  <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Logga">
+  <div id="clock"></div>
+  <div id="updated">Senast uppdaterad: –</div>
 </header>
 
 <div class="toolbar">
-  <button id="btnParticipant">Deltagarschema</button>
+  <button id="btnDaily">Gemensamt schema</button>
   <button id="btnCoach">Coachschema</button>
-
+  <button id="btnParticipant">Deltagarschema</button>
+  <select id="coachSelect"><option value="">-- Välj coach --</option></select>
   <select id="nameSelect"><option value="">-- Välj deltagare --</option></select>
-  <select id="coachSelect" style="display:none"><option value="">-- Välj coach --</option></select>
-
-  <button id="btnCards">Dagens schema</button>
   <button id="btnBlocks">Veckoschema</button>
+  <button id="btnCards">Kortvy</button>
+  <button id="btnSick">Sjukschema</button>
   <button id="btnPrint">🖨️ Skriv ut</button>
-  <button id="btnReload">🔄 Uppdatera från master</button>
 </div>
 
 <h2 id="viewTitle"></h2>
-<div id="schemaContainer"></div>
+<div id="schemaContainer">Laddar schema...</div>
 
-<div id="blockContainer">
+<div id="blockContainer" class="block-wrap" aria-hidden="true">
   <div class="block-header" id="blockHeader"></div>
   <div class="block-grid" id="blockGrid"></div>
+</div>
+
+<div id="sickPanel">
+  <h3>🩺 Välj sjuka coacher (max 5)</h3>
+  <div id="sickList"></div>
+  <div id="sickMsg" style="font-size:.85rem;color:#666;margin-top:6px;"></div>
+  <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+    <button id="btnShowSick">Visa sjukschema</button>
+    <button id="btnClearSick">Rensa</button>
+  </div>
 </div>
 
 <script>
@@ -99,166 +139,201 @@ const aktivitetFarger={
   "Återkoppling":{color:"#85C1E9",emoji:"🔄"},"Medicin":{color:"#E59866",emoji:"💊"},
   "Biljard":{color:"#A9DFBF",emoji:"🎱"},"Spelgruppen":{color:"#F8C471",emoji:"🎲"},
   "Sömnad":{color:"#F5EEF8",emoji:"🧵"},"Filmgruppen":{color:"#E6B0AA",emoji:"🎬"},
-  "Musikquizz":{color:"#D2B4DE",emoji:"🎶"},"Musikdokumentär":{color:"#D2B4DE",emoji:"🎶"},
-  "Warhammer":{color:"#C39BD3",emoji:"🛡️"},"Uppstart Taket":{color:"#AED6F1",emoji:"🌤️"},
-  "Gåträning":{color:"#ABEBC6",emoji:"🚶‍♂️"},"Promenad":{color:"#ABEBC6",emoji:"🚶‍♀️"},
-  "Baka":{color:"#FAD7A0",emoji:"🧁"},"Utflykt":{color:"#A9CCE3",emoji:"🚌"}
+  "Musikquizz":{color:"#D2B4DE",emoji:"🎶"},"Musikdokumentär":{color:"#D2B4DE",emoji:"🎶"}
 };
 
-function colorFor(r){return(aktivitetFarger[r.Aktivitet]||{color:"#F4F6F7"}).color;}
-function emojiFor(r){return(aktivitetFarger[r.Aktivitet]||{emoji:""}).emoji;}
-function dayKey(str){return String(str).slice(0,10);}
-function todayKey(){return new Date().toISOString().slice(0,10);}
+function getSEDate(){return new Date(new Date().toLocaleString("en-US",{timeZone:"Europe/Stockholm"}));}
+function fmtSE(dt,opts){return new Intl.DateTimeFormat("sv-SE",opts).format(dt);}
+function updateClock(){
+  const now=getSEDate();
+  document.getElementById("clock").textContent=
+    fmtSE(now,{weekday:"long",year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+setInterval(updateClock,1000);updateClock();
 
+function dayKey(str){return String(str).slice(0,10);}
+function parseCoaches(coachStr){
+  const ignore=["","-",".","ingen","ingen coach","eget arbete","självständigt","utan coach"];
+  return (coachStr||"").split(/,|\/|&|\+|;|\||\n| och /i)
+    .map(c=>c.trim())
+    .filter(c=>c&&!ignore.includes(c.toLowerCase())&&c.toLowerCase()!=="alla");
+}
+function colorFor(r){return(aktivitetFarger[r.Aktivitet]||{color:"#fff"}).color;}
+function emojiFor(r){return(aktivitetFarger[r.Aktivitet]||{emoji:""}).emoji;}
+function shrinkList(str,max=2){
+  if(!str) return "-";
+  const arr=String(str).split(/,|\/|;|\||\n| och /i).map(s=>s.trim()).filter(Boolean);
+  return arr.length<=max?arr.join(", "):arr.slice(0,max).join(", ")+`, +${arr.length-max} fler`;
+}
+/* ===== Ladda data ===== */
 let DATA=[];
 async function loadData(){
   try{
     const res=await fetch(url+"?t="+Date.now());
     const json=await res.json();
     DATA=json.data||[];
-    fillNameList();
-    fillCoachList();
-    console.log("✅ Data uppdaterad från master "+new Date().toLocaleString("sv-SE"));
-  }catch(e){console.error(e);}
+    document.getElementById("updated").textContent="Senast uppdaterad: "+(json.updated||"–");
+    setupCoachSelect(DATA);
+    setupNameSelect(DATA);
+    setupSickList(DATA);
+    renderDaily(DATA);
+  }catch(e){
+    document.getElementById("schemaContainer").innerHTML="<p style='color:red'>Kunde inte hämta schemat.</p>";
+    console.error(e);
+  }
 }
-loadData();
 
-/* --- Fyll listor --- */
-function fillNameList(){
+/* ===== Fyll coach-lista ===== */
+function setupCoachSelect(data){
+  const s=document.getElementById("coachSelect");
+  s.innerHTML=`<option value="">-- Välj coach --</option>`;
+  [...new Set(data.map(r=>parseCoaches(r.Coach)).flat())].sort().forEach(c=>{
+    const o=document.createElement("option");o.value=c;o.textContent=c;s.appendChild(o);
+  });
+  s.onchange=()=>{const v=s.value;if(v)renderCoachWeek(DATA,v);};
+}
+
+/* ===== Fyll deltagar-lista (från fungerande deltagarsida) ===== */
+function setupNameSelect(data){
   const s=document.getElementById("nameSelect");
   s.innerHTML='<option value="">-- Välj deltagare --</option>';
-  [...new Set(DATA.map(r=>(r.Deltagare||"").split(/,|\/|;|\n/).map(x=>x.trim())).flat())]
+  [...new Set(data.map(r=>(r.Deltagare||"").split(/,|\/|;|\n/).map(x=>x.trim())).flat())]
     .filter(x=>x&&x.toLowerCase()!=="alla")
     .sort().forEach(n=>{
       const o=document.createElement("option");o.value=n;o.textContent=n;s.appendChild(o);
     });
 }
-function fillCoachList(){
-  const s=document.getElementById("coachSelect");
-  s.innerHTML='<option value="">-- Välj coach --</option>';
-  [...new Set(DATA.map(r=>(r.Coach||"").split(/,|\/|;|\n/).map(x=>x.trim())).flat())]
-    .filter(x=>x&&x.toLowerCase()!=="alla")
-    .sort().forEach(c=>{
-      const o=document.createElement("option");o.value=c;o.textContent=c;s.appendChild(o);
-    });
-}
 
-/* --- Hjälpfunktioner --- */
-function applyLunchRule(rows,name,isCoach){
-  return rows.filter(r=>{
-    const isLunch=(r.Aktivitet||"").toLowerCase().includes("lunch");
-    const isAll=(isCoach? r.Coach : r.Deltagare ||"").trim().toLowerCase()==="alla";
-    if(isLunch&&isAll){
-      const specific=rows.some(x=>x.Datum===r.Datum&&x.Start===r.Start&&x.Slut===r.Slut&&
-        (x.Aktivitet||"").toLowerCase().includes("lunch")&&
-        (isCoach? (x.Coach||"").toLowerCase().includes(name.toLowerCase())
-                 : (x.Deltagare||"").toLowerCase().includes(name.toLowerCase())));
-      if(specific) return false;
-    }
-    return true;
-  });
+/* ===== Kortvy gemensamt schema ===== */
+function cardHTML(r){
+  const b=colorFor(r);
+  const t=(r.Start&&r.Slut)?`${r.Start}–${r.Slut}`:r.Start||r.Slut||"-";
+  return `<div class="card" style="--band:${b}">
+    <div class="row"><label>🕒 Tid:</label><span>${t}</span></div>
+    <div class="card-title">${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</div>
+    <div class="row"><label>👥 Deltagare:</label><span>${shrinkList(r.Deltagare,2)}</span></div>
+    <div class="row"><label>🧑‍🏫 Coach:</label><span>${shrinkList(r.Coach,2)}</span></div>
+  </div>`;
 }
-
-/* --- Kortvy --- */
-function renderCards(name,isCoach){
-  const today=todayKey();
-  const field=isCoach?"Coach":"Deltagare";
-  const rows=applyLunchRule(
-    DATA.filter(r=>{
-      const str=(r[field]||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-      return (
-        str.split(/,|\/|;|\n/).map(x=>x.trim().toLowerCase()).some(x=>x===name.toLowerCase()) ||
-        str==="alla"
-      ) && dayKey(r.Datum)===today;
-    }),name,isCoach).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
-  const label=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(today));
-  let html=`<h3>${label}</h3><div class="cards">`;
-  if(!rows.length){html+="<p>Inga aktiviteter idag.</p>";}
-  rows.forEach(r=>{
-    html+=`<div class="card" style="--band:${colorFor(r)}">
-      <h3>${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h3>
-      <div class="row">🕒 ${r.Start||""}–${r.Slut||""}</div>
-      <div class="row">${isCoach?"👥 Deltagare: "+(r.Deltagare||"-"):"🧑‍🏫 Coach: "+(r.Coach||"-")}</div>
-    </div>`;
-  });
-  html+="</div>";
-  document.getElementById("schemaContainer").innerHTML=html;
+function groupByDate(rows){
+  const g={};rows.forEach(r=>{const k=dayKey(r.Datum);(g[k]=g[k]||[]).push(r);});
+  return Object.keys(g).sort().reduce((a,k)=>(a[k]=g[k],a),{});
+}
+function sectionHTML(k,rows){
+  const label=new Intl.DateTimeFormat("sv-SE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(k));
+  return `<div class="day-section"><div class="day-heading">${label}</div><div class="cards">${rows.map(cardHTML).join("")}</div></div>`;
+}
+function renderDaily(data){
+  const today=dayKey(getSEDate().toISOString());
+  const rows=data.filter(r=>dayKey(r.Datum)===today).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
+  document.getElementById("viewTitle").textContent="Gemensamt schema";
   document.getElementById("schemaContainer").style.display="block";
   document.getElementById("blockContainer").style.display="none";
-  document.getElementById("viewTitle").textContent=`Dagens schema – ${name}`;
+  document.getElementById("schemaContainer").innerHTML=rows.length?sectionHTML(today,rows):`<p>Inga aktiviteter idag.</p>`;
 }
 
-/* --- Block/Veckoschema --- */
-function makeSlots(){const a=[];for(let h=8;h<=16;h++){a.push(`${String(h).padStart(2,"0")}:00`,`${String(h).padStart(2,"0")}:30`);}a.push("16:30");return a;}
-function renderBlocks(name,isCoach){
-  const slots=makeSlots(), days=[...new Set(DATA.map(r=>dayKey(r.Datum)))].sort();
-  const field=isCoach?"Coach":"Deltagare";
-  const rows=applyLunchRule(DATA.filter(r=>{
-    const str=(r[field]||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-    return (
-      str.split(/,|\/|;|\n/).map(x=>x.trim().toLowerCase()).some(x=>x===name.toLowerCase()) ||
-      str==="alla"
-    );
-  }),name,isCoach);
-  const head=document.getElementById("blockHeader"), grid=document.getElementById("blockGrid");
+/* ===== Coachschema ===== */
+function renderCoachWeek(data,coach){
+  const rows=data.filter(r=>parseCoaches(r.Coach).includes(coach)||(r.Coach||"").trim().toLowerCase()==="alla")
+    .sort((a,b)=>{
+      if(dayKey(a.Datum)===dayKey(b.Datum))return(a.Start||"").localeCompare(b.Start||"");
+      return dayKey(a.Datum).localeCompare(dayKey(b.Datum));
+    });
+  const grouped=groupByDate(rows);
+  document.getElementById("viewTitle").textContent="Coachschema – "+coach;
+  document.getElementById("schemaContainer").innerHTML=Object.keys(grouped).map(k=>sectionHTML(k,grouped[k])).join("")||`<p>Inga aktiviteter för ${coach}.</p>`;
+  document.getElementById("schemaContainer").style.display="block";
+  document.getElementById("blockContainer").style.display="none";
+}
+
+/* ===== Deltagarschema ===== */
+function renderParticipantWeek(data,name){
+  const rows=data.filter(r=>{
+    const d=(r.Deltagare||"").toLowerCase();
+    return d.includes(name.toLowerCase())||d==="alla";
+  }).sort((a,b)=>{
+    if(dayKey(a.Datum)===dayKey(b.Datum))return(a.Start||"").localeCompare(b.Start||"");
+    return dayKey(a.Datum).localeCompare(dayKey(b.Datum));
+  });
+  const grouped=groupByDate(rows);
+  document.getElementById("viewTitle").textContent="Deltagarschema – "+name;
+  document.getElementById("schemaContainer").innerHTML=Object.keys(grouped).map(k=>sectionHTML(k,grouped[k])).join("")||`<p>Inga aktiviteter för ${name}.</p>`;
+  document.getElementById("schemaContainer").style.display="block";
+  document.getElementById("blockContainer").style.display="none";
+}
+
+/* ===== Veckoschema (coach + deltagare, samma layout) ===== */
+function makeSlots(){const out=[];let t=8*60;while(t<=16*60+30){out.push(String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"));t+=30;}return out;}
+function renderBlocks(data,filterFunc,title){
+  const slots=makeSlots(),days=[...new Set(data.map(r=>dayKey(r.Datum)))].sort();
+  const rows=data.filter(filterFunc);
+  const head=document.getElementById("blockHeader"),grid=document.getElementById("blockGrid");
   head.innerHTML="<div>Tid</div>"+days.map(d=>`<div>${new Intl.DateTimeFormat("sv-SE",{weekday:"short"}).format(new Date(d))}</div>`).join("");
   grid.innerHTML="";grid.style.gridTemplateColumns=`80px repeat(${days.length},1fr)`;
-  slots.forEach(t=>{
-    grid.innerHTML+=`<div class="block-time">${t}</div>`+days.map(()=>`<div class="block-cell"></div>`).join("");
-  });
-  const cells=[...grid.children], dayMap={};days.forEach((d,i)=>dayMap[d]=i+1);
-  const toMin=t=>{const [h,m]=t.split(":").map(Number);return h*60+m;};
-
+  slots.forEach(t=>{grid.innerHTML+=`<div class='block-time'>${t}</div>`+days.map(()=>`<div class='block-cell'></div>`).join("");});
+  const cells=[...grid.children],dayMap={};days.forEach((d,i)=>dayMap[d]=i+1);
+  const toMin=t=>{const[h,m]=t.split(":").map(Number);return h*60+m;};
   rows.forEach(r=>{
     const dk=dayKey(r.Datum),col=dayMap[dk];if(!col)return;
     const sIdx=slots.indexOf(r.Start),eIdx=slots.indexOf(r.Slut);
     if(sIdx<0||eIdx<=sIdx)return;
-    const firstCellIndex=(sIdx)*(1+days.length)+col,firstCell=cells[firstCellIndex];
-    const block=document.createElement("div");block.className="block";
-    block.style.background=colorFor(r);
+    const firstCellIndex=sIdx*(1+days.length)+col,firstCell=cells[firstCellIndex];
+    const block=document.createElement("div");block.className="block";block.style.background=colorFor(r);
     const duration=toMin(r.Slut)-toMin(r.Start);
-    if(duration<=30){
-      block.innerHTML=`${emojiFor(r)} ${r.Aktivitet||""} – ${isCoach?"👥 "+(r.Deltagare||"-"):"🧑‍🏫 "+(r.Coach||"-")}`;
-    }else{
-      block.innerHTML=`${emojiFor(r)} ${r.Aktivitet||""}<br>${r.Start||""}–${r.Slut||""}<br>${isCoach?"👥 Deltagare: "+(r.Deltagare||"-"):"🧑‍🏫 Coach: "+(r.Coach||"-")}`;
-    }
+    if(duration<=30){block.innerHTML=`${emojiFor(r)} ${r.Aktivitet||""} – ${r.Coach||"-"}`;}
+    else{block.innerHTML=`${emojiFor(r)} ${r.Aktivitet||""}<br>${r.Start}–${r.Slut}<br>${r.Coach||"-"}`;}
     requestAnimationFrame(()=>{const cellH=firstCell.clientHeight||28;block.style.height=(eIdx-sIdx)*cellH+"px";});
     firstCell.appendChild(block);
   });
-
-  const today=new Date();
-  const dateLabel=today.toLocaleDateString("sv-SE");
-  document.getElementById("viewTitle").textContent=`Veckoschema – ${name} – utskrivet ${dateLabel}`;
+  document.getElementById("viewTitle").textContent=title;
   document.getElementById("schemaContainer").style.display="none";
   document.getElementById("blockContainer").style.display="block";
 }
 
-/* --- Knappar --- */
+/* ===== Knapphantering ===== */
+document.getElementById("btnDaily").onclick=()=>{renderDaily(DATA);};
+document.getElementById("btnCoach").onclick=()=>{
+  document.getElementById("coachSelect").style.display="inline-block";
+  document.getElementById("nameSelect").style.display="none";
+  document.getElementById("btnBlocks").style.display="inline-block";
+  document.getElementById("btnCards").style.display="inline-block";
+  document.getElementById("sickPanel").style.display="none";
+  const v=document.getElementById("coachSelect").value;
+  if(v)renderCoachWeek(DATA,v);
+};
 document.getElementById("btnParticipant").onclick=()=>{
   document.getElementById("coachSelect").style.display="none";
   document.getElementById("nameSelect").style.display="inline-block";
-  document.getElementById("viewTitle").textContent="Deltagarschema";
-};
-document.getElementById("btnCoach").onclick=()=>{
-  document.getElementById("nameSelect").style.display="none";
-  document.getElementById("coachSelect").style.display="inline-block";
-  document.getElementById("viewTitle").textContent="Coachschema";
-};
-document.getElementById("btnCards").onclick=()=>{
-  const n=document.getElementById("nameSelect").style.display!=="none"
-    ?document.getElementById("nameSelect").value
-    :document.getElementById("coachSelect").value;
-  if(n)renderCards(n,document.getElementById("coachSelect").style.display!=="none");
+  document.getElementById("btnBlocks").style.display="inline-block";
+  document.getElementById("btnCards").style.display="inline-block";
+  document.getElementById("sickPanel").style.display="none";
+  const v=document.getElementById("nameSelect").value;
+  if(v)renderParticipantWeek(DATA,v);
 };
 document.getElementById("btnBlocks").onclick=()=>{
-  const n=document.getElementById("nameSelect").style.display!=="none"
-    ?document.getElementById("nameSelect").value
-    :document.getElementById("coachSelect").value;
-  if(n)renderBlocks(n,document.getElementById("coachSelect").style.display!=="none");
+  const coach=document.getElementById("coachSelect").value;
+  const name=document.getElementById("nameSelect").value;
+  if(coach)renderBlocks(DATA,r=>parseCoaches(r.Coach).includes(coach)||(r.Coach||"").toLowerCase()==="alla","Veckoschema – "+coach);
+  else if(name)renderBlocks(DATA,r=>{
+    const d=(r.Deltagare||"").toLowerCase();
+    return d.includes(name.toLowerCase())||d==="alla";
+  },"Veckoschema – "+name);
+  else alert("Välj en coach eller deltagare först.");
+};
+document.getElementById("btnCards").onclick=()=>{
+  const coach=document.getElementById("coachSelect").value;
+  const name=document.getElementById("nameSelect").value;
+  if(coach)renderCoachWeek(DATA,coach);
+  else if(name)renderParticipantWeek(DATA,name);
+  else alert("Välj en coach eller deltagare först.");
 };
 document.getElementById("btnPrint").onclick=()=>{window.print();};
-document.getElementById("btnReload").onclick=()=>{loadData();};
+
+/* ===== Init ===== */
+loadData();
+setInterval(loadData,15*60*1000);
 </script>
 </body>
 </html>
+
 
