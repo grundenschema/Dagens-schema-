@@ -133,17 +133,41 @@ select{min-width:220px;background:#fff}
 .dropdown.show .dropdown-content{ display:block; }
 
 /* Print */
-.print-visible{ display:block !important; }
 @media print{
-  body{ background:#fff; color:#000; font-size:9pt; margin:0; }
-  header, .toolbar, .helper-panels, #nowContainer{ display:none !important; }
-  #schemaContainer, #blockContainer{ display:none !important; }
+  body{
+    background:#fff;
+    color:#000;
+    font-size:9pt;
+    margin:0;
+  }
+
+  /* Göm sånt som aldrig ska med i utskrift */
+  header,
+  .toolbar,
+  .helper-panels,
+  #nowContainer{
+    display:none !important;
+  }
+
+  /* Göm båda vyerna som standard */
+  #schemaContainer,
+  #blockContainer{
+    display:none !important;
+    visibility:hidden !important;
+  }
+
+  /* ⬅️ Viktigt: högre specificitet än raden ovan */
+  #schemaContainer.print-visible,
+  #blockContainer.print-visible{
+    display:block !important;
+    visibility:visible !important;
+    position:relative !important;
+  }
+
   .compare-wrap{ grid-template-columns: repeat(2, 1fr); }
   .compare-item{ break-inside:avoid; page-break-inside:avoid; }
-  @page{ size:A4 landscape; margin:6mm; }
 
-  /* Denna MÅSTE ligga sist för att utskriften inte ska bli tom */
-  .print-visible{ display:block !important; }
+  @page{ size:A4 landscape; margin:6mm; }
 }
 
 /* Responsiv */
