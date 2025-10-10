@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-<meta charset="UTF-8"/>
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Schema – Deltagare & Coacher</title>
 
@@ -56,13 +56,6 @@ button:active{transform:translateY(1px)}
 select{min-width:220px;background:#fff}
 #viewTitle{text-align:center;margin:10px 0 8px;font-weight:700;}
 
-/* Gör att namnlistan ligger bredvid Pågår nu på desktop */
-.toolbar-row.now-row{flex-wrap:nowrap;gap:12px;justify-content:center;align-items:center;}
-@media (max-width:760px){
-  .toolbar-row.now-row{flex-direction:column;}
-  .toolbar-row.now-row select{width:95%;}
-}
-
 /* Cards */
 .cards{display:flex;flex-direction:column;gap:10px;max-width:1100px;margin:0 auto;}
 .card{
@@ -76,7 +69,7 @@ select{min-width:220px;background:#fff}
 .card h3{margin:0 0 6px;font-size:1.05rem}
 .card .row{font-size:.95rem;color:#222}
 
-/* Veckoschema */
+/* Veckoschema (liggande) */
 #blockContainer{display:none;margin-top:6px;}
 .block-header{
   display:grid;grid-template-columns:80px repeat(5,1fr);font-weight:800;font-size:.92rem;background:var(--header-bg);
@@ -94,6 +87,7 @@ select{min-width:220px;background:#fff}
   word-break:break-word; overflow:hidden; -webkit-print-color-adjust:exact; print-color-adjust:exact;
 }
 .block .title{font-weight:700}
+
 /* Jämförelse – grid bredvid varandra (max 4) */
 .compare-wrap{
   display:grid;
@@ -126,7 +120,7 @@ select{min-width:220px;background:#fff}
 .chip input{display:none;}
 .chip.active{ background:var(--chip-active); border-color:var(--chip-active); color:#fff; }
 
-/* Dropdown */
+/* Dropdown “Schemaläggning” */
 .dropdown{ position:relative; display:inline-block; }
 .dropdown-content{
   display:none; position:absolute; background:#fff; box-shadow:0 6px 18px rgba(0,0,0,.15);
@@ -147,6 +141,8 @@ select{min-width:220px;background:#fff}
   .compare-wrap{ grid-template-columns: repeat(2, 1fr); }
   .compare-item{ break-inside:avoid; page-break-inside:avoid; }
   @page{ size:A4 landscape; margin:6mm; }
+
+  /* Denna MÅSTE ligga sist för att utskriften inte ska bli tom */
   .print-visible{ display:block !important; }
 }
 
@@ -163,12 +159,11 @@ select{min-width:220px;background:#fff}
   <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png" alt="Grunden DV logo">
   <div id="clock"></div>
 </header>
-<!-- Knappar och meny -->
-<div class="toolbar">
 
-  <!-- Steg 1 -->
+<!-- Knappar i önskad ordning -->
+<div class="toolbar">
   <div class="toolbar-row">
-    <button id="btnParticipant">1️⃣ Deltagarschema</button>
+    <button id="btnParticipant">Deltagarschema</button>
     <button id="btnCoach">Coachschema</button>
     <div class="dropdown" id="scheduleDropdown">
       <button id="btnSchedule">📅 Schemaläggning ▼</button>
@@ -179,24 +174,21 @@ select{min-width:220px;background:#fff}
     </div>
   </div>
 
-  <!-- Steg 2 -->
   <div class="toolbar-row">
-    <button id="btnCards">2️⃣ Dagens schema</button>
+    <button id="btnCards">Dagens schema</button>
     <button id="btnBlocks">Veckoschema</button>
+    <button id="btnNow">Pågår nu</button>
   </div>
 
-  <!-- Steg 3: Pågår nu + namnlista på samma rad (desktop) -->
-  <div class="toolbar-row now-row" style="gap:8px;margin-top:4px;">
-    <button id="btnNow">3️⃣ Pågår nu</button>
+  <div class="toolbar-row" style="gap:8px;margin-top:4px;">
     <select id="nameSelect"><option value="">-- Välj deltagare --</option></select>
     <select id="coachSelect" style="display:none"><option value="">-- Välj coach --</option></select>
   </div>
-
 </div>
 
 <h2 id="viewTitle"></h2>
 
-<!-- Ytor för visning -->
+<!-- Ytor -->
 <div id="schemaContainer" class="print-scope" style="display:none;"></div>
 <div id="nowContainer" style="display:none;"></div>
 
@@ -208,9 +200,8 @@ select{min-width:220px;background:#fff}
   </div>
 </div>
 
-<!-- Hjälppaneler -->
+<!-- Paneler (Jämförelse och Ersättare) -->
 <div class="helper-panels">
-  <!-- Jämför scheman -->
   <div id="comparePanel" class="panel">
     <h2>🔍 Jämför scheman</h2>
     <div class="chip-title">Coacher</div>
@@ -222,7 +213,6 @@ select{min-width:220px;background:#fff}
     </div>
   </div>
 
-  <!-- Hitta ersättare -->
   <div id="sickPanel" class="panel">
     <h2>🩺 Hitta ersättare</h2>
     <select id="sickCoachSelect"><option value="">-- Välj sjuk coach --</option></select>
@@ -321,7 +311,7 @@ async function loadData(){
     const json=await res.json();
     DATA=json.data||[];
     fillLists(); fillCompareLists(); fillSickList();
-    showNowAndNext(); // startvy
+    showNowAndNext(); // start på Pågår nu
   }catch(e){ console.error(e); }
 }
 loadData();
@@ -398,7 +388,6 @@ function hideAllViews(){
   document.getElementById("btnPrint").style.display="none";
 }
 function setTitle(t){ document.getElementById("viewTitle").textContent=t||""; }
-
 /* =========================
    PÅGÅR NU + KOMMANDE
 ========================= */
@@ -455,6 +444,7 @@ function showNowAndNext(){
   cont.style.display="block";
   setTitle("");
 }
+
 /* =========================
    DAGENS (KORT)
 ========================= */
@@ -484,7 +474,7 @@ function renderCards(name,isCoach){
 }
 
 /* =========================
-   VECKA (BLOCK)
+   VECKA (BLOCK, LIGGANDE)
 ========================= */
 function makeSlots(){const a=[];for(let h=8;h<=16;h++){a.push(`${String(h).padStart(2,"0")}:00`,`${String(h).padStart(2,"0")}:30`);}a.push("16:30");return a;}
 function renderBlocks(name,isCoach){
@@ -533,9 +523,8 @@ function renderBlocks(name,isCoach){
   document.getElementById("blockContainer").style.display="block";
   document.getElementById("btnPrint").style.display="inline-block";
 }
-
 /* =========================
-   JÄMFÖR
+   JÄMFÖR – chips + MAX 4 bredvid varandra
 ========================= */
 document.getElementById("btnCompare").onclick = () => {
   hideAllViews();
@@ -543,6 +532,7 @@ document.getElementById("btnCompare").onclick = () => {
   setTitle("Jämför scheman");
   document.getElementById("scheduleDropdown").classList.remove("show");
 };
+
 document.getElementById("btnShowCompare").onclick = () => {
   const selected = [
     ...document.querySelectorAll(".chk-delt:checked"),
@@ -588,10 +578,10 @@ function renderSingleWeek(name,isCoach,compact=false){
   const container=document.createElement("div");
   container.innerHTML=`<div class="block-header"><div>Tid</div>${days.map(d=>`<div>${d}</div>`).join("")}</div>
   <div class="block-grid" style="grid-template-columns:80px repeat(${days.length},1fr)"></div>`;
+
   const grid=container.querySelector(".block-grid");
   const timeFont = compact ? ".78rem" : ".86rem";
   grid.previousElementSibling.querySelectorAll('div').forEach(d => d.style.fontSize = compact ? ".86rem" : ".92rem");
-
   slots.forEach(t=>{
     grid.innerHTML+=`<div class='block-time' style="font-size:${timeFont}">${t}</div>`+days.map(()=>`<div class='block-cell'></div>`).join("");
   });
@@ -635,7 +625,8 @@ document.getElementById("btnSick").onclick = () => {
 };
 document.getElementById("sickCoachSelect").onchange = renderSick;
 document.getElementById("chkFullWeek").onchange = renderSick;
-  function renderSick(){
+
+function renderSick(){
   const coach = document.getElementById("sickCoachSelect").value;
   const fullWeek = document.getElementById("chkFullWeek").checked;
   if(!coach){ document.getElementById("sickResult").innerHTML=""; return; }
@@ -708,7 +699,7 @@ document.getElementById("chkFullWeek").onchange = renderSick;
 }
 
 /* =========================
-   KNAPPAR / VÄXLING / PRINT
+   KNAPPAR / VÄXLING
 ========================= */
 document.getElementById("btnParticipant").onclick=()=>{
   hideAllViews();
@@ -734,7 +725,7 @@ document.getElementById("btnBlocks").onclick=()=>{
 };
 document.getElementById("btnNow").onclick=()=>showNowAndNext();
 
-/* Dropdown */
+/* Dropdown öppna/stäng + klick utanför stänger */
 document.getElementById("btnSchedule").addEventListener("click",(e)=>{
   e.stopPropagation();
   document.getElementById("scheduleDropdown").classList.toggle("show");
@@ -745,34 +736,27 @@ document.addEventListener("click",(e)=>{
   }
 });
 
-/* UTSKRIFT */
+/* =========================
+   UTSKRIFT – robust
+========================= */
 document.getElementById("btnPrint").onclick=()=>{
   document.querySelectorAll('.print-scope').forEach(e=>e.classList.remove('print-visible'));
   const sc=document.getElementById("schemaContainer");
   const blocks=document.getElementById("blockContainer");
-
-  if(blocks.style.display==="block"){
-    blocks.classList.add("print-visible");
-  } else if(sc.style.display==="block" && sc.dataset.view==="compare"){
-    sc.classList.add("print-visible");
-  } else if(sc.style.display==="block"){
-    sc.classList.add("print-visible");
-  } else{
-    alert("Öppna ett schema först (Vecka, Dagens eller Jämförelse).");
-    return;
-  }
-
+  if(blocks.style.display==="block"){blocks.classList.add("print-visible");}
+  else if(sc.style.display==="block" && sc.dataset.view==="compare"){sc.classList.add("print-visible");}
+  else if(sc.style.display==="block"){sc.classList.add("print-visible");}
+  else{alert("Öppna ett schema först (Vecka, Dagens eller Jämförelse).");return;}
   setTimeout(()=>{window.print();},150);
 };
 
 /* LOGGA = START */
 document.querySelector("header img").addEventListener("click",()=>showNowAndNext());
 
-/* Auto-uppdatering av Pågår nu */
+/* Auto-uppdatera Pågår nu var minut om den är aktiv */
 setInterval(()=>{ 
   if(document.getElementById("nowContainer").style.display==="block") showNowAndNext();
 },60000);
 </script>
 </body>
 </html>
-
