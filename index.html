@@ -6,7 +6,7 @@
 <title>Schema – Deltagare & Coacher</title>
 <style>
 :root{
-  --bg:#fafafa;                /* ljus bakgrund (som v2) */
+  --bg:#fafafa;
   --card-bg:#fff;
   --border:#ddd;
   --shadow:0 3px 10px rgba(0,0,0,.06);
@@ -43,19 +43,7 @@ header{
 header img{height:60px;width:auto;}
 #clock{font-weight:600;color:#333;font-size:1.1rem;letter-spacing:.5px}
 
-/* 🔹 Startmeny under loggan (NY) */
-.startbar{
-  display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin:16px 0 20px;
-}
-.startbar button{
-  font-size:1rem; padding:10px 18px; border-radius:12px;
-  border:1px solid #cfd8e3; background:#fff; cursor:pointer;
-  transition:background .15s, transform .15s;
-}
-.startbar button:hover{ background:#eef2f7; }
-.startbar button:active{ transform:translateY(1px); }
-
-/* Toolbar: två rader */
+/* Toolbar i logisk ordning */
 .toolbar{
   display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;
   margin:12px 0 16px;
@@ -95,29 +83,26 @@ select{min-width:220px;background:#fff}
 .block-header div{ text-align:center; padding:8px 0; }
 .block-grid{ display:grid; grid-template-columns:80px repeat(5,1fr); background:transparent; }
 .block-time{ font-size:.86rem; padding:4px 6px; text-align:right; color:#2b2b2b; }
-.block-cell{ position:relative; min-height:28px; background:transparent; border:none; } /* inga linjer */
+.block-cell{ position:relative; min-height:28px; background:transparent; border:none; }
+
+/* Block i veckoschemat — tunn kant + tydligare separation */
 .block{
   position:absolute; left:2px; right:2px; top:2px;
-  border-radius:10px; padding:6px 8px; line-height:1.25; border:none;
+  border-radius:10px; padding:6px 8px; line-height:1.25;
   font-size:.82rem; color:#111; box-shadow:var(--shadow);
   word-break:break-word; overflow:hidden; -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  border:1px solid rgba(0,0,0,.15);   /* NYTT: tunn kant runt block */
+  background:#fff;                    /* behåll läsbarhet vid ljusa färger */
 }
 .block .title{font-weight:700}
 
-/* Flervy i jämförelse (ORIGINAL) */
+/* Flervy i jämförelse */
 .schema-wrap{ display:flex; flex-wrap:nowrap; gap:16px; align-items:flex-start; overflow-x:auto; padding-bottom:8px; }
 .schema{
   min-width:420px; max-width:520px; flex:0 0 auto;
   background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:10px; box-shadow:var(--shadow);
 }
 .schema h3{margin:6px 0 10px; text-align:center; font-size:1.05rem}
-
-/* 🔹 Liggande A4 för jämförelsevyn (NY, utan att förstöra original) */
-@media print{
-  .schema-wrap{ display:block; }
-  .schema{ width:100%; max-width:none; page-break-after:always; box-shadow:none; border:1px solid #ccc; }
-  @page{ size:A4 landscape; margin:6mm; }
-}
 
 /* Paneler */
 .helper-panels{ max-width:1200px; margin:0 auto }
@@ -127,7 +112,7 @@ select{min-width:220px;background:#fff}
 }
 .panel h2{margin:4px 0 10px;font-size:1.2rem}
 
-/* Jämför – chips moderniserade */
+/* Jämför – chips */
 .chip-group{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
 .chip-title{ font-weight:700; margin:10px 0 6px; }
 .chip{
@@ -157,11 +142,11 @@ select{min-width:220px;background:#fff}
 
 @media print{
   body{ background:#fff; color:#000; font-size:9pt; margin:0; }
-  header, .toolbar, .helper-panels, #nowContainer, .startbar{ display:none !important; }
-  /* Visa endast den markerade ytan (hanteras via JS) */
+  header, .toolbar, .helper-panels, #nowContainer{ display:none !important; }
   #schemaContainer, #blockContainer{ display:none !important; }
   .print-visible{ display:block !important; }
   .schema{ page-break-inside:avoid; }
+  @page{ size:A4 landscape; margin:6mm; }
 }
 
 /* Responsiv */
@@ -179,23 +164,12 @@ select{min-width:220px;background:#fff}
   <div id="clock"></div>
 </header>
 
-<!-- 🔹 Startmeny (NY) -->
-<div class="startbar">
-  <button id="startSelectParticipant">👤 Välj deltagare</button>
-  <button id="startSelectCoach">🧑‍🏫 Coach</button>
-  <button id="startWeek">📅 Veckoschema</button>
-  <button id="startDay">🕒 Dagschema</button>
-  <button id="startSchedule">📆 Schemaläggning</button>
-  <button id="startNow">⏱️ Pågår nu</button>
-</div>
-
-<!-- **Två huvudrader + Schemaläggning efter Coachschema** -->
+<!-- KNAPPAR I LOGISK ORDNING: typ → namn → visning → extra -->
 <div class="toolbar">
+  <!-- Rad 1: välj schematyp + schemaläggning -->
   <div class="toolbar-row">
     <button id="btnParticipant">Deltagarschema</button>
     <button id="btnCoach">Coachschema</button>
-
-    <!-- Schemaläggning ligger direkt efter Coachschema -->
     <div class="dropdown" id="scheduleDropdown">
       <button id="btnSchedule">📅 Schemaläggning ▼</button>
       <div class="dropdown-content">
@@ -205,14 +179,16 @@ select{min-width:220px;background:#fff}
     </div>
   </div>
 
-  <div class="toolbar-row">
-    <button id="btnCards">Dagens schema</button>
-    <button id="btnBlocks">Veckoschema</button>
-  </div>
-
-  <div class="toolbar-row" style="gap:8px;margin-top:4px;">
+  <!-- Rad 2: välj person -->
+  <div class="toolbar-row" style="gap:8px;margin-top:2px;">
     <select id="nameSelect"><option value="">-- Välj deltagare --</option></select>
     <select id="coachSelect" style="display:none"><option value="">-- Välj coach --</option></select>
+  </div>
+
+  <!-- Rad 3: välj visning -->
+  <div class="toolbar-row" style="gap:10px;">
+    <button id="btnCards">Dagens schema</button>
+    <button id="btnBlocks">Veckoschema</button>
   </div>
 </div>
 
@@ -221,12 +197,10 @@ select{min-width:220px;background:#fff}
 <div id="schemaContainer" class="print-scope"></div>
 <div id="nowContainer"></div>
 
-<!-- Veckoblock (singel vy) -->
+<!-- Veckoschema (singel vy) -->
 <div id="blockContainer" class="print-scope">
   <div class="block-header" id="blockHeader"></div>
   <div class="block-grid" id="blockGrid"></div>
-
-  <!-- Skriv ut visas BARA i veckovy -->
   <div style="text-align:center;margin-top:10px;">
     <button id="btnPrint" style="display:none;">🖨️ Skriv ut</button>
   </div>
@@ -234,16 +208,13 @@ select{min-width:220px;background:#fff}
 
 <!-- Paneler -->
 <div class="helper-panels">
-
   <!-- Jämför -->
   <div id="comparePanel" class="panel">
     <h2>🔍 Jämför scheman</h2>
     <div class="chip-title">Coacher</div>
     <div id="coachListCompare" class="chip-group"></div>
-
     <div class="chip-title">Deltagare</div>
     <div id="participantListCompare" class="chip-group"></div>
-
     <div style="text-align:center; margin-top:12px;">
       <button id="btnShowCompare">Visa valda scheman</button>
     </div>
@@ -258,7 +229,6 @@ select{min-width:220px;background:#fff}
     </div>
     <div id="sickResult" style="margin-top:10px;"></div>
   </div>
-
 </div>
 
 <script>
@@ -267,7 +237,7 @@ select{min-width:220px;background:#fff}
 ========================= */
 const url="https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
 
-/* Utökat emoji/färgsystem – inkl. alias och “Ladda stol” (☕🔋) */
+/* Emojis + färger (inkl. alias och ☕🔋) */
 const aktivitetFarger={
   "Måndagsmöte":{color:"#AED6F1",emoji:"📅"},
   "Gruppmöte":{color:"#7FB3D5",emoji:"👥"},
@@ -350,8 +320,7 @@ async function loadData(){
     const json=await res.json();
     DATA=json.data||[];
     fillNameList(); fillCoachList(); fillCompareLists(); fillSickList();
-    // auto: visa pågår nu
-    showNowAndNext();
+    showNowAndNext(); // standardvy: Pågår nu
   }catch(e){ console.error(e); }
 }
 loadData();
@@ -363,8 +332,7 @@ function updateClock(){
   const el=document.getElementById("clock");
   if(!el) return;
   const now=new Date();
-  const time=now.toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"});
-  el.textContent=time;
+  el.textContent=now.toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"});
 }
 setInterval(updateClock,1000); updateClock();
 
@@ -375,6 +343,13 @@ function uniqueTokens(field){
   return [...new Set(DATA.map(r=>(r[field]||"").split(/,|\/|;|\n/).map(x=>x.trim())).flat())]
     .filter(x=>x && x.toLowerCase()!=="alla")
     .sort();
+}
+function sanitizeName(x){
+  const bad=["alla","ingen coach","ingen","eget arbete",".","-","na","n/a","okänt","unknown","(tom)",""];
+  return x && !bad.includes(String(x).trim().toLowerCase());
+}
+function splitNames(str){
+  return (str||"").split(/,|\/|;|\n/).map(s=>s.trim()).filter(sanitizeName);
 }
 function fillNameList(){
   const s=document.getElementById("nameSelect");
@@ -396,15 +371,15 @@ function fillCompareLists(){
   cWrap.innerHTML=""; pWrap.innerHTML="";
   uniqueTokens("Coach").forEach(c=>{
     const id="c_"+btoa(encodeURIComponent(c)).replace(/=/g,"");
-    cWrap.insertAdjacentHTML("beforeend",`
-      <label class="chip" for="${id}"><input id="${id}" type="checkbox" class="chk-coach" value="${c}"><span>${c}</span></label>
-    `);
+    cWrap.insertAdjacentHTML("beforeend",
+      `<label class="chip" for="${id}"><input id="${id}" type="checkbox" class="chk-coach" value="${c}"><span>${c}</span></label>`
+    );
   });
   uniqueTokens("Deltagare").forEach(n=>{
     const id="p_"+btoa(encodeURIComponent(n)).replace(/=/g,"");
-    pWrap.insertAdjacentHTML("beforeend",`
-      <label class="chip" for="${id}"><input id="${id}" type="checkbox" class="chk-delt" value="${n}"><span>${n}</span></label>
-    `);
+    pWrap.insertAdjacentHTML("beforeend",
+      `<label class="chip" for="${id}"><input id="${id}" type="checkbox" class="chk-delt" value="${n}"><span>${n}</span></label>`
+    );
   });
   // chip feedback
   document.querySelectorAll(".chip").forEach(chip=>{
@@ -420,7 +395,6 @@ function fillSickList(){
   s.innerHTML='<option value="">-- Välj sjuk coach --</option>'+
     uniqueTokens("Coach").map(c=>`<option>${c}</option>`).join("");
 }
-
 /* =========================
    GEMENSAM LOGIK
 ========================= */
@@ -428,94 +402,6 @@ function hidePanels(){
   document.getElementById("comparePanel").style.display="none";
   document.getElementById("sickPanel").style.display="none";
 }
-function sanitizeName(x){
-  const bad=["alla","ingen coach","ingen","eget arbete",".","-","na","n/a","okänt","unknown","(tom)",""];
-  return x && !bad.includes(String(x).trim().toLowerCase());
-}
-function splitNames(str){
-  return (str||"").split(/,|\/|;|\n/).map(s=>s.trim()).filter(sanitizeName);
-}
-
-/* =========================
-   DAGENS SCHEMA (KORT)
-========================= */
-function renderCards(name,isCoach){
-  hidePanels();
-  const today=todayKey();
-  const field=isCoach?"Coach":"Deltagare";
-  const rows=applyLunchRule(
-    DATA.filter(r=>{
-      const list=splitNames(r[field]||"");
-      return (list.map(x=>x.toLowerCase()).includes(name.toLowerCase())) || (r[field]||"").trim().toLowerCase()==="alla";
-    }),name,isCoach
-  ).filter(r=>dayKey(r.Datum)===today).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
-  let html=`<div class='cards'>`;
-  if(!rows.length) html+="<p>Inga aktiviteter idag.</p>";
-  rows.forEach(r=>{
-    html+=`<div class="card" style="--band:${colorFor(r)}">
-      <h3>${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h3>
-      <div class="row">🕒 ${r.Start||""}–${r.Slut||""}</div>
-      <div class="row">${isCoach?"👥 Deltagare: "+(r.Deltagare||"-"):"🧑‍🏫 Coach: "+(r.Coach||"-")}</div>
-    </div>`;
-  });
-  html+="</div>";
-  document.getElementById("schemaContainer").innerHTML=html;
-  document.getElementById("schemaContainer").style.display="block";
-  document.getElementById("blockContainer").style.display="none";
-  document.getElementById("btnPrint").style.display="none";           // skriv inte ut kortläget
-  document.getElementById("viewTitle").textContent=`Dagens schema – ${name}`;
-}
-
-/* =========================
-   VECKOSCHEMA (BLOCK, LIGGANDE)
-========================= */
-function makeSlots(){const a=[];for(let h=8;h<=16;h++){a.push(`${String(h).padStart(2,"0")}:00`,`${String(h).padStart(2,"0")}:30`);}a.push("16:30");return a;}
-function renderBlocks(name,isCoach){
-  hidePanels();
-  const slots=makeSlots();
-  const days=["måndag","tisdag","onsdag","torsdag","fredag"];
-  const field=isCoach?"Coach":"Deltagare";
-  const rows=applyLunchRule(DATA.filter(r=>{
-    const list=splitNames(r[field]||"");
-    return (list.map(x=>x.toLowerCase()).includes(name.toLowerCase())) || (r[field]||"").trim().toLowerCase()==="alla";
-  }),name,isCoach);
-
-  const head=document.getElementById("blockHeader"), grid=document.getElementById("blockGrid");
-  head.innerHTML="<div>Tid</div>"+days.map(d=>`<div>${d}</div>`).join("");
-  grid.innerHTML="";grid.style.gridTemplateColumns=`80px repeat(${days.length},1fr)`;
-  makeSlots().forEach(t=>{grid.innerHTML+=`<div class='block-time'>${t}</div>`+days.map(()=>`<div class='block-cell'></div>`).join("");});
-  const cells=[...grid.children];
-
-  rows.forEach(r=>{
-    const d=new Date(r.Datum);
-    let wd=d.getDay(); // 0=Sun .. 6=Sat
-    if(wd===0||wd===6) return; // endast vardagar
-    const col=(wd-1)+1; // måndag=1
-    const sIdx=slots.indexOf(r.Start), eIdx=slots.indexOf(r.Slut);
-    if(sIdx<0||eIdx<=sIdx) return;
-    const firstCellIndex=sIdx*(1+days.length)+col, firstCell=cells[firstCellIndex];
-    const block=document.createElement("div");
-    block.className="block"; block.style.background=colorFor(r);
-    // Längre pass: mer info. Kort (≤30min): kompakt rad.
-    const [sh,sm]=(r.Start||"00:00").split(":").map(Number);
-    const [eh,em]=(r.Slut||"00:00").split(":").map(Number);
-    const duration=(eh*60+em)-(sh*60+sm);
-    if(duration<=30){
-      block.innerHTML=`${emojiFor(r)} ${r.Aktivitet||""} – ${isCoach?"👥 "+(r.Deltagare||"-"):"🧑‍🏫 "+(r.Coach||"-")}`;
-    }else{
-      block.innerHTML=`<div class="title">${emojiFor(r)} ${r.Aktivitet||""}</div>${r.Start||""}–${r.Slut||""}<br>${isCoach?"👥 "+(r.Deltagare||"-"):"🧑‍🏫 "+(r.Coach||"-")}`;
-    }
-    requestAnimationFrame(()=>{const cellH=firstCell.clientHeight||28;block.style.height=(eIdx-sIdx)*cellH+"px";});
-    firstCell.appendChild(block);
-  });
-
-  document.getElementById("viewTitle").textContent=`Veckoschema – ${name}`;
-  document.getElementById("schemaContainer").style.display="none";
-  document.getElementById("blockContainer").style.display="block";
-  document.getElementById("btnPrint").style.display="inline-block";   // skriv ut finns bara här
-}
-
-/* Anpassning: lunch “alla” vs specifik */
 function applyLunchRule(rows,name,isCoach){
   return rows.filter(r=>{
     const isLunch=(r.Aktivitet||"").toLowerCase().includes("lunch");
@@ -534,302 +420,335 @@ function applyLunchRule(rows,name,isCoach){
 }
 
 /* =========================
-   JÄMFÖR SCHEMAN (FLERVY VECKA) – original
+   DAGENS SCHEMA (kortvy)
 ========================= */
-document.getElementById("btnCompare").onclick = () => {
-  document.getElementById("comparePanel").style.display = "block";
-  document.getElementById("sickPanel").style.display = "none";
-  document.getElementById("schemaContainer").style.display = "none";
-  document.getElementById("blockContainer").style.display = "none";
-  document.getElementById("nowContainer").innerHTML = "";
-  document.getElementById("viewTitle").textContent = "Jämför scheman";
-  // stäng dropdown
-  document.getElementById("scheduleDropdown").classList.remove("show");
-};
+function renderCards(name,isCoach){
+  hidePanels();
+  const today=todayKey();
+  const field=isCoach?"Coach":"Deltagare";
+  const rows=applyLunchRule(
+    DATA.filter(r=>{
+      const list=splitNames(r[field]||"");
+      return (list.map(x=>x.toLowerCase()).includes(name.toLowerCase())) ||
+             (r[field]||"").trim().toLowerCase()==="alla";
+    }),name,isCoach
+  ).filter(r=>dayKey(r.Datum)===today)
+   .sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
 
-document.getElementById("btnShowCompare").onclick = () => {
-  const selected = [
-    ...document.querySelectorAll(".chk-delt:checked"),
-    ...document.querySelectorAll(".chk-coach:checked")
-  ].map(cb => ({ name: cb.value, isCoach: cb.classList.contains("chk-coach") }));
-
-  if (!selected.length) { alert("Välj minst ett namn."); return; }
-
-  const wrap = document.createElement("div");
-  wrap.className = "schema-wrap";
-  selected.forEach(sel => {
-    const div = document.createElement("div");
-    div.className = "schema";
-    div.appendChild(renderSingleWeek(sel.name, sel.isCoach));
-    wrap.appendChild(div);
+  let html=`<div class='cards'>`;
+  if(!rows.length) html+="<p>Inga aktiviteter idag.</p>";
+  rows.forEach(r=>{
+    html+=`<div class="card" style="--band:${colorFor(r)}">
+      <h3>${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h3>
+      <div class="row">🕒 ${r.Start||""}–${r.Slut||""}</div>
+      <div class="row">${isCoach?"👥 Deltagare: "+(r.Deltagare||"-"):"🧑‍🏫 Coach: "+(r.Coach||"-")}</div>
+    </div>`;
   });
+  html+="</div>";
+  document.getElementById("schemaContainer").innerHTML=html;
+  document.getElementById("schemaContainer").style.display="block";
+  document.getElementById("blockContainer").style.display="none";
+  document.getElementById("btnPrint").style.display="none";
+  document.getElementById("viewTitle").textContent=`Dagens schema – ${name}`;
+}
 
-  document.getElementById("comparePanel").style.display = "none";
-  document.getElementById("sickPanel").style.display = "none";
-  document.getElementById("schemaContainer").innerHTML = "";
-  document.getElementById("schemaContainer").appendChild(wrap);
-  document.getElementById("schemaContainer").style.display = "block";
-  document.getElementById("blockContainer").style.display = "none";
-  document.getElementById("nowContainer").innerHTML="";
-  document.getElementById("viewTitle").textContent = "Jämförelse av veckoscheman";
-};
+/* =========================
+   VECKOSCHEMA (block, liggande)
+========================= */
+function makeSlots(){
+  const a=[];for(let h=8;h<=16;h++){a.push(`${String(h).padStart(2,"0")}:00`,`${String(h).padStart(2,"0")}:30`);}
+  a.push("16:30");return a;
+}
 
-function renderSingleWeek(name,isCoach){
-  const slots=makeSlots(), days=["måndag","tisdag","onsdag","torsdag","fredag"];
+function renderBlocks(name,isCoach){
+  hidePanels();
+  const slots=makeSlots();
+  const days=["måndag","tisdag","onsdag","torsdag","fredag"];
   const field=isCoach?"Coach":"Deltagare";
   const rows=applyLunchRule(DATA.filter(r=>{
     const list=splitNames(r[field]||"");
-    return (list.map(x=>x.toLowerCase()).includes(name.toLowerCase())) || (r[field]||"").trim().toLowerCase()==="alla";
+    return (list.map(x=>x.toLowerCase()).includes(name.toLowerCase())) ||
+           (r[field]||"").trim().toLowerCase()==="alla";
   }),name,isCoach);
 
-  const container=document.createElement("div");
-  container.innerHTML=`<h3>${isCoach?"Coach: ":"Deltagare: "}${name}</h3>
-  <div class="block-header"><div>Tid</div>${days.map(d=>`<div>${d}</div>`).join("")}</div>
-  <div class="block-grid"></div>`;
-
-  const grid=container.querySelector(".block-grid");
+  const head=document.getElementById("blockHeader"),
+        grid=document.getElementById("blockGrid");
+  head.innerHTML="<div>Tid</div>"+days.map(d=>`<div>${d}</div>`).join("");
+  grid.innerHTML="";
   grid.style.gridTemplateColumns=`80px repeat(${days.length},1fr)`;
-  slots.forEach(t=>{grid.innerHTML+=`<div class='block-time'>${t}</div>`+days.map(()=>`<div class='block-cell'></div>`).join("");});
+
+  slots.forEach(t=>{
+    grid.innerHTML+=`<div class='block-time'>${t}</div>`+
+      days.map(()=>`<div class='block-cell'></div>`).join("");
+  });
+
   const cells=[...grid.children];
 
   rows.forEach(r=>{
-    const wd=new Date(r.Datum).getDay();
+    const d=new Date(r.Datum);
+    let wd=d.getDay(); // 0=Sun..6=Sat
     if(wd===0||wd===6) return;
     const col=(wd-1)+1;
     const sIdx=slots.indexOf(r.Start), eIdx=slots.indexOf(r.Slut);
     if(sIdx<0||eIdx<=sIdx) return;
-    const firstCellIndex=sIdx*(1+days.length)+col,firstCell=cells[firstCellIndex];
+
+    const firstCellIndex=sIdx*(1+days.length)+col;
+    const firstCell=cells[firstCellIndex];
     const block=document.createElement("div");
-    block.className="block"; block.style.background=colorFor(r);
-    block.innerHTML=`<div class="title">${emojiFor(r)} ${r.Aktivitet||""}</div>${r.Start||""}–${r.Slut||""}<br>${isCoach?"👥 "+(r.Deltagare||"-"):"🧑‍🏫 "+(r.Coach||"-")}`;
-    requestAnimationFrame(()=>{const cellH=firstCell.clientHeight||28; block.style.height=(eIdx-sIdx)*cellH+"px";});
-    firstCell.appendChild(block);
-  });
-  return container;
-}
+    block.className="block";
+    block.style.background=colorFor(r);
 
-/* =========================
-   ERSÄTTARE – HEL VECKA (original)
-========================= */
-document.getElementById("btnSick").onclick = () => {
-  document.getElementById("sickPanel").style.display = "block";
-  document.getElementById("comparePanel").style.display = "none";
-  document.getElementById("schemaContainer").style.display = "none";
-  document.getElementById("blockContainer").style.display = "none";
-  document.getElementById("nowContainer").innerHTML = "";
-  document.getElementById("viewTitle").textContent = "Hitta ersättare";
-  document.getElementById("scheduleDropdown").classList.remove("show");
-};
-
-document.getElementById("sickCoachSelect").onchange = renderSick;
-document.getElementById("chkFullWeek").onchange = renderSick;
-
-function renderSick(){
-  const coach = document.getElementById("sickCoachSelect").value;
-  const fullWeek = document.getElementById("chkFullWeek").checked;
-  if(!coach){ document.getElementById("sickResult").innerHTML=""; return; }
-
-  const today = new Date();
-  const monday = new Date(today);
-  const day = monday.getDay(); // 0..6
-  const diffToMonday = (day === 0 ? -6 : 1) - day; // måndag som start
-  monday.setDate(today.getDate() + diffToMonday);
-  const days = [...Array(5)].map((_,i)=>{ const d=new Date(monday); d.setDate(monday.getDate()+i); return d; });
-
-  // Hämta pass för vald coach (idag eller hela veckan)
-  const passes = DATA.filter(r=>{
-    const rDate = new Date(r.Datum);
-    const isSameDay = dayKey(r.Datum)===todayKey();
-    const inWeek = days.some(d => dayKey(r.Datum)===d.toISOString().slice(0,10));
-    const coachHit = (r.Coach||"").toLowerCase().includes(coach.toLowerCase());
-    return coachHit && (fullWeek ? inWeek : isSameDay);
-  }).sort((a,b)=> (a.Datum||"").localeCompare(b.Datum||"") || (a.Start||"").localeCompare(b.Start||""));
-
-  const allCoaches = uniqueTokens("Coach");
-
-  let html = "";
-  if(!passes.length){
-    html = `<p>Inga pass hittades för ${coach} ${fullWeek?"denna vecka":"idag"}.</p>`;
-  } else {
-    const byDay = {};
-    passes.forEach(p=>{
-      const k = dayKey(p.Datum);
-      (byDay[k] ||= []).push(p);
-    });
-
-    html = `<div class="cards">`;
-    Object.keys(byDay).sort().forEach(k=>{
-      const dObj=new Date(k);
-      html += `<div class="card" style="--band:#cfd8e3">
-        <h3>📅 ${weekdayName(dObj.getDay())}</h3>
-        <div class="row" style="color:#555">Coach: ${coach}</div>
-      </div>`;
-
-      byDay[k].forEach(p=>{
-        const [psh,psm]=(p.Start||"00:00").split(":").map(Number);
-        const [peh,pem]=(p.Slut||"00:00").split(":").map(Number);
-        const ps=psh*60+psm, pe=peh*60+pem;
-
-        const free = allCoaches.filter(c=>{
-          if(!sanitizeName(c) || c===coach) return false;
-          const overlaps = DATA.some(r=>{
-            if(dayKey(r.Datum)!==k) return false;
-            if(!(r.Coach||"").toLowerCase().includes(c.toLowerCase())) return false;
-            const [sh,sm]=(r.Start||"00:00").split(":").map(Number);
-            const [eh,em]=(r.Slut||"00:00").split(":").map(Number);
-            const s=sh*60+sm, e=eh*60+em;
-            return !(e<=ps || s>=pe);
-          });
-          return !overlaps;
-        });
-
-        const e=emojiFor(p), col=colorFor(p);
-        html += `<div class="card" style="--band:${col}">
-          <h3>${e} ${p.Aktivitet||""} (${p.Start}–${p.Slut})</h3>
-          <div class="row">🧑‍🏫 Sjuk coach: ${coach}</div>
-          <div class="row">👥 Deltagare: ${p.Deltagare||"-"}</div>
-          <div class="row">✅ Lediga ersättare: ${free.length? free.join(", ") : "Ingen tillgänglig"}</div>
-        </div>`;
-      });
-    });
-    html += `</div>`;
-  }
-
-  document.getElementById("sickResult").innerHTML = html;
-}
-
-/* =========================
-   PÅGÅR NU + KOMMANDE (DAGSLINJE)
-========================= */
-let nowTimer=null;
-function showNowAndNext(){
-  const cont = document.getElementById("nowContainer");
-  const today=todayKey();
-  const now=new Date(); const minsNow=now.getHours()*60 + now.getMinutes();
-  const all = DATA.filter(r=> dayKey(r.Datum)===today )
-                  .sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
-
-  const ongo = all.filter(r=>{
     const [sh,sm]=(r.Start||"00:00").split(":").map(Number);
     const [eh,em]=(r.Slut||"00:00").split(":").map(Number);
-    const s=sh*60+sm, e=eh*60+em;
-    return minsNow>=s && minsNow<=e;
+    const duration=(eh*60+em)-(sh*60+sm);
+
+    // 🕒 NYT: visa tid först för längre pass
+    if(duration>30){
+      block.innerHTML=`<div class="title">🕒 ${r.Start||""}–${r.Slut||""}</div>
+        ${emojiFor(r)} ${r.Aktivitet||""}<br>
+        ${isCoach?"👥 "+(r.Deltagare||"-"):"🧑‍🏫 "+(r.Coach||"-")}`;
+    }else{
+      block.innerHTML=`${emojiFor(r)} ${r.Aktivitet||""}<br>
+        ${r.Start||""}–${r.Slut||""}<br>
+        ${isCoach?"👥 "+(r.Deltagare||"-"):"🧑‍🏫 "+(r.Coach||"-")}`;
+    }
+
+    requestAnimationFrame(()=>{
+      const cellH=firstCell.clientHeight||28;
+      block.style.height=(eIdx-sIdx)*cellH+"px";
+    });
+    firstCell.appendChild(block);
   });
-  const next = all.filter(r=>{
-    const [sh,sm]=(r.Start||"00:00").split(":").map(Number);
-    const s=sh*60+sm;
-    return s>minsNow;
-  });
 
-  const label = new Intl.DateTimeFormat("sv-SE",{ weekday:"long", day:"numeric", month:"long"}).format(now);
-  const time = now.toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"});
-  let html = `<h2 style="text-align:center;margin-bottom:8px">⏱️ ${label} – kl. ${time}</h2>`;
-
-  html += `<h3 style="text-align:center;margin:8px 0 6px">Pågår nu</h3>`;
-  if(!ongo.length) html += `<p style="text-align:center">Inga aktiviteter pågår just nu.</p>`;
-  else{
-    html += `<div class="cards">` + ongo.map(r => `
-      <div class="card" style="--band:${colorFor(r)}">
-        <h3>${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h3>
-        <div class="row">🕒 ${r.Start||""}–${r.Slut||""}</div>
-        <div class="row">🧑‍🏫 Coach: ${r.Coach||"-"}</div>
-        <div class="row">👥 Deltagare: ${r.Deltagare||"-"}</div>
-      </div>`).join("") + `</div>`;
-  }
-
-  html += `<h3 style="text-align:center;margin:12px 0 6px">Kommande idag</h3>`;
-  if(!next.length) html += `<p style="text-align:center">Inget mer planerat idag.</p>`;
-  else{
-    html += `<div class="cards">` + next.map(r => `
-      <div class="card" style="--band:${colorFor(r)}">
-        <h3>${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h3>
-        <div class="row">🕒 ${r.Start||""}–${r.Slut||""}</div>
-        <div class="row">🧑‍🏫 Coach: ${r.Coach||"-"}</div>
-        <div class="row">👥 Deltagare: ${r.Deltagare||"-"}</div>
-      </div>`).join("") + `</div>`;
-  }
-
-  cont.innerHTML = html;
+  document.getElementById("viewTitle").textContent=`Veckoschema – ${name}`;
+  document.getElementById("schemaContainer").style.display="none";
+  document.getElementById("blockContainer").style.display="block";
+  document.getElementById("btnPrint").style.display="inline-block";
 }
-if(nowTimer) clearInterval(nowTimer);
-nowTimer=setInterval(showNowAndNext,60000);
-
 /* =========================
-   DROPDOWN: öppna/stäng + stäng vid klick utanför
+   JÄMFÖR SCHEMAN
 ========================= */
-document.getElementById("btnSchedule").addEventListener("click",(e)=>{
-  e.stopPropagation();
-  document.getElementById("scheduleDropdown").classList.toggle("show");
-});
-document.addEventListener("click",(e)=>{
-  if(!e.target.closest("#scheduleDropdown")){
-    document.getElementById("scheduleDropdown").classList.remove("show");
-  }
-});
-
-/* =========================
-   KNAPPAR / VÄXLING
-========================= */
-document.getElementById("btnParticipant").onclick=()=>{
+function renderCompare(){
   hidePanels();
-  document.getElementById("coachSelect").style.display="none";
+  const chosenCoaches=[...document.querySelectorAll(".chk-coach:checked")].map(c=>c.value);
+  const chosenParts=[...document.querySelectorAll(".chk-delt:checked")].map(c=>c.value);
+  const allNames=[...chosenCoaches.map(x=>({name:x,isCoach:true})),...chosenParts.map(x=>({name:x,isCoach:false}))];
+
+  if(!allNames.length){alert("Välj minst en person att jämföra!");return;}
+
+  let html="<div class='schema-wrap'>";
+  allNames.forEach(p=>{
+    html+=`<div class='schema'><h3>${p.isCoach?"🧑‍🏫 ":"🧍‍♀️ "}${p.name}</h3>`;
+    html+=makeWeekGrid(p.name,p.isCoach);
+    html+="</div>";
+  });
+  html+="</div>";
+  document.getElementById("schemaContainer").innerHTML=html;
+  document.getElementById("schemaContainer").style.display="block";
+  document.getElementById("blockContainer").style.display="none";
+  document.getElementById("btnPrint").style.display="inline-block";
+  document.getElementById("viewTitle").textContent="Jämförelse";
+}
+
+function makeWeekGrid(name,isCoach){
+  const slots=makeSlots();
+  const days=["måndag","tisdag","onsdag","torsdag","fredag"];
+  const field=isCoach?"Coach":"Deltagare";
+  const rows=applyLunchRule(DATA.filter(r=>{
+    const list=splitNames(r[field]||"");
+    return (list.map(x=>x.toLowerCase()).includes(name.toLowerCase())) ||
+           (r[field]||"").trim().toLowerCase()==="alla";
+  }),name,isCoach);
+
+  let html="<div class='block-header' style='font-size:.9rem'><div>Tid</div>"+days.map(d=>`<div>${d}</div>`).join("")+"</div>";
+  html+="<div class='block-grid' style='grid-template-columns:80px repeat(5,1fr)'>";
+  slots.forEach(t=>{
+    html+=`<div class='block-time'>${t}</div>`+days.map(()=>`<div class='block-cell'></div>`).join("");
+  });
+  html+="</div>";
+
+  const div=document.createElement("div");div.innerHTML=html;
+  const grid=div.querySelector(".block-grid");
+  const cells=[...grid.children];
+
+  rows.forEach(r=>{
+    const d=new Date(r.Datum);let wd=d.getDay();if(wd===0||wd===6)return;
+    const col=(wd-1)+1;
+    const sIdx=slots.indexOf(r.Start),eIdx=slots.indexOf(r.Slut);
+    if(sIdx<0||eIdx<=sIdx)return;
+    const firstCellIndex=sIdx*(1+days.length)+col;
+    const firstCell=cells[firstCellIndex];
+    const block=document.createElement("div");
+    block.className="block";block.style.background=colorFor(r);
+
+    const [sh,sm]=(r.Start||"00:00").split(":").map(Number);
+    const [eh,em]=(r.Slut||"00:00").split(":").map(Number);
+    const duration=(eh*60+em)-(sh*60+sm);
+    if(duration>30){
+      block.innerHTML=`<div class="title">🕒 ${r.Start||""}–${r.Slut||""}</div>
+        ${emojiFor(r)} ${r.Aktivitet||""}<br>
+        ${isCoach?"👥 "+(r.Deltagare||"-"):"🧑‍🏫 "+(r.Coach||"-")}`;
+    }else{
+      block.innerHTML=`${emojiFor(r)} ${r.Aktivitet||""}<br>
+        ${r.Start||""}–${r.Slut||""}<br>
+        ${isCoach?"👥 "+(r.Deltagare||"-"):"🧑‍🏫 "+(r.Coach||"-")}`;
+    }
+    requestAnimationFrame(()=>{
+      const cellH=firstCell.clientHeight||28;
+      block.style.height=(eIdx-sIdx)*cellH+"px";
+    });
+    firstCell.appendChild(block);
+  });
+  return div.innerHTML;
+}
+
+/* =========================
+   HITTA ERSÄTTARE
+========================= */
+function renderSick(){
+  hidePanels();
+  const sel=document.getElementById("sickCoachSelect");
+  const name=sel.value;
+  if(!name){alert("Välj sjuk coach.");return;}
+  const fullWeek=document.getElementById("chkFullWeek").checked;
+  const rows=DATA.filter(r=>{
+    const list=splitNames(r.Coach||"");
+    return list.map(x=>x.toLowerCase()).includes(name.toLowerCase());
+  }).filter(r=>{
+    if(!fullWeek)return dayKey(r.Datum)===todayKey();return true;
+  }).sort((a,b)=>(a.Datum+a.Start).localeCompare(b.Datum+b.Start));
+
+  const allCoaches=uniqueTokens("Coach").filter(c=>c.toLowerCase()!==name.toLowerCase());
+  const resultDiv=document.getElementById("sickResult");
+  resultDiv.innerHTML="";
+
+  if(!rows.length){resultDiv.innerHTML="<p>Inga pass hittades.</p>";return;}
+
+  rows.forEach(r=>{
+    const dateStr=new Date(r.Datum).toLocaleDateString("sv-SE",{weekday:"short",month:"short",day:"numeric"});
+    const sameTime=DATA.filter(x=>{
+      const sameDay=dayKey(x.Datum)===dayKey(r.Datum);
+      if(!sameDay)return false;
+      const [sh,sm]=(x.Start||"00:00").split(":").map(Number);
+      const [eh,em]=(x.Slut||"00:00").split(":").map(Number);
+      const [rsh,rsm]=(r.Start||"00:00").split(":").map(Number);
+      const [reh,rem]=(r.Slut||"00:00").split(":").map(Number);
+      const startMin=sh*60+sm,endMin=eh*60+em;
+      const rStart=rsh*60+rsm,rEnd=reh*60+rem;
+      return !(endMin<=rStart||startMin>=rEnd);
+    });
+    const busy=uniqueTokens("Coach").filter(c=>sameTime.some(x=>splitNames(x.Coach).includes(c)));
+    const free=allCoaches.filter(c=>!busy.includes(c));
+    resultDiv.innerHTML+=`<div class='card' style='--band:${colorFor(r)}'>
+      <h3>${emojiFor(r)} ${r.Aktivitet||""}</h3>
+      <div class="row">📅 ${dateStr} 🕒 ${r.Start||""}–${r.Slut||""}</div>
+      <div class="row">👥 Deltagare: ${(r.Deltagare||"-")}</div>
+      <div class="row">🧑‍🏫 Möjliga ersättare: ${free.join(", ")||"–"}</div>
+    </div>`;
+  });
+}
+/* =========================
+   “PÅGÅR NU” + KOMMANDE
+========================= */
+function showNowAndNext(){
+  hidePanels();
+  const now=new Date();
+  const today=dayKey(now);
+  const nowMin=now.getHours()*60+now.getMinutes();
+  const todayRows=DATA.filter(r=>dayKey(r.Datum)===today);
+
+  const ongoing=todayRows.filter(r=>{
+    const [sh,sm]=(r.Start||"00:00").split(":").map(Number);
+    const [eh,em]=(r.Slut||"00:00").split(":").map(Number);
+    const startMin=sh*60+sm,endMin=eh*60+em;
+    return nowMin>=startMin && nowMin<endMin;
+  }).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
+
+  const upcoming=todayRows.filter(r=>{
+    const [sh,sm]=(r.Start||"00:00").split(":").map(Number);
+    const startMin=sh*60+sm;
+    return startMin>nowMin;
+  }).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
+
+  let html="<div class='cards'>";
+  html+="<h2>⏱️ Pågår nu</h2>";
+  if(!ongoing.length) html+="<p>Ingen aktivitet just nu.</p>";
+  ongoing.forEach(r=>{
+    html+=`<div class='card' style='--band:${colorFor(r)}'>
+      <h3>${emojiFor(r)} ${r.Aktivitet||""}</h3>
+      <div class="row">🕒 ${r.Start||""}–${r.Slut||""}</div>
+      <div class="row">🧑‍🏫 Coach: ${(r.Coach||"-")}</div>
+      <div class="row">👥 Deltagare: ${(r.Deltagare||"-")}</div>
+    </div>`;
+  });
+  html+="<h2 style='margin-top:12px'>📅 Kommande idag</h2>";
+  if(!upcoming.length) html+="<p>Inga fler aktiviteter idag.</p>";
+  upcoming.forEach(r=>{
+    html+=`<div class='card' style='--band:${colorFor(r)}'>
+      <h3>${emojiFor(r)} ${r.Aktivitet||""}</h3>
+      <div class="row">🕒 ${r.Start||""}–${r.Slut||""}</div>
+      <div class="row">🧑‍🏫 Coach: ${(r.Coach||"-")}</div>
+      <div class="row">👥 Deltagare: ${(r.Deltagare||"-")}</div>
+    </div>`;
+  });
+  html+="</div>";
+
+  document.getElementById("schemaContainer").innerHTML=html;
+  document.getElementById("schemaContainer").style.display="block";
+  document.getElementById("blockContainer").style.display="none";
+  document.getElementById("btnPrint").style.display="none";
+  document.getElementById("viewTitle").textContent="Pågår nu";
+}
+setInterval(showNowAndNext,60000);
+
+/* =========================
+   EVENT HANDLERS
+========================= */
+document.getElementById("btnParticipant").addEventListener("click",()=>{
   document.getElementById("nameSelect").style.display="inline-block";
-  document.getElementById("viewTitle").textContent="Deltagarschema";
-};
-document.getElementById("btnCoach").onclick=()=>{
-  hidePanels();
+  document.getElementById("coachSelect").style.display="none";
+});
+document.getElementById("btnCoach").addEventListener("click",()=>{
   document.getElementById("nameSelect").style.display="none";
   document.getElementById("coachSelect").style.display="inline-block";
-  document.getElementById("viewTitle").textContent="Coachschema";
-};
-document.getElementById("btnCards").onclick=()=>{
-  const isCoach = document.getElementById("coachSelect").style.display!=="none";
-  const n = isCoach ? document.getElementById("coachSelect").value : document.getElementById("nameSelect").value;
-  if(n) renderCards(n,isCoach);
-};
-document.getElementById("btnBlocks").onclick=()=>{
-  const isCoach = document.getElementById("coachSelect").style.display!=="none";
-  const n = isCoach ? document.getElementById("coachSelect").value : document.getElementById("nameSelect").value;
-  if(n) renderBlocks(n,isCoach);
-};
-
-/* Utskrift – visa endast aktiv vy */
-document.getElementById("btnPrint").onclick=()=>{
-  // rensa markering
-  document.querySelectorAll('.print-scope').forEach(el=>el.classList.remove('print-visible'));
-  // markera rätt
-  if(document.getElementById("blockContainer").style.display==="block"){
-    document.getElementById("blockContainer").classList.add('print-visible');
-  }else if(document.getElementById("schemaContainer").style.display==="block"){
-    document.getElementById("schemaContainer").classList.add('print-visible');
-  }
-  window.print();
-  // städa
-  setTimeout(()=>document.querySelectorAll('.print-scope').forEach(el=>el.classList.remove('print-visible')),50);
-};
-
-/* Auto: när man väljer namn → visa veckoschema direkt */
-document.getElementById("nameSelect").addEventListener("change", e=>{
-  if(e.target.value) { renderBlocks(e.target.value,false); document.getElementById("btnPrint").style.display="inline-block"; }
-});
-document.getElementById("coachSelect").addEventListener("change", e=>{
-  if(e.target.value) { renderBlocks(e.target.value,true); document.getElementById("btnPrint").style.display="inline-block"; }
 });
 
-/* 🔹 Startmeny-knappar – genvägar (NY) */
-document.getElementById("startSelectParticipant").onclick=()=>document.getElementById("btnParticipant").click();
-document.getElementById("startSelectCoach").onclick=()=>document.getElementById("btnCoach").click();
-document.getElementById("startWeek").onclick=()=>document.getElementById("btnBlocks").click();
-document.getElementById("startDay").onclick=()=>document.getElementById("btnCards").click();
-document.getElementById("startSchedule").onclick=()=>document.getElementById("btnSchedule").click();
-document.getElementById("startNow").onclick=()=>{
-  showNowAndNext();
-  document.getElementById("schemaContainer").style.display="none";
-  document.getElementById("blockContainer").style.display="none";
-  document.getElementById("comparePanel").style.display="none";
+document.getElementById("btnCards").addEventListener("click",()=>{
+  const ns=document.getElementById("nameSelect"),cs=document.getElementById("coachSelect");
+  const name=ns.style.display!=="none"?ns.value:cs.value;
+  const isCoach=cs.style.display!=="none";
+  if(!name){alert("Välj namn först.");return;}
+  renderCards(name,isCoach);
+});
+document.getElementById("btnBlocks").addEventListener("click",()=>{
+  const ns=document.getElementById("nameSelect"),cs=document.getElementById("coachSelect");
+  const name=ns.style.display!=="none"?ns.value:cs.value;
+  const isCoach=cs.style.display!=="none";
+  if(!name){alert("Välj namn först.");return;}
+  renderBlocks(name,isCoach);
+});
+
+document.getElementById("btnCompare").addEventListener("click",()=>{
+  hidePanels();
+  document.getElementById("comparePanel").style.display="block";
   document.getElementById("sickPanel").style.display="none";
-  document.getElementById("viewTitle").textContent = "Pågår nu";
-};
+});
+document.getElementById("btnSick").addEventListener("click",()=>{
+  hidePanels();
+  document.getElementById("sickPanel").style.display="block";
+});
+document.getElementById("btnShowCompare").addEventListener("click",renderCompare);
+document.getElementById("sickCoachSelect").addEventListener("change",renderSick);
+document.getElementById("chkFullWeek").addEventListener("change",renderSick);
+
+document.getElementById("btnPrint").addEventListener("click",()=>window.print());
+
+document.getElementById("btnSchedule").addEventListener("click",()=>{
+  document.getElementById("scheduleDropdown").classList.toggle("show");
+});
+window.addEventListener("click",e=>{
+  if(!e.target.matches("#btnSchedule")) document.getElementById("scheduleDropdown").classList.remove("show");
+});
 </script>
 </body>
 </html>
