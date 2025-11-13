@@ -420,7 +420,6 @@ const aktivitetFarger = {
   "Lunch Anders B": { color: "#F9A825", emoji: "🍽️" },
 
   "Frukost": { color: "#FAD7A0", emoji: "🥐" },
-
   "Morgonrutiner": { color: "#FAD7A0", emoji: "☀️" },
 
   "Ateljé": { color: "#F5CBA7", emoji: "🎨" },
@@ -433,7 +432,6 @@ const aktivitetFarger = {
   "Rep och jam": { color: "#D2B4DE", emoji: "🎶" },
   "Musikquizz": { color: "#D2B4DE", emoji: "🎶" },
   "Musikdokumentär": { color: "#D2B4DE", emoji: "🎶" },
-
   "Vocal": { color: "#D2B4DE", emoji: "🎤" },
 
   "Pod": { color: "#A9CCE3", emoji: "🎙️" },
@@ -504,17 +502,26 @@ const aktivitetFarger = {
   "Ladda stol": { color: "#FAD7A0", emoji: "🔋" }
 };
 
+/* ===== FUNKTIONER ===== */
+
+function colorFor(r) {
+  return (aktivitetFarger[r.Aktivitet] || { color: "#edf2f7" }).color;
 }
 
+function emojiFor(r) {
+  return (aktivitetFarger[r.Aktivitet] || { emoji: "" }).emoji;
+}
 
-};
+function dayKey(str) {
+  return String(str).slice(0, 10);
+}
 
-function colorFor(r) { return (aktivitetFarger[r.Aktivitet] || { color: "#edf2f7" }).color; }
-function emojiFor(r) { return (aktivitetFarger[r.Aktivitet] || { emoji: "" }).emoji; }
-function dayKey(str) { return String(str).slice(0, 10); }
-function todayKey() { return new Date().toISOString().slice(0, 10); }
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function weekdayName(d) {
-  return ["söndag", "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag"][d];
+  return ["söndag","måndag","tisdag","onsdag","torsdag","fredag","lördag"][d];
 }
 
 
