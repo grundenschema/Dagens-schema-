@@ -1005,6 +1005,52 @@ body.pictos-print #participantPictos .picto-day{
   .card .row{ font-size: 15px !important; }
 }
 
+
+
+
+/* Diskret underrubrik */
+.subhint{
+  margin: 6px 0 10px 0;
+  font-size: 15px;
+  color: #333;
+}
+
+
+
+
+
+
+@media print {
+  /* Centrera rubrik (namn + datum) vid utskrift av VECKOSCHEMAN (coach + deltagare) */
+  body:not(.pictos-print) #print-header-single{
+    text-align: center !important;
+  }
+  body:not(.pictos-print) #print-header-single *{
+    text-align: center !important;
+  }
+}
+
+
+@media print {
+  /* Dölj vy-rubriker vid utskrift (ska inte följa med i print) */
+  #participantView #viewTitle,
+  #coachView #viewTitle{
+    display: none !important;
+  }
+}
+
+
+@media print {
+  /* Centrera rubrik (namn + datum) på VECKOSCHEMA */
+  body:not(.pictos-print) #print-header-single{
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center !important;
+  }
+}
+
 </style>
 </head>
 
@@ -1034,14 +1080,15 @@ body.pictos-print #participantPictos .picto-day{
 <!-- DELTAGARE-VY -->
 <div id="participantView" class="view">
   <div id="viewTitle">👤 Deltagarschema</div>
-  <div class="controls">
+
+<div class="controls">
     <select id="nameSelect"><option value="">-- Välj deltagare --</option></select>
     <button id="btnParticipantToday" class="btn primary">☀️ Dagens schema</button>
     <button id="btnParticipantWeek" class="btn primary">📆 Schema</button>
     <button id="btnParticipantPictos" class="btn primary">🖼️ Bildstöd (vecka)</button>
     <button id="btnPrintParticipant" class="btn">🖨️ Skriv ut</button>
   </div>
-  <div id="participantDay" class="cards print-scope"></div>
+<div id="participantDay" class="cards print-scope"></div>
   <div id="participantWeek" class="print-scope" style="display:none;">
     <div class="block-header" id="pBlockHeader"></div>
     <div class="block-grid" id="pBlockGrid"></div>
@@ -1060,7 +1107,7 @@ body.pictos-print #participantPictos .picto-day{
     <button id="btnCoachWeek" class="btn primary">📆 Schema</button>
     <button id="btnPrintCoach" class="btn">🖨️ Skriv ut</button>
   </div>
-  <div id="coachDay" class="cards print-scope"></div>
+<div id="coachDay" class="cards print-scope"></div>
   <div id="coachWeek" class="print-scope" style="display:none;">
     <div class="block-header" id="cBlockHeader"></div>
     <div class="block-grid" id="cBlockGrid"></div>
@@ -1331,12 +1378,42 @@ function fillSickList(){
 function showView(id){
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
   document.getElementById(id).classList.add("active");
+
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   if(id==="participantView") document.getElementById("tabParticipant").classList.add("active");
   if(id==="coachView") document.getElementById("tabCoach").classList.add("active");
   if(id==="nowView") document.getElementById("tabNow").classList.add("active");
   if(id==="assistantView") document.getElementById("tabAssistant").classList.add("active");
+
+  // ===== Alternativ 3: Nollställ visningen vid vybyte, men behåll val i listorna =====
+  if(id==="participantView"){
+    const day = document.getElementById("participantDay");
+    const week = document.getElementById("participantWeek");
+    const pictos = document.getElementById("participantPictos");
+
+    if(week) week.style.display = "none";
+    if(pictos){ pictos.style.display = "none"; pictos.innerHTML = ""; }
+
+    if(day){
+      day.style.display = "block";
+      day.innerHTML = "";
+    }
+  }
+
+  if(id==="coachView"){
+    const day = document.getElementById("coachDay");
+    const week = document.getElementById("coachWeek");
+
+    if(week) week.style.display = "none";
+
+    if(day){
+      day.style.display = "block";
+      day.innerHTML = "";
+    }
+  }
 }
+
+
 
 document.getElementById("tabParticipant").onclick=()=>{ showView("participantView"); };
 document.getElementById("tabCoach").onclick=()=>{ showView("coachView"); };
