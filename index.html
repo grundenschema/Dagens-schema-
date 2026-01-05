@@ -954,17 +954,55 @@ body.pictos-print #participantPictos .picto-day{
   .picto-act .a{ font-size: 18px !important; }
   .picto-coach .names{ font-size: 18px !important; }
 
-  /* Veckoblock: en kolumn på mobil */
-  .block-grid{
-    grid-template-columns: 1fr !important;
   }
-}
 
 /* Super-små skärmar */
 @media (max-width: 380px){
   #viewTitle{ font-size: 18px !important; }
   .btn, select{ font-size: 15px !important; }
   .picto-act .e{ font-size: 46px !important; }
+}
+
+
+/* =========================
+   Mobilfix (städad vy)
+========================= */
+@media (max-width: 720px){
+  /* Ta bort onödiga flikar i mobilen */
+  #tabAssistant, #tabNow { display:none !important; }
+  #assistantView { display:none !important; }
+
+  /* Bildstöd-knappen behövs inte i mobilen */
+  #btnParticipantPictos { display:none !important; }
+
+  /* Större väljare, särskilt coach */
+  #coachSelect, #nameSelect{
+    font-size: 18px !important;
+    padding: 14px 14px !important;
+    min-height: 52px !important;
+  }
+
+  /* Veckoschema: visa hela veckan genom horisontell scroll */
+  #participantWeek, #coachWeek{
+    overflow-x:auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 10px;
+  }
+  #participantWeek .block-header,
+  #participantWeek .block-grid,
+  #coachWeek .block-header,
+  #coachWeek .block-grid{
+    min-width: 820px; /* så alla dagar får plats */
+  }
+
+  /* Gör tidskolumnen lite större så man ser */
+  .block-header{ grid-template-columns: 90px repeat(5, 1fr) !important; }
+  .block-grid{ grid-template-columns: 90px repeat(5, 1fr) !important; }
+  .block-time{ font-size: 14px !important; }
+
+  /* Mindre rörigt: lite tajtare kort */
+  .card h3{ font-size: 18px !important; }
+  .card .row{ font-size: 15px !important; }
 }
 
 </style>
