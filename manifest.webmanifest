@@ -1,6 +1,6 @@
 {
-  "name": "Schema",
-  "short_name": "Schema",
+  "name": " Grunden Schema",
+  "short_name": "Grunden",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
