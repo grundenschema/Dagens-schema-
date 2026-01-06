@@ -1284,6 +1284,23 @@ body.pictos-print #participantPictos .picto-day{
   .tab-row-mobile{ display:contents; } /* påverka inte desktop */
 }
 
+
+/* =========================
+   STARTVY: Centrera knappar (webb + mobil)
+========================= */
+.tab-bar{
+  justify-content:center;
+}
+@media (max-width:720px){
+  .tab-bar{
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+  #tabNow{ order:1; width:100%; max-width:320px; }
+  .tab-row-mobile{ order:2; width:100%; max-width:320px; }
+  #tabCoach, #tabParticipant{ width:100%; }
+}
 </style>
 
 <!-- =========================
@@ -2155,23 +2172,23 @@ function showView(id){
   if(id==="coachView") initMobileCoach();
 
   // Mobil: helskärm endast i coach/deltagare
-  document.body.classList.toggle('mobile-fullscreen', isMobile() && (id==='coachView'));
+  document.body.classList.toggle('mobile-fullscreen', isMobile() && (id==='coachView' && document.getElementById('coachSelect')?.value));
 }
 
 // Mobil: tillbaka från helskärm-dagschema
-document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>showView("nowView"));
-document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>showView("nowView"));
+document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>document.body.classList.remove('mobile-fullscreen'); showView("nowView"));
+document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>document.body.classList.remove('mobile-fullscreen'); showView("nowView"));
 
 
 
 
 document.getElementById("tabParticipant").onclick=()=>{ showView("participantView"); };
 document.getElementById("tabCoach").onclick=()=>{ showView("coachView"); };
-document.getElementById("tabNow").onclick=()=>{ showView("nowView"); renderNow(); };
+document.getElementById("tabNow").onclick=()=>{ document.body.classList.remove('mobile-fullscreen'); showView("nowView"); renderNow(); };
 document.getElementById("tabAssistant").onclick=()=>{ showView("assistantView"); };
 
 /* Loggan = hem (pågår nu) */
-document.getElementById("homeLogo").addEventListener("click",()=>{ showView("nowView"); renderNow(); });
+document.getElementById("homeLogo").addEventListener("click",()=>{ document.body.classList.remove('mobile-fullscreen'); showView("nowView"); renderNow(); });
 
 /* =========================
    PÅGÅR NU + KOMMANDE
