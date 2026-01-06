@@ -1175,6 +1175,26 @@ body.pictos-print #participantPictos .picto-day{
   #mPDayCards, #mCDayCards{ perspective: 900px; }
 }
 
+
+
+@media (max-width: 720px){
+  .mobile-swipe-hint{
+    font-size: 12px;
+    color: #555;
+    text-align: center;
+    margin: 4px 0 8px;
+    opacity: 0.85;
+  }
+  .mobile-swipe-hint.hide{
+    opacity: 0.0;
+    transition: opacity 220ms ease-out;
+  }
+  /* mjukare "snap" när man släpper */
+  .mobile-swipe-surface{
+    transition: transform 180ms cubic-bezier(.2,.8,.2,1);
+  }
+}
+
 </style>
 
 <!-- =========================
@@ -1382,7 +1402,8 @@ body.print-week{ }
       <div class="mobile-day-title" id="mPTitle">Idag</div>
       <div class="mobile-day-sub" id="mPSub"></div>
     </div>
-    <div id="mPSwipe" class="mobile-swipe-surface">
+    <div class="mobile-swipe-hint" id="mPHint">Svep ← / → för att bläddra dagar</div>
+<div id="mPSwipe" class="mobile-swipe-surface">
       <div id="mPDayCards" class="cards"></div>
     </div>
     <div class="mobile-edge-hint" id="mPEdgeHint"></div>
@@ -1417,7 +1438,8 @@ body.print-week{ }
       <div class="mobile-day-title" id="mCTitle">Idag</div>
       <div class="mobile-day-sub" id="mCSub"></div>
     </div>
-    <div id="mCSwipe" class="mobile-swipe-surface">
+    <div class="mobile-swipe-hint" id="mCHint">Svep ← / → för att bläddra dagar</div>
+<div id="mCSwipe" class="mobile-swipe-surface">
       <div id="mCDayCards" class="cards"></div>
     </div>
     <div class="mobile-edge-hint" id="mCEdgeHint"></div>
@@ -1712,9 +1734,9 @@ function attachDaySwipe(opts){
   }
 
   function reset(){
-    surface.style.transition = "transform 120ms ease-out";
+    surface.style.transition = "transform 180ms cubic-bezier(.2,.8,.2,1)";
     surface.style.transform = "translateX(0px)";
-    setTimeout(()=>{ surface.style.transition = "transform 120ms ease-out"; }, 0);
+    setTimeout(()=>{ surface.style.transition = "transform 180ms cubic-bezier(.2,.8,.2,1)"; }, 0);
   }
 
   surface.addEventListener("touchstart",(e)=>{
@@ -1832,7 +1854,7 @@ function initMobileParticipant(){
     onEdge: (where)=>{
       edgeEl.textContent = where ? (where==="start" ? "Första dagen i veckan" : "Sista dagen i veckan") : "";
     },
-    onChange: (_i,dir)=>{ if(dir) mPLastDir=dir; render(); }
+    onChange: (_i,dir)=>{ if(dir) mPLastDir=dir; const h=document.getElementById("mPHint"); if(h) h.classList.add("hide"); try{ localStorage.setItem("swipeHintSeenP","1"); }catch(_e){}; render(); }
   });
 }
 
@@ -1879,7 +1901,7 @@ function initMobileCoach(){
     onEdge: (where)=>{
       edgeEl.textContent = where ? (where==="start" ? "Första dagen i veckan" : "Sista dagen i veckan") : "";
     },
-    onChange: (_i,dir)=>{ if(dir) mCLastDir=dir; render(); }
+    onChange: (_i,dir)=>{ if(dir) mCLastDir=dir; const h=document.getElementById("mCHint"); if(h) h.classList.add("hide"); try{ localStorage.setItem("swipeHintSeenC","1"); }catch(_e){}; render(); }
   });
 }
 
