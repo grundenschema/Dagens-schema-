@@ -48,6 +48,49 @@
   }
 }
 
+
+/* ===== v34: Mobil dagbanner layout ===== */
+.mobile-day-header{
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mobile-day-left{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:6px;
+}
+.mobile-inline-back{
+  font-size: 18px !important;
+  padding: 6px 10px !important;
+  min-height: 32px;
+  line-height: 1;
+}
+.mobile-day-title{
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.05;
+}
+.mobile-day-sub{
+  font-size: 14px;
+  font-weight: 600;
+  opacity: .75;
+  text-align: right;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+/* I dagläge: dölj stora tillbaka-raden + rubriker + select */
+body.mobile-day-mode .mobile-backbar,
+body.mobile-day-mode .mobile-selectbar,
+body.mobile-day-mode .mobile-titlebar{
+  display: none !important;
+}
+
 </style>
 
 <style>
@@ -1917,10 +1960,11 @@ body.print-week{ }
   <!-- MOBIL (tittläge): Dag-för-dag med swipe (kortvy) -->
   <div id="mobileParticipantDayView" class="print-scope">
     <div class="mobile-day-header">
-      <button class="btn mobile-inline-back" id="btnBackInlineP" aria-label="Tillbaka">←</button>
-      <div class="mobile-day-title" id="mPTitle">Idag</div>
-      <div class="mobile-day-sub" id="mPSub"></div>
-    </div>
+      <div class="mobile-day-left">
+        <button class="btn mobile-inline-back" id="btnBackInlineP" aria-label="Tillbaka">←</button>
+        <div class="mobile-day-title" id="mPTitle">Idag</div>
+      </div>
+      <div class="mobile-day-sub" id="mPSub"></div></div>
     <div class="mobile-swipe-hint" id="mPHint">Svep ← / → för att bläddra dagar</div>
 <div id="mPSwipe" class="mobile-swipe-surface">
       <div id="mPDayCards" class="cards"></div>
@@ -1954,10 +1998,11 @@ body.print-week{ }
   <!-- MOBIL (tittläge): Dag-för-dag med swipe (kortvy) -->
   <div id="mobileCoachDayView" class="print-scope">
     <div class="mobile-day-header">
-      <button class="btn mobile-inline-back" id="btnBackInlineC" aria-label="Tillbaka">←</button>
-      <div class="mobile-day-title" id="mCTitle">Idag</div>
-      <div class="mobile-day-sub" id="mCSub"></div>
-    </div>
+      <div class="mobile-day-left">
+        <button class="btn mobile-inline-back" id="btnBackInlineC" aria-label="Tillbaka">←</button>
+        <div class="mobile-day-title" id="mCTitle">Idag</div>
+      </div>
+      <div class="mobile-day-sub" id="mCSub"></div></div>
     <div class="mobile-swipe-hint" id="mCHint">Svep ← / → för att bläddra dagar</div>
 <div id="mCSwipe" class="mobile-swipe-surface">
       <div id="mCDayCards" class="cards"></div>
@@ -2618,22 +2663,40 @@ function updateMobileFullscreenForCurrentView(){
   document.body.classList.toggle('mobile-day-mode', wantFull);
 }
 
+/* ===== v34: lämna dagläge korrekt (rensa val så man kan byta schema) ===== */
+function exitDayMode(){
+  // Rensa val i mobil så nästa gång kan man välja annat schema
+  const coachSel = document.getElementById("coachSelect");
+  const partSel  = document.getElementById("nameSelect");
+  if(coachSel) coachSel.value = "";
+  if(partSel) partSel.value = "";
+
+  // Rensa mobil state-variabler om de finns
+  try{ if(typeof mCName !== "undefined") mCName = ""; }catch(_e){}
+  try{ if(typeof mPName !== "undefined") mPName = ""; }catch(_e){}
+
+  document.body.classList.remove("mobile-fullscreen","mobile-day-mode");
+
+  // Gå till startsidan i mobil
+  if(typeof showView === "function") showView("nowView");
+}
+
 
 
 // Mobil: håll helskärmsläget korrekt vid rotation/resize
 window.addEventListener("resize", ()=>{ if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView(); });
 window.addEventListener("orientationchange", ()=>{ if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView(); });
 // Mobil: tillbaka från helskärm-dagschema
-document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen","mobile-day-mode"); showView("nowView"); });
-document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen","mobile-day-mode"); showView("nowView"); });
+document.getElementById("btnBackFromParticipant")?.addEventListener("click", exitDayMode); showView("nowView"); });
+document.getElementById("btnBackFromCoach")?.addEventListener("click", exitDayMode); showView("nowView"); });
 
 
 
 
 
 // Mobil: inline-tillbaka i dagraden
-document.getElementById("btnBackInlineP")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen","mobile-day-mode"); showView("nowView"); });
-document.getElementById("btnBackInlineC")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen","mobile-day-mode"); showView("nowView"); });
+document.getElementById("btnBackInlineP")?.addEventListener("click", exitDayMode); showView("nowView"); });
+document.getElementById("btnBackInlineC")?.addEventListener("click", exitDayMode); showView("nowView"); });
 document.getElementById("tabParticipant").onclick=()=>{ showView("participantView"); };
 document.getElementById("tabCoach").onclick=()=>{ showView("coachView"); };
 document.getElementById("tabNow").onclick=()=>{ showView("nowView"); renderNow(); };
