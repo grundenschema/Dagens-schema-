@@ -1275,17 +1275,6 @@ body.pictos-print #participantPictos .picto-day{
 
 
 /* Desktop: flik-ordning Deltagare → Pågår nu → Coach */
-@media (min-width: 721px){
-  .tab-bar{ display:flex; gap:8px; align-items:center; justify-content:flex-start; flex-wrap:wrap; }
-  #tabParticipant{ order:1; }
-  #tabNow{ order:2; }
-  #tabCoach{ order:3; }
-  #tabAssistant{ order:4; }
-  .tab-row-mobile{ display:contents; } /* påverka inte desktop */
-}
-
-
-
 /* =========================
    STARTVY: centrerade knappar (webb + mobil)
 ========================= */
@@ -1344,6 +1333,33 @@ body.pictos-print #participantPictos .picto-day{
     z-index: 50;
     padding: 8px 0 6px;
     margin-top: 0;
+  }
+}
+
+
+
+/* =========================
+   STARTVY (webb): Coach + Deltagare bredvid varandra och bredare knappar
+========================= */
+@media (min-width: 721px){
+  .tab-bar{
+    justify-content:center;
+    gap:12px;
+  }
+  .tab-row-mobile{
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+  #tabCoach, #tabParticipant{
+    padding: 12px 18px;
+    min-width: 240px;
+    justify-content:center;
+  }
+  #tabNow{
+    padding: 12px 18px;
+    min-width: 240px;
+    justify-content:center;
   }
 }
 
