@@ -1195,6 +1195,68 @@ body.pictos-print #participantPictos .picto-day{
   }
 }
 
+
+
+/* =========================
+   MOBIL: Riktig helskärm i schema + tillbaka till start
+========================= */
+@media (max-width: 720px){
+  body.mobile-fullscreen header{ display:none !important; }
+  body.mobile-fullscreen #dataStatus{ display:none !important; }
+  body.mobile-fullscreen #debugPanel{ display:none !important; }
+
+  body.mobile-fullscreen{
+    overflow:hidden; /* undvik att body scrollar bakom vyn */
+  }
+
+  /* Backbar ligger fast högst upp (respektera safe-area på iPhone) */
+  body.mobile-fullscreen .mobile-backbar{
+    position: fixed;
+    top: env(safe-area-inset-top);
+    left: 0; right: 0;
+    z-index: 9999;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    padding: 10px 12px;
+    border-bottom: 1px solid #e6e6e6;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  }
+
+  /* Själva innehållet under backbaren */
+  body.mobile-fullscreen #participantView,
+  body.mobile-fullscreen #coachView{
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    overflow: auto;
+    padding-top: calc(56px + env(safe-area-inset-top));
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    background: #f7f7fb;
+  }
+
+  /* Ta bort extra rubrik/controls som äter höjd i helskärm */
+  body.mobile-fullscreen #participantView #viewTitle,
+  body.mobile-fullscreen #coachView #viewTitle{
+    display:none !important;
+  }
+  body.mobile-fullscreen #participantView .controls,
+  body.mobile-fullscreen #coachView .controls{
+    position: sticky;
+    top: calc(56px + env(safe-area-inset-top));
+    z-index: 1000;
+    background: #f7f7fb;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  /* Ge swipe-yta mer plats */
+  body.mobile-fullscreen #mPSwipe,
+  body.mobile-fullscreen #mCSwipe{
+    min-height: 62vh;
+  }
+}
+
 </style>
 
 <!-- =========================
