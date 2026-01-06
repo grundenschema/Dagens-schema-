@@ -1112,6 +1112,44 @@ body.pictos-print #participantPictos .picto-day{
 ========================= */
 #btnPrintParticipant, #btnPrintCoach, #btnPrintNow, #btnPrintCompare { display:none !important; }
 
+
+
+/* Mobil: ta bort "Dagens schema"/Idag-knappar (Idag är default + swipe) */
+@media (max-width: 720px){
+  #btnParticipantToday, #btnCoachToday { display:none !important; }
+}
+
+
+
+@media (max-width: 720px){
+  #mobileParticipantDayView .card{
+    padding: 14px 14px;
+  }
+  #mobileParticipantDayView .card h3{
+    font-size: 18px;
+  }
+  #mobileParticipantDayView .card .row{
+    font-size: 15px;
+  }
+  #mobileCoachDayView .card{
+    padding: 12px 12px;
+  }
+}
+
+
+
+@media (max-width: 720px){
+  .day-swap-enter{
+    opacity: 0.01;
+    transform: translateX(18px);
+  }
+  .day-swap-enter-active{
+    opacity: 1;
+    transform: translateX(0px);
+    transition: opacity 160ms ease-out, transform 160ms ease-out;
+  }
+}
+
 </style>
 
 <!-- =========================
@@ -1527,8 +1565,13 @@ function dayKey(str) {
   return String(str).slice(0, 10);
 }
 
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+function todayKey(){
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
 }
 
 
@@ -1561,7 +1604,12 @@ function weekDaysMonFri(baseDate){
 }
 
 function keyFromDate(d){
-  return new Date(d).toISOString().slice(0,10);
+  const x = new Date(d);
+  x.setHours(0,0,0,0);
+  const y = x.getFullYear();
+  const m = String(x.getMonth()+1).padStart(2,"0");
+  const day = String(x.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
 }
 
 function prettyDay(d){
@@ -1572,7 +1620,13 @@ function prettyDay(d){
 }
 
 /* Kort-rendering med valt datum (återanvänd dina kort-stilar) */
-function renderCardsGenericForDate(name,isCoach,targetEl,dateKeyStr){
+function cardsEl.classList.remove("day-swap-enter","day-swap-enter-active");
+    cardsEl.classList.add("day-swap-enter");
+    // nästa frame: slå på transition
+    requestAnimationFrame(()=>{
+      cardsEl.classList.add("day-swap-enter-active");
+    });
+    renderCardsGenericForDate(name,isCoach,targetEl,dateKeyStr){
   const field=isCoach?"Coach":"Deltagare";
   const rows=DATA.filter(r=>{
     const list=splitNames(r[field]||"");
@@ -1580,7 +1634,7 @@ function renderCardsGenericForDate(name,isCoach,targetEl,dateKeyStr){
   }).filter(r=>dayKey(r.Datum)===dateKeyStr).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
 
   let html=`<div class='cards'>`;
-  if(!rows.length) html+="<div class='card' style='--band:#cfd8e3'><div class='row'>Inga aktiviteter denna dag.</div></div>";
+  if(!rows.length) html+="<div class='card' style='--band:#cfd8e3'><div class='row'>Ledig (inga aktiviteter)</div></div>";
   rows.forEach(r=>{
     html+=`<div class="card" style="--band:${colorFor(r)}">
       <h3>${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h3>
@@ -1708,6 +1762,12 @@ function initMobileParticipant(){
     const pretty = prettyDay(d);
     titleEl.textContent = (k===today) ? "Idag" : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
     subEl.textContent = pretty.date;
+    cardsEl.classList.remove("day-swap-enter","day-swap-enter-active");
+    cardsEl.classList.add("day-swap-enter");
+    // nästa frame: slå på transition
+    requestAnimationFrame(()=>{
+      cardsEl.classList.add("day-swap-enter-active");
+    });
     renderCardsGenericForDate(name,false,cardsEl,k);
   }
 
