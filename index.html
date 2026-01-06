@@ -1110,7 +1110,9 @@ body.pictos-print #participantPictos .picto-day{
 /* =========================
    UI: Dölj "Skriv ut" (globalt)
 ========================= */
-#btnPrintParticipant, #btnPrintCoach, #btnPrintNow, #btnPrintCompare { display:none !important; }
+@media (max-width: 720px){
+  #btnPrintParticipant, #btnPrintCoach, #btnPrintNow, #btnPrintCompare { display:none !important; }
+}
 
 
 
@@ -1255,6 +1257,31 @@ body.pictos-print #participantPictos .picto-day{
   body.mobile-fullscreen #mCSwipe{
     min-height: 62vh;
   }
+}
+
+
+
+@media (max-width: 720px){
+  body.mobile-fullscreen #mobileCoachDayView{ padding-top: 6px; }
+  body.mobile-fullscreen .mobile-day-header{ margin-top: 8px; }
+}
+
+
+
+@media (max-width: 720px){
+  .mobile-swipe-hint{ font-weight:600; }
+}
+
+
+
+/* Desktop: flik-ordning Deltagare → Pågår nu → Coach */
+@media (min-width: 721px){
+  .tab-bar{ display:flex; gap:8px; align-items:center; justify-content:flex-start; flex-wrap:wrap; }
+  #tabParticipant{ order:1; }
+  #tabNow{ order:2; }
+  #tabCoach{ order:3; }
+  #tabAssistant{ order:4; }
+  .tab-row-mobile{ display:contents; } /* påverka inte desktop */
 }
 
 </style>
@@ -1900,9 +1927,10 @@ function initMobileParticipant(){
     const d = mPDays[mPIndex];
     const k = keyFromDate(d);
     const pretty = prettyDay(d);
-    titleEl.textContent = (k===today) ? `Idag – ${pretty.wd}` : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
-    if(k===today){ titleEl.textContent = titleEl.textContent.replace(/^Idag – /, "Idag – ")+""; }
-    subEl.textContent = pretty.date;
+    titleEl.textContent = (k===today)
+      ? `Idag – ${pretty.wd}`
+      : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
+subEl.textContent = pretty.date;
     renderCardsGenericForDate(mPName,false,cardsEl,k);
   }
 
@@ -1947,9 +1975,10 @@ function initMobileCoach(){
     const d = mCDays[mCIndex];
     const k = keyFromDate(d);
     const pretty = prettyDay(d);
-    titleEl.textContent = (k===today) ? `Idag – ${pretty.wd}` : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
-    if(k===today){ titleEl.textContent = titleEl.textContent.replace(/^Idag – /, "Idag – ")+""; }
-    subEl.textContent = pretty.date;
+    titleEl.textContent = (k===today)
+      ? `Idag – ${pretty.wd}`
+      : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
+subEl.textContent = pretty.date;
     renderCardsGenericForDate(mCName,true,cardsEl,k);
   }
 
@@ -2126,7 +2155,7 @@ function showView(id){
   if(id==="coachView") initMobileCoach();
 
   // Mobil: helskärm endast i coach/deltagare
-  document.body.classList.toggle('mobile-fullscreen', isMobile() && (id==='participantView' || id==='coachView'));
+  document.body.classList.toggle('mobile-fullscreen', isMobile() && (id==='coachView'));
 }
 
 // Mobil: tillbaka från helskärm-dagschema
