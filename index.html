@@ -971,7 +971,7 @@ body.pictos-print #participantPictos .picto-day{
 ========================= */
 @media (max-width: 720px){
   /* Ta bort onödiga flikar i mobilen */
-  #tabAssistant { display:none !important; }
+  #tabAssistant, #tabNow { display:none !important; }
   #assistantView { display:none !important; }
 
   /* Bildstöd-knappen behövs inte i mobilen */
@@ -1053,400 +1053,7 @@ body.pictos-print #participantPictos .picto-day{
   }
 }
 
-
-
-/* =========================
-   MOBIL: Dag-för-dag med swipe (kortvy)
-   - Default: idag
-   - Swipe: höger=framåt, vänster=bakåt
-   - Stopp med "motstånd" i kanterna
-========================= */
-#mobileParticipantDayView, #mobileCoachDayView { display:none; max-width:1100px; margin:0 auto; }
-@media (max-width: 720px){
-  #mobileParticipantDayView, #mobileCoachDayView { display:block !important; }
-  /* Mobil = tittläge: dölj utskriftsknappar och veckovy-knappar */
-  #btnParticipantWeek, #btnParticipantPictos, #btnPrintParticipant,
-  #btnCoachWeek, #btnPrintCoach,
-  #tabAssistant { display:none !important; }
-
-  /* Dölj veckogrid på mobil */
-  #participantWeek, #coachWeek, #compareOutput { display:none !important; }
-}
-
-.mobile-day-header{
-  display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  gap:12px;
-  margin: 8px 0 8px;
-}
-.mobile-day-title{
-  font-weight: 900;
-  font-size: 20px;
-}
-.mobile-day-sub{
-  font-size: 13px;
-  color: #444;
-  white-space: nowrap;
-}
-.mobile-edge-hint{
-  font-size: 12px;
-  color: #666;
-  text-align: center;
-  margin: 6px 0 0;
-  min-height: 16px;
-}
-
-/* swipe-yta: vi tillåter vertikal scroll men fångar horisontell */
-.mobile-swipe-surface{
-  touch-action: pan-y;
-  user-select:none;
-  will-change: transform;
-  transition: transform 120ms ease-out;
-}
-
-
-
-/* =========================
-   UI: Dölj "Skriv ut" (globalt)
-========================= */
-@media (max-width: 720px){
-  #btnPrintParticipant, #btnPrintCoach, #btnPrintNow, #btnPrintCompare { display:none !important; }
-}
-
-
-
-/* Mobil: ta bort "Dagens schema"-knappar (Idag är default + swipe) */
-@media (max-width: 720px){
-  #btnParticipantToday, #btnCoachToday { display:none !important; }
-}
-
-/* Mobil: Pågår nu över Coach/Deltagare */
-@media (max-width: 720px){
-  .tab-bar{ display:flex; flex-direction:column; gap:8px; align-items:stretch; }
-  #tabNow{ width:100%; order:1; }
-  #tabCoach, #tabParticipant{ width:49%; }
-  .tab-row-mobile{ display:flex; gap:8px; order:2; }
-  /* flytta in coach/deltagare i en rad via wrapper */
-  #tabAssistant{ display:none !important; }
-}
-
-
-
-@media (max-width: 720px){
-  #mPSwipe, #mCSwipe{ min-height: 55vh; }
-}
-
-
-
-/* =========================
-   MOBIL: Hel-skärm för dagschema + tillbaka
-========================= */
-.mobile-backbar{ display:none; }
-.mobile-back{ display:none; }
-
-@media (max-width: 720px){
-  /* Mer yta till schema */
-  body.mobile-fullscreen .tab-bar{ display:none !important; } /* dölj endast i helskärm-vy */
-  body.mobile-fullscreen .mobile-backbar{ display:block; max-width:1100px; margin: 6px auto 0; }
-  body.mobile-fullscreen .mobile-back{ display:inline-flex !important; align-items:center; gap:8px; }
-
-  /* Låt vyerna använda skärmen bättre */
-  .view{ min-height: calc(100vh - 120px); } /* header + luft */
-  #mobileParticipantDayView, #mobileCoachDayView{ padding-bottom: 18px; }
-}
-
-/* "Bläddra mellan blad" - animation */
-@media (max-width: 720px){
-  .page-enter{
-    opacity: 0.01;
-    transform: translateX(36px) rotateY(-10deg);
-    transform-origin: 50% 50%;
-  }
-  .page-enter-left{
-    opacity: 0.01;
-    transform: translateX(-36px) rotateY(10deg);
-    transform-origin: 50% 50%;
-  }
-  .page-enter-active{
-    opacity: 1;
-    transform: translateX(0px) rotateY(0deg);
-    transition: opacity 180ms ease-out, transform 180ms ease-out;
-  }
-  /* ge lite perspektiv känsla */
-  #mPDayCards, #mCDayCards{ perspective: 900px; }
-}
-
-
-
-@media (max-width: 720px){
-  .mobile-swipe-hint{
-    font-size: 12px;
-    color: #555;
-    text-align: center;
-    margin: 4px 0 8px;
-    opacity: 0.85;
-  }
-  .mobile-swipe-hint.hide{
-    opacity: 0.0;
-    transition: opacity 220ms ease-out;
-  }
-  /* mjukare "snap" när man släpper */
-  .mobile-swipe-surface{
-    transition: transform 180ms cubic-bezier(.2,.8,.2,1);
-  }
-}
-
-
-
-/* =========================
-   MOBIL: Riktig helskärm i schema + tillbaka till start
-========================= */
-@media (max-width: 720px){
-  body.mobile-fullscreen header{ display:none !important; }
-  body.mobile-fullscreen #dataStatus{ display:none !important; }
-  body.mobile-fullscreen #debugPanel{ display:none !important; }
-
-  body.mobile-fullscreen{
-    overflow:hidden; /* undvik att body scrollar bakom vyn */
-  }
-
-  /* Backbar ligger fast högst upp (respektera safe-area på iPhone) */
-  body.mobile-fullscreen .mobile-backbar{
-    position: fixed;
-    top: env(safe-area-inset-top);
-    left: 0; right: 0;
-    z-index: 9999;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(10px);
-    padding: 10px 12px;
-    border-bottom: 1px solid #e6e6e6;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-  }
-
-  /* Själva innehållet under backbaren */
-  body.mobile-fullscreen #participantView,
-  body.mobile-fullscreen #coachView{
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    overflow: auto;
-    padding-top: calc(56px + env(safe-area-inset-top));
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: calc(16px + env(safe-area-inset-bottom));
-    background: #f7f7fb;
-  }
-
-  /* Ta bort extra rubrik/controls som äter höjd i helskärm */
-  body.mobile-fullscreen #participantView #viewTitle,
-  body.mobile-fullscreen #coachView #viewTitle{
-    display:none !important;
-  }
-  body.mobile-fullscreen #participantView .controls,
-  body.mobile-fullscreen #coachView .controls{
-    position: sticky;
-    top: calc(56px + env(safe-area-inset-top));
-    z-index: 1000;
-    background: #f7f7fb;
-    padding-top: 6px;
-    padding-bottom: 6px;
-  }
-
-  /* Ge swipe-yta mer plats */
-  body.mobile-fullscreen #mPSwipe,
-  body.mobile-fullscreen #mCSwipe{
-    min-height: 62vh;
-  }
-}
-
-
-
-@media (max-width: 720px){
-  body.mobile-fullscreen #mobileCoachDayView{ padding-top: 6px; }
-  body.mobile-fullscreen .mobile-day-header{ margin-top: 8px; }
-}
-
-
-
-@media (max-width: 720px){
-  .mobile-swipe-hint{ font-weight:600; }
-}
-
-
-
-/* Desktop: flik-ordning Deltagare → Pågår nu → Coach */
-@media (min-width: 721px){
-  .tab-bar{ display:flex; gap:8px; align-items:center; justify-content:flex-start; flex-wrap:wrap; }
-  #tabParticipant{ order:1; }
-  #tabNow{ order:2; }
-  #tabCoach{ order:3; }
-  #tabAssistant{ order:4; }
-  .tab-row-mobile{ display:contents; } /* påverka inte desktop */
-}
-
-
-/* =========================
-   STARTVY: Centrera knappar (webb + mobil)
-========================= */
-.tab-bar{
-  justify-content:center;
-}
-@media (max-width:720px){
-  .tab-bar{
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
-  }
-  #tabNow{ order:1; width:100%; max-width:320px; }
-  .tab-row-mobile{ order:2; width:100%; max-width:320px; }
-  #tabCoach, #tabParticipant{ width:100%; }
-}
 </style>
-
-<!-- =========================
-     PRINTFIX (2026-01-05)
-     Mål: Veckoschema = 1 sida (A4 liggande), Bildstöd = 1 dag per sida (A4 stående), max 8 rutor
-     Detta ligger SIST och vinner med !important.
-========================= -->
-<style id="printfix">
-/* Skärmläge påverkas inte – bara print */
-@media print {
-
-  /* Tydliga print-lägen */
-  body.print-week #participantPictos,
-  body.print-week #participantPictos * { display:none !important; visibility:hidden !important; }
-
-  body.print-pictos #participantWeek,
-  body.print-pictos #coachWeek,
-  body.print-pictos #compareOutput,
-  body.print-pictos #participantWeek *,
-  body.print-pictos #coachWeek *,
-  body.print-pictos #compareOutput * { display:none !important; visibility:hidden !important; }
-
-  /* Nollställ sådant som ofta skapar "extra sida" */
-  html, body { margin:0 !important; padding:0 !important; }
-  body { background:#fff !important; }
-
-  /* ===== VECKOSCHEMA: pressa till exakt 1 sida ===== */
-  body.print-week #participantWeek,
-  body.print-week #coachWeek,
-  body.print-week #compareOutput{
-    /* blockera sidbrytning */
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-    overflow: hidden !important;
-
-    /* skala ner lite (Firefox/Chrome) */
-    transform: scale(0.92) !important;
-    transform-origin: top left !important;
-    width: 108.7% !important; /* 1/0.92 */
-  }
-
-  body.print-week .block-header{ font-size: .80rem !important; }
-  body.print-week .block-time{ font-size: .72rem !important; }
-  body.print-week .block{ font-size: .72rem !important; padding: 4px 5px !important; }
-  body.print-week .compare-wrap{ gap: 6mm !important; }
-
-  /* ===== BILDSTÖD: exakt 1 dag per sida, 8 rutor ===== */
-  body.print-pictos #print-logo,
-  body.print-pictos #print-header-single{ display:none !important; }
-
-  body.print-pictos #participantPictos{ display:block !important; visibility:visible !important; margin:0 !important; padding:0 !important; }
-
-  body.print-pictos #participantPictos .picto-wrap{ margin:0 !important; padding:0 !important; }
-
-  body.print-pictos #participantPictos .picto-day{
-    height: 277mm !important; /* A4 297mm - 20mm marginaler */
-    box-sizing: border-box !important;
-
-    /* GRID: rubrik + 8 lika höga rader */
-    display: grid !important;
-    grid-template-rows: 14mm repeat(8, 1fr) !important;
-
-    padding: 0 !important;
-    margin: 0 !important;
-    border: 0 !important;
-
-    break-after: page !important;
-    page-break-after: always !important;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-  body.print-pictos #participantPictos .picto-day:last-child{
-    break-after: auto !important;
-    page-break-after: auto !important;
-  }
-
-  body.print-pictos #participantPictos .picto-day-title{
-    height: 14mm !important;
-    line-height: 14mm !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    font-size: 16pt !important;
-    font-weight: 900 !important;
-    text-align: center !important;
-  }
-
-  body.print-pictos #participantPictos .picto-item{
-    margin: 0 !important;
-    border-width: 2px !important;
-    border-radius: 12px !important;
-
-    display: grid !important;
-    grid-template-columns: 85px 1fr 150px !important;
-    align-items: center !important;
-    gap: 4mm !important;
-    padding: 4.5mm !important;
-
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-
-  /* Lite mindre typografi så 8 alltid får plats */
-  body.print-pictos #participantPictos .picto-time .clock{ font-size: 24px !important; }
-  body.print-pictos #participantPictos .picto-time .t{ font-size: 16px !important; }
-  body.print-pictos #participantPictos .picto-act .e{ font-size: 34px !important; }
-  body.print-pictos #participantPictos .picto-act .a{ font-size: 16px !important; font-weight:900 !important; }
-  body.print-pictos #participantPictos .picto-coach .lbl{ font-size: 11px !important; }
-  body.print-pictos #participantPictos .picto-coach .names{ font-size: 14px !important; font-weight:900 !important; }
-
-  /* Text får inte växa höjden (ingen radbrytning) */
-  body.print-pictos #participantPictos .picto-act .a,
-  body.print-pictos #participantPictos .picto-coach .names{
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-}
-
-/* Fallback @page om JS inte hinner (browser-bugg) */
-@media print { @page { size: A4 landscape; margin: 10mm; } }
-body.print-pictos{ }
-body.print-week{ }
-</style>
-
-
-
-<style id="print-logo-override">
-@media print{
-  /* Flytta Grunden-loggan i veckoutskrift ovanför strecket och undvik att den ligger på linjen */
-  #print-logo{
-    top: -4mm !important;
-    right: 10mm !important;
-    z-index: 999999 !important;
-    background: #fff !important;
-    padding: 1mm 2mm !important;
-    border-radius: 2mm !important;
-  }
-  #print-logo img{
-    height: 14mm !important;
-    width: auto !important;
-    display:block !important;
-  }
-}
-</style>
-
-
 </head>
 
 <body>
@@ -1460,38 +1067,21 @@ body.print-week{ }
   <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png"
        alt="Grunden DV logotyp" id="homeLogo">
   <div id="clock"></div>
-  <div id="logoFallback" style="display:none;font-weight:900;font-size:18px;">Grunden DV</div>
 </header>
-
-
-<div id="dataStatus" style="max-width:1100px;margin:0 auto 10px;display:none;
-  background:#fff3cd;border:1px solid #ffeeba;color:#856404;
-  padding:10px 12px;border-radius:12px;box-shadow:var(--shadow);">
-  <div style="font-weight:800;margin-bottom:6px;">⚠️ Kunde inte ladda schema-data</div>
-  <div style="font-size:14px;line-height:1.35;margin-bottom:8px;">
-    Kontrollera nätet. Om du öppnar filen som en lokal fil kan vissa mobiler blockera dataladdning.
-  </div>
-  <button id="btnRetryData" class="btn">🔄 Försök igen</button>
-</div>
 
 
 <!-- Flikar -->
 <div class="tab-bar">
+  <button id="tabParticipant" class="tab">👤 Deltagare</button>
+  <button id="tabCoach" class="tab">🧑‍🏫 Coach</button>
   <button id="tabNow" class="tab active">🔔 Pågår nu</button>
-  <div class="tab-row-mobile">
-    <button id="tabCoach" class="tab">🧑‍🏫 Coach</button>
-    <button id="tabParticipant" class="tab">👤 Deltagare</button>
-  </div>
   <button id="tabAssistant" class="tab">🤖 Assistent</button>
 </div>
 
 
 <!-- DELTAGARE-VY -->
 <div id="participantView" class="view">
-  <div class="mobile-backbar">
-  <button id="btnBackFromParticipant" class="btn mobile-back">← Tillbaka</button>
-</div>
-<div id="viewTitle">👤 Deltagarschema</div>
+  <div id="viewTitle">👤 Deltagarschema</div>
 
 <div class="controls">
     <select id="nameSelect"><option value="">-- Välj deltagare --</option></select>
@@ -1501,20 +1091,6 @@ body.print-week{ }
     <button id="btnPrintParticipant" class="btn">🖨️ Skriv ut</button>
   </div>
 <div id="participantDay" class="cards print-scope"></div>
-
-  <!-- MOBIL (tittläge): Dag-för-dag med swipe (kortvy) -->
-  <div id="mobileParticipantDayView" class="print-scope">
-    <div class="mobile-day-header">
-      <div class="mobile-day-title" id="mPTitle">Idag</div>
-      <div class="mobile-day-sub" id="mPSub"></div>
-    </div>
-    <div class="mobile-swipe-hint" id="mPHint">Svep ← / → för att bläddra dagar</div>
-<div id="mPSwipe" class="mobile-swipe-surface">
-      <div id="mPDayCards" class="cards"></div>
-    </div>
-    <div class="mobile-edge-hint" id="mPEdgeHint"></div>
-  </div>
-
   <div id="participantWeek" class="print-scope" style="display:none;">
     <div class="block-header" id="pBlockHeader"></div>
     <div class="block-grid" id="pBlockGrid"></div>
@@ -1526,10 +1102,7 @@ body.print-week{ }
 
 <!-- COACH-VY -->
 <div id="coachView" class="view">
-  <div class="mobile-backbar">
-  <button id="btnBackFromCoach" class="btn mobile-back">← Tillbaka</button>
-</div>
-<div id="viewTitle">🧑‍🏫 Coachschema</div>
+  <div id="viewTitle">🧑‍🏫 Coachschema</div>
   <div class="controls">
     <select id="coachSelect"><option value="">-- Välj coach --</option></select>
     <button id="btnCoachToday" class="btn primary">☀️ Dagens schema</button>
@@ -1537,20 +1110,6 @@ body.print-week{ }
     <button id="btnPrintCoach" class="btn">🖨️ Skriv ut</button>
   </div>
 <div id="coachDay" class="cards print-scope"></div>
-
-  <!-- MOBIL (tittläge): Dag-för-dag med swipe (kortvy) -->
-  <div id="mobileCoachDayView" class="print-scope">
-    <div class="mobile-day-header">
-      <div class="mobile-day-title" id="mCTitle">Idag</div>
-      <div class="mobile-day-sub" id="mCSub"></div>
-    </div>
-    <div class="mobile-swipe-hint" id="mCHint">Svep ← / → för att bläddra dagar</div>
-<div id="mCSwipe" class="mobile-swipe-surface">
-      <div id="mCDayCards" class="cards"></div>
-    </div>
-    <div class="mobile-edge-hint" id="mCEdgeHint"></div>
-  </div>
-
   <div id="coachWeek" class="print-scope" style="display:none;">
     <div class="block-header" id="cBlockHeader"></div>
     <div class="block-grid" id="cBlockGrid"></div>
@@ -1726,306 +1285,10 @@ function dayKey(str) {
   return String(str).slice(0, 10);
 }
 
-function todayKey(){
-  const d=new Date(); d.setHours(0,0,0,0);
-  const y=d.getFullYear();
-  const m=String(d.getMonth()+1).padStart(2,"0");
-  const day=String(d.getDate()).padStart(2,"0");
-  return `${y}-${m}-${day}`;
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
 }
 
-
-
-/* =========================
-   MOBIL: Dag-för-dag (kortvy) + swipe
-========================= */
-function isMobile(){
-  return window.matchMedia && window.matchMedia("(max-width: 720px)").matches;
-}
-
-function mondayOfWeek(date){
-  const d = new Date(date);
-  const day = d.getDay(); // 0=Sun..6=Sat
-  const diff = (day === 0 ? -6 : 1 - day); // back to Monday
-  d.setDate(d.getDate() + diff);
-  d.setHours(0,0,0,0);
-  return d;
-}
-
-function weekDaysMonFri(baseDate){
-  const mon = mondayOfWeek(baseDate);
-  const days = [];
-  for(let i=0;i<5;i++){
-    const x = new Date(mon);
-    x.setDate(mon.getDate() + i);
-    days.push(x);
-  }
-  return days;
-}
-
-function keyFromDate(d){
-  const x=new Date(d); x.setHours(0,0,0,0);
-  const y=x.getFullYear();
-  const m=String(x.getMonth()+1).padStart(2,"0");
-  const day=String(x.getDate()).padStart(2,"0");
-  return `${y}-${m}-${day}`;
-}
-
-function prettyDay(d){
-  const dt = new Date(d);
-  const wd = ["söndag","måndag","tisdag","onsdag","torsdag","fredag","lördag"][dt.getDay()];
-  const date = new Intl.DateTimeFormat("sv-SE",{ day:"numeric", month:"short"}).format(dt);
-  return { wd, date };
-}
-
-/* Kort-rendering med valt datum (återanvänd dina kort-stilar) */
-function renderCardsGenericForDate(name,isCoach,targetEl,dateKeyStr){
-  const field=isCoach?"Coach":"Deltagare";
-  const rows=DATA.filter(r=>{
-    const list=splitNames(r[field]||"");
-    return (list.map(x=>x.toLowerCase()).includes(name.toLowerCase())) || (r[field]||"").trim().toLowerCase()==="alla";
-  }).filter(r=>dayKey(r.Datum)===dateKeyStr).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
-
-  let html=``;
-  if(!rows.length) html+="<div class='card' style='--band:#cfd8e3'><div class='row'>Ledig</div></div>";
-  rows.forEach(r=>{
-    html+=`<div class="card" style="--band:${colorFor(r)}">
-      <h3>${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h3>
-      <div class="row">🕒 ${r.Start||""}–${r.Slut||""}</div>
-      <div class="row">${isCoach?"👥 Deltagare: "+(r.Deltagare||"-"):"🧑‍🏫 Coach: "+(r.Coach||"-")}</div>
-    </div>`;
-  });
-  
-  targetEl.innerHTML=html;
-}
-
-/* Swipe-engine med motstånd (stopp i kanterna) */
-function attachDaySwipe(opts){
-  const surface = opts.surface;
-  // iOS: undvik dubbla listeners, men tillåt uppdatering av callbacks
-  if(surface && surface.__swipeAttached){
-    // uppdatera state och återanvänd samma listeners
-    surface.__swipeState = {
-      getIndex: opts.getIndex,
-      setIndex: opts.setIndex,
-      maxIndex: opts.maxIndex,
-      onEdge: opts.onEdge || function(){},
-      onChange: opts.onChange || function(){}
-    };
-    return;
-  }
-  if(surface) surface.__swipeAttached = true;
-  if(surface) surface.__swipeState = {
-    getIndex: opts.getIndex,
-    setIndex: opts.setIndex,
-    maxIndex: opts.maxIndex,
-    onEdge: opts.onEdge || function(){},
-    onChange: opts.onChange || function(){}
-  };
-  const state = surface.__swipeState;
-  const getIndex = ()=>state.getIndex();
-  const setIndex = (v)=>state.setIndex(v);
-  const maxIndex = ()=>state.maxIndex;
-  const onEdge = (w)=>state.onEdge(w);
-  const onChange = (i)=>state.onChange(i);
-
-  let startX=0, startY=0, dx=0, dy=0, dragging=false, horizontal=false;
-
-  let lastCommitTs = 0;
-
-  function rubberband(dist){
-    // mjuk motståndskurva
-    const k = 0.35;
-    return dist * k;
-  }
-
-  function reset(){
-    surface.style.transition = "transform 180ms cubic-bezier(.2,.8,.2,1)";
-    surface.style.transform = "translateX(0px)";
-    setTimeout(()=>{ surface.style.transition = "transform 180ms cubic-bezier(.2,.8,.2,1)"; }, 0);
-  }
-
-  surface.addEventListener("touchstart",(e)=>{
-    if(!e.touches || e.touches.length!==1) return;
-    dragging=true; horizontal=false;
-    startX=e.touches[0].clientX;
-    startY=e.touches[0].clientY;
-    dx=0; dy=0;
-    surface.style.transition = "none";
-  },{passive:true});
-
-  surface.addEventListener("touchmove",(e)=>{
-    if(!dragging || !e.touches || e.touches.length!==1) return;
-    dx=e.touches[0].clientX - startX;
-    dy=e.touches[0].clientY - startY;
-
-    if(!horizontal){
-      // lättare att fånga horisontell swipe på iPhone
-      if(Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)){
-        horizontal = true;
-      }else{
-        return;
-      }
-    }
-
-    const idx = getIndex();
-    const atStart = idx<=0;
-    const atEnd = idx>=maxIndex();
-
-    let move = dx;
-
-    // Motstånd i kanterna
-    if((atStart && dx>0) || (atEnd && dx<0)){
-      move = rubberband(dx);
-      onEdge(atStart ? "start" : "end");
-    }else{
-      onEdge(null);
-    }
-
-    surface.style.transform = `translateX(${move}px)`;
-    e.preventDefault();
-  },{passive:false});
-
-  surface.addEventListener("touchend",()=>{
-    if(!dragging){ reset(); return; }
-    dragging=false;
-
-    const idx = getIndex();
-    const atStart = idx<=0;
-    const atEnd = idx>=maxIndex();
-
-    const threshold = 60; // px
-
-    // dx>0 = svep höger (tillbaka), dx<0 = svep vänster (framåt)
-    const nowTs = Date.now();
-    if(nowTs - lastCommitTs < 220){ reset(); return; }
-    if(horizontal && Math.abs(dx) > threshold){
-      if(dx < 0 && !atEnd){
-        setIndex(idx+1);
-        lastCommitTs = Date.now();
-        onChange(getIndex(), dx<0 ? 'forward' : 'back');
-      }else if(dx > 0 && !atStart){
-        setIndex(idx-1);
-        lastCommitTs = Date.now();
-        onChange(getIndex(), dx<0 ? 'forward' : 'back');
-      }else{
-        // stopp
-        onEdge(atStart ? "start" : "end");
-      }
-    }
-    reset();
-  },{passive:true});
-}
-
-/* Init mobilvy för deltagare */
-let mPDays = [];
-let mPIndex = 0;
-let mPName = "";
-let mPLastDir = "forward";
-
-function initMobileParticipant(){
-  if(!isMobile()) return;
-  const name = document.getElementById("nameSelect")?.value;
-  if(!name) return;
-  mPName = name;
-
-  mPDays = weekDaysMonFri(new Date());
-  const today = todayKey();
-  const todayIdx = mPDays.findIndex(d=>keyFromDate(d)===today);
-  mPIndex = (todayIdx>=0)?todayIdx:0;
-
-  const titleEl = document.getElementById("mPTitle");
-  const subEl = document.getElementById("mPSub");
-  const cardsEl = document.getElementById("mPDayCards");
-  const edgeEl = document.getElementById("mPEdgeHint");
-  const surface = document.getElementById("mPSwipe");
-
-  function render(){
-    const d = mPDays[mPIndex];
-    const k = keyFromDate(d);
-    const pretty = prettyDay(d);
-    titleEl.textContent = (k===today)
-      ? `Idag – ${pretty.wd}`
-      : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
-subEl.textContent = pretty.date;
-    renderCardsGenericForDate(mPName,false,cardsEl,k);
-  }
-
-  render();
-
-  attachDaySwipe({
-    surface,
-    getIndex: ()=>mPIndex,
-    setIndex: (v)=>{ mPIndex=v; },
-    maxIndex: mPDays.length-1,
-    onEdge: (where)=>{
-      edgeEl.textContent = where ? (where==="start" ? "Första dagen i veckan" : "Sista dagen i veckan") : "";
-    },
-    onChange: (_i,dir)=>{ if(dir) mPLastDir=dir; const h=document.getElementById("mPHint"); if(h) h.classList.add("hide"); try{ localStorage.setItem("swipeHintSeenP","1"); }catch(_e){}; render(); }
-  });
-}
-
-/* Init mobilvy för coach */
-let mCDays = [];
-let mCIndex = 0;
-let mCName = "";
-let mCLastDir = "forward";
-
-function initMobileCoach(){
-  if(!isMobile()) return;
-  const name = document.getElementById("coachSelect")?.value;
-  if(!name) return;
-  mCName = name;
-
-  mCDays = weekDaysMonFri(new Date());
-  const today = todayKey();
-  const todayIdx = mCDays.findIndex(d=>keyFromDate(d)===today);
-  mCIndex = (todayIdx>=0)?todayIdx:0;
-
-  const titleEl = document.getElementById("mCTitle");
-  const subEl = document.getElementById("mCSub");
-  const cardsEl = document.getElementById("mCDayCards");
-  const edgeEl = document.getElementById("mCEdgeHint");
-  const surface = document.getElementById("mCSwipe");
-
-  function render(){
-    const d = mCDays[mCIndex];
-    const k = keyFromDate(d);
-    const pretty = prettyDay(d);
-    titleEl.textContent = (k===today)
-      ? `Idag – ${pretty.wd}`
-      : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
-subEl.textContent = pretty.date;
-    renderCardsGenericForDate(mCName,true,cardsEl,k);
-  }
-
-  render();
-
-  attachDaySwipe({
-    surface,
-    getIndex: ()=>mCIndex,
-    setIndex: (v)=>{ mCIndex=v; },
-    maxIndex: mCDays.length-1,
-    onEdge: (where)=>{
-      edgeEl.textContent = where ? (where==="start" ? "Första dagen i veckan" : "Sista dagen i veckan") : "";
-    },
-    onChange: (_i,dir)=>{ if(dir) mCLastDir=dir; const h=document.getElementById("mCHint"); if(h) h.classList.add("hide"); try{ localStorage.setItem("swipeHintSeenC","1"); }catch(_e){}; render(); }
-  });
-}
-
-/* Re-init när man byter person/coach */
-document.getElementById("nameSelect")?.addEventListener("change", ()=>{
-  if(!isMobile()) return;
-  mPName = document.getElementById("nameSelect")?.value || "";
-  initMobileParticipant();
-});
-document.getElementById("coachSelect")?.addEventListener("change", ()=>{
-  if(!isMobile()) return;
-  mCName = document.getElementById("coachSelect")?.value || "";
-  initMobileCoach();
-});
-
-/* Om skärmstorlek ändras (t.ex. rotering) */
 function weekdayName(d) {
   return ["söndag","måndag","tisdag","onsdag","torsdag","fredag","lördag"][d];
 }
@@ -2040,14 +1303,9 @@ async function loadData(){
     const res=await fetch(url+"?t="+Date.now());
     const json=await res.json();
     DATA=json.data||[];
-    const st=document.getElementById("dataStatus"); if(st) st.style.display="none";
     fillLists(); fillCompareLists(); fillSickList();
     renderNow(); // startvy
-    // Mobil-init om val redan finns
-    if(isMobile()) { initMobileParticipant(); initMobileCoach(); }
-  }catch(e){ console.error("Kunde inte hämta data:", e);
-    const st=document.getElementById("dataStatus"); if(st) st.style.display="block";
-  }
+  }catch(e){ console.error("Kunde inte hämta data:", e); }
 }
 loadData();
 
@@ -2059,17 +1317,6 @@ function updateClock(){
   el.textContent=now.toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"});
 }
 setInterval(updateClock,1000); updateClock();
-
-
-/* Logga-fallback (om bild inte kan laddas) */
-const logoImg = document.getElementById("homeLogo");
-if(logoImg){
-  logoImg.addEventListener("error", ()=>{
-    const fb=document.getElementById("logoFallback");
-    if(fb) fb.style.display="block";
-  });
-}
-
 
 /* =========================
    LISTOR / UTVAL
@@ -2166,29 +1413,17 @@ function showView(id){
       day.innerHTML = "";
     }
   }
-
-  // Mobil: init swipe-vyer om relevant
-  if(id==="participantView") initMobileParticipant();
-  if(id==="coachView") initMobileCoach();
-
-  // Mobil: helskärm endast i coach/deltagare
-  document.body.classList.toggle('mobile-fullscreen', isMobile() && (id==='coachView' && document.getElementById('coachSelect')?.value));
 }
-
-// Mobil: tillbaka från helskärm-dagschema
-document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>document.body.classList.remove('mobile-fullscreen'); showView("nowView"));
-document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>document.body.classList.remove('mobile-fullscreen'); showView("nowView"));
-
 
 
 
 document.getElementById("tabParticipant").onclick=()=>{ showView("participantView"); };
 document.getElementById("tabCoach").onclick=()=>{ showView("coachView"); };
-document.getElementById("tabNow").onclick=()=>{ document.body.classList.remove('mobile-fullscreen'); showView("nowView"); renderNow(); };
+document.getElementById("tabNow").onclick=()=>{ showView("nowView"); renderNow(); };
 document.getElementById("tabAssistant").onclick=()=>{ showView("assistantView"); };
 
 /* Loggan = hem (pågår nu) */
-document.getElementById("homeLogo").addEventListener("click",()=>{ document.body.classList.remove('mobile-fullscreen'); showView("nowView"); renderNow(); });
+document.getElementById("homeLogo").addEventListener("click",()=>{ showView("nowView"); renderNow(); });
 
 /* =========================
    PÅGÅR NU + KOMMANDE
@@ -2256,7 +1491,7 @@ function renderCardsGeneric(name,isCoach,targetEl){
     return (list.map(x=>x.toLowerCase()).includes(name.toLowerCase())) || (r[field]||"").trim().toLowerCase()==="alla";
   }).filter(r=>dayKey(r.Datum)===today).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
 
-  let html=``;
+  let html=`<div class='cards'>`;
   if(!rows.length) html+="<div class='card' style='--band:#cfd8e3'><div class='row'>Inga aktiviteter idag.</div></div>";
   rows.forEach(r=>{
     html+=`<div class="card" style="--band:${colorFor(r)}">
@@ -2265,7 +1500,7 @@ function renderCardsGeneric(name,isCoach,targetEl){
       <div class="row">${isCoach?"👥 Deltagare: "+(r.Deltagare||"-"):"🧑‍🏫 Coach: "+(r.Coach||"-")}</div>
     </div>`;
   });
-  
+  html+="</div>";
   targetEl.innerHTML=html;
 }
 
@@ -2691,23 +1926,6 @@ function printSchema(title, personName) {
   // Alltid färskt namn i rubriken
   updatePrintHeaderSingleNow();
 
-  // ===== PRINT-LÄGE: lås orientering rätt innan dialogen öppnas =====
-  (function(){
-    const pv = document.getElementById("participantView");
-    const pictos = document.getElementById("participantPictos");
-    const isPictos = pv && pv.classList.contains("active") && pictos && pictos.style.display !== "none" && pictos.innerHTML.trim() !== "";
-    // Sätt klass tidigt så print-CSS kan slå igenom
-    document.body.classList.toggle("pictos-print", !!isPictos);
-
-    // Lås @page via dynamicPageStyle direkt (inte bara via beforeprint)
-    const styleEl = document.getElementById("dynamicPageStyle");
-    if(styleEl){
-      styleEl.textContent = isPictos
-        ? "@media print { @page { size: A4 portrait; margin: 10mm; } }"
-        : "@media print { @page { size: A4 landscape; margin: 10mm; } }";
-    }
-  })();
-
   // Säkerställ att bara EN yta i respektive vy är synlig vid utskrift
   const activeView = document.querySelector(".view.active");
   const restore = [];
@@ -2851,65 +2069,11 @@ function weekDatesMonFri(monDate){
   return dates;
 }
 
-function buildPictosWeekData(name){
-  // Samma logik som tidigare: välj första vecka (mån–fre) med minst en aktivitet inom 0–6 veckor framåt
-  const allRows = DATA
-    .filter(r=>{
-      const list = splitNames(r["Deltagare"]||"");
-      return (list.map(x=>x.toLowerCase()).includes(name.toLowerCase())) ||
-             (r["Deltagare"]||"").trim().toLowerCase()==="alla";
-    })
-    .filter(r=> sanitizeName(r.Aktivitet||""));
-
-  const startMon = mondayOf(new Date());
-  let chosenDates = null;
-
-  for(let w=0; w<7; w++){
-    const mon = new Date(startMon);
-    mon.setDate(startMon.getDate() + w*7);
-    const dates = weekDatesMonFri(mon);
-    const hasAny = allRows.some(r => dates.includes(dayKey(r.Datum)));
-    if(hasAny){ chosenDates = dates; break; }
-  }
-
-  if(!chosenDates) return [];
-
-  const rows = allRows
-    .filter(r=> chosenDates.includes(dayKey(r.Datum)))
-    .sort((a,b)=> (a.Datum||"").localeCompare(b.Datum||"") || (a.Start||"").localeCompare(b.Start||""));
-
-  const byDate = {};
-  rows.forEach(r=>{
-    const k = dayKey(r.Datum);
-    (byDate[k] ||= []).push(r);
-  });
-
-  const daysData = [];
-  chosenDates.forEach(dateKeyStr=>{
-    const allDayRows = (byDate[dateKeyStr]||[]);
-    if(!allDayRows.length) return; // Tom dag = inget blad
-
-    const d = new Date(dateKeyStr);
-    const title = `${name} – ${weekdayName(d.getDay())}`;
-
-    const items = allDayRows.slice(0,8).map(r=>({
-      time: `🕒 ${r.Start||""}`,
-      emoji: emojiFor(r) || "✨",
-      label: r.Aktivitet||"",
-      coach: (splitNames(r.Coach||"").join(", ") || (r.Coach||"-") || "-")
-    }));
-
-    daysData.push({ title, items });
-  });
-
-  return daysData;
-}
-
 function renderParticipantPictosWeek(name){
   const out = document.getElementById("participantPictos");
   if(!out) return;
 
-  // Alla rader för deltagaren
+  // Alla rader för deltagaren (för att kunna hitta första vecka med innehåll)
   const allRows = DATA
     .filter(r=>{
       const list = splitNames(r["Deltagare"]||"");
@@ -2950,28 +2114,37 @@ function renderParticipantPictosWeek(name){
   const wrap = document.createElement("div");
   wrap.className = "picto-wrap";
 
-  // 1 dag = 1 sida. Tom dag = inget blad. Max 8 aktiviteter per dag.
-  const MAX_PER_DAY = 8;
-
   chosenDates.forEach(dateKeyStr=>{
-    const allDayRows = (byDate[dateKeyStr]||[])
-      .filter(r=> sanitizeName(r.Aktivitet||""))
-      .sort((a,b)=> (a.Start||"").localeCompare(b.Start||""));
-
-    if(!allDayRows.length) return; // tom dag = ledig, inget blad
+    const allDayRows = (byDate[dateKeyStr]||[]);
+    if(!allDayRows.length) return; // tom dag = ledig, ingen sida
 
     const d = new Date(dateKeyStr);
-    const dayRows = allDayRows.slice(0, MAX_PER_DAY);
 
-    const dayDiv = document.createElement("div");
-    dayDiv.className = "picto-day";
+    // Robust: dela upp dagen i flera sidor om det är många aktiviteter.
+    // 6 per sida är stabilt på Chromebook/Chrome + Firefox.
+    const MAX_PER_PAGE = 8;
+    const totalPages = Math.ceil(allDayRows.length / MAX_PER_PAGE);
 
-    const title = document.createElement("div");
-    title.className = "picto-day-title";
-    title.textContent = `${name} – ${weekdayName(d.getDay())}`;
-    dayDiv.appendChild(title);
+    // Om dagen är tät (7–8 aktiviteter) – använd hårdare print-skalning för att alltid få plats
+    if(allDayRows.length >= 7){ document.body.classList.add('pictos-tight'); }
+    else { document.body.classList.remove('pictos-tight'); }
 
-    dayRows.forEach(r=>{
+    for(let page=0; page<totalPages; page++){
+      const start = page*MAX_PER_PAGE;
+      const end = start + MAX_PER_PAGE;
+      const dayRows = allDayRows.slice(start, end);
+
+      const dayDiv = document.createElement("div");
+      dayDiv.className = "picto-day";
+
+      const title = document.createElement("div");
+      title.className = "picto-day-title";
+      title.textContent = totalPages>1
+        ? `${name} – ${weekdayName(d.getDay())} (${page+1}/${totalPages})`
+        : `${name} – ${weekdayName(d.getDay())}`;
+      dayDiv.appendChild(title);
+
+      dayRows.forEach(r=>{
       const item = document.createElement("div");
       item.className = "picto-item";
 
@@ -2995,7 +2168,8 @@ function renderParticipantPictosWeek(name){
       dayDiv.appendChild(item);
     });
 
-    wrap.appendChild(dayDiv);
+      wrap.appendChild(dayDiv);
+    } // end page loop
   });
 
   out.innerHTML = "";
@@ -3079,22 +2253,12 @@ if(btnP){
     const name = document.getElementById("nameSelect").value;
     if(!name){ alert("Välj en deltagare."); return; }
 
-    // Bygg bildstödsdata (1 dag = 1 blad, max 8, tom dag = inget blad)
-    const daysData = buildPictosWeekData(name);
-    if(!daysData.length){
-      alert("Inget schema mån–fre de närmaste veckorna.");
-      return;
-    }
+    // dölj andra vyer i deltagare
+    document.getElementById("participantDay").style.display="none";
+    document.getElementById("participantWeek").style.display="none";
+    document.getElementById("participantPictos").style.display="block";
 
-    // Gör datan tillgänglig för nya fönstret direkt (bäst för Firefox/file://)
-    window.__PICTO_DATA__ = daysData;
-
-    // Spara även som fallback
-    try{ localStorage.setItem("PICTO_DATA_V1", JSON.stringify(daysData)); }catch(e){}
-    try{ localStorage.setItem("PICTO_BACK_URL", location.href); }catch(e){}
-
-    // Öppna separat print-fil (stående A4) – löser Firefox-låsning i liggande
-    location.href = "./bildstod_print_v11.html";
+    renderParticipantPictosWeek(name);
   });
 }
 
@@ -3154,61 +2318,6 @@ window.addEventListener("afterprint", ()=>{
       navigator.serviceWorker.register("./sw.js").catch(()=>{});
     });
   }
-</script>
-
-
-<script id="printfix-js">
-/* =========================
-   PRINTFIX (2026-01-05)
-   - Sätter tydligt print-läge (week/pictos)
-   - Sätter @page via dynamicPageStyle
-========================= */
-(function(){
-  const styleEl = document.getElementById("dynamicPageStyle");
-
-  function setPage(orientation){
-    if(!styleEl) return;
-    styleEl.textContent = "@media print { @page { size: A4 " + orientation + "; margin: 10mm; } }";
-  }
-
-  function computeMode(){
-    const activeView = document.querySelector(".view.active");
-    const pictos = document.getElementById("participantPictos");
-    const pictosVisible = activeView && activeView.id === "participantView" &&
-      pictos && pictos.style.display !== "none" && pictos.innerHTML.trim().length > 0;
-
-    // Bildstöd styr endast när bildstöd är synligt i deltagarvyn
-    return pictosVisible ? "pictos" : "week";
-  }
-
-  function applyMode(){
-    const mode = computeMode();
-
-    document.body.classList.remove("print-week","print-pictos","pictos-print");
-    if(mode === "pictos"){
-      document.body.classList.add("print-pictos","pictos-print");
-      setPage("portrait");
-    }else{
-      document.body.classList.add("print-week");
-      setPage("landscape");
-    }
-  }
-
-  window.addEventListener("beforeprint", applyMode);
-  window.addEventListener("afterprint", ()=>{
-    document.body.classList.remove("print-week","print-pictos","pictos-print");
-    // tillbaka till standard (landscape) så veckoschema känns "normalt"
-    setPage("landscape");
-  });
-
-  // Om användaren växlar vy precis innan print (Chrome kan vara seg)
-  document.addEventListener("click", (e)=>{
-    const t = e.target;
-    if(t && t.id && String(t.id).toLowerCase().includes("print")){
-      applyMode();
-    }
-  }, true);
-})();
 </script>
 
 </body>
