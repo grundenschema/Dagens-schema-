@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bildstöd – utskrift</title>
+<style>
+@page { size: A4 portrait; margin: 6mm; }
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background:#f0f4f8;
+  color:#111;
+  padding:14px;
+}
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  max-width:1100px;
+  margin:0 auto 10px auto;
+}
+header .title{ font-weight:900; font-size:18px; }
+.controls{
+  display:flex;
+  gap:10px;
+}
+.btn{
+  font-size:16px;
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid #cfd8e3;
+  background:#fff;
+  cursor:pointer;
+}
+.btn:hover{ background:#eef3fb; }
+
+.picto-wrap{ width:100%; max-width:1100px; margin:0 auto; }
+
+/* A4: 297mm. Margins 6mm top+bottom => 285mm usable */
+:root{
+  --pageH: 285mm;
+  --titleH: 9mm;
+  --gap: 2mm;
+  --itemH: calc((var(--pageH) - var(--titleH) - (7 * var(--gap))) / 8);
+}
+
+/* Default day block (prints one day per page) */
+.picto-day{
+  background:#fff;
+  height: var(--pageH);
+  display:grid;
+  grid-template-rows: var(--titleH) repeat(8, var(--itemH));
+  row-gap: var(--gap);
+  break-after: page;
+  page-break-after: always;
+}
+
+.picto-day:last-child{
+  break-after: auto;
+  page-break-after: auto;
+}
+
+.picto-day-title{
+  text-align:center;
+  font-size:15pt;
+  font-weight:900;
+  line-height: var(--titleH);
+  height: var(--titleH);
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+
+/* Item card */
+.picto-item{
+  height: var(--itemH);
+  border: 2.5px solid #000;
+  border-radius: 12px;
+  display:grid;
+  grid-template-columns: 78px 1fr 145px;
+  align-items:center;
+  gap: 4mm;
+  padding: 3.2mm;
+  overflow:hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.picto-time{
+  text-align:center;
+  font-size:16pt;
+  font-weight:900;
+  line-height:1.0;
+  white-space:nowrap;
+}
+.picto-act{ text-align:center; overflow:hidden; }
+.picto-act .emoji{ font-size:30pt; line-height:0.95; }
+.picto-act .label{
+  font-size:13.5pt;
+  font-weight:900;
+  line-height:1.0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.picto-coach{
+  text-align:center;
+  font-size:11pt;
+  font-weight:900;
+  line-height:1.0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Tight mode (only when 8 items) – this is the “last mile” */
+.picto-day.tight{
+  --titleH: 8mm;
+  --gap: 1.5mm;
+}
+.picto-day.tight .picto-item{
+  padding: 2.7mm;
+  border-width: 2px;
+  grid-template-columns: 74px 1fr 140px;
+}
+.picto-day.tight .picto-time{ font-size:15pt; }
+.picto-day.tight .picto-act .emoji{ font-size:28pt; }
+.picto-day.tight .picto-act .label{ font-size:12.8pt; }
+.picto-day.tight .picto-coach{ font-size:10.5pt; }
+
+.hint{ text-align:center; margin:18mm auto 0 auto; font-size:14px; color:#333; max-width:700px; }
+
+@media print{
+  body{ background:#fff; padding:0; }
+  header{ display:none !important; }
+  .btn{ display:none !important; }
+  .hint{ display:none !important; }
+  .picto-wrap{ max-width:none !important; margin:0 !important; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title">Bildstöd</div>
+  <div class="controls">
+    <button class="btn" id="btnBack">⬅︎ Tillbaka</button>
+    <button class="btn" id="btnPrint">🖨️ Skriv ut</button>
+  </div>
+</header>
+
+<div id="output" class="picto-wrap"></div>
+
+<script>
+(function(){
+  function getData(){
+    try{
+      const raw = localStorage.getItem("PICTO_DATA_V1");
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    try{
+      if(window.opener && window.opener.__PICTO_DATA__) return window.opener.__PICTO_DATA__;
+    }catch(e){}
+    return null;
+  }
+
+  function goBack(){
+    const backUrl = (localStorage.getItem("PICTO_BACK_URL") || "").trim();
+    if(backUrl){
+      location.href = backUrl;
+      return;
+    }
+    history.back();
+  }
+
+  document.getElementById("btnBack").addEventListener("click", goBack);
+  document.getElementById("btnPrint").addEventListener("click", ()=>window.print());
+
+  const data = getData();
+  const out = document.getElementById("output");
+
+  if(!data || !Array.isArray(data) || !data.length){
+    out.innerHTML = "<div class='hint'>Ingen bildstödsdata mottagen.<br>Öppna huvudfilen och klicka Bildstöd därifrån.</div>";
+    return;
+  }
+
+  data.forEach(day => {
+    if(!day.items || !day.items.length) return;
+
+    const items = day.items.slice(0,8);
+    const dayDiv = document.createElement("div");
+    dayDiv.className = "picto-day" + (items.length === 8 ? " tight" : "");
+
+    const title = document.createElement("div");
+    title.className = "picto-day-title";
+    title.textContent = day.title;
+    dayDiv.appendChild(title);
+
+    items.forEach(item => {
+      const el = document.createElement("div");
+      el.className = "picto-item";
+      el.innerHTML = `
+        <div class="picto-time">${item.time || ""}</div>
+        <div class="picto-act">
+          <div class="emoji">${item.emoji || "✨"}</div>
+          <div class="label">${item.label || ""}</div>
+        </div>
+        <div class="picto-coach">${item.coach || ""}</div>
+      `;
+      dayDiv.appendChild(el);
+    });
+
+    // Fyll resterande rader så grid alltid har 8 rader (hindrar konstiga höjdberäkningar)
+    for(let i=items.length; i<8; i++){
+      const filler = document.createElement("div");
+      filler.className = "picto-item";
+      filler.style.visibility = "hidden";
+      filler.innerHTML = '<div class="picto-time"> </div><div class="picto-act"><div class="emoji"> </div><div class="label"> </div></div><div class="picto-coach"> </div>';
+      dayDiv.appendChild(filler);
+    }
+
+    out.appendChild(dayDiv);
+  });
+})();
+</script>
+</body>
+</html>
