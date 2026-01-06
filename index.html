@@ -1376,6 +1376,72 @@ body.pictos-print #participantPictos .picto-day{
   }
 }
 
+
+
+/* =========================
+   MOBIL: Helskärm i schema (coach + deltagare) med Tillbaka
+   Aktiveras endast när body har class "mobile-fullscreen"
+========================= */
+.mobile-backbar{ display:none; }
+.mobile-back{ display:none; }
+
+@media (max-width:720px){
+  body.mobile-fullscreen header{ display:none !important; }
+  body.mobile-fullscreen #dataStatus{ display:none !important; }
+  body.mobile-fullscreen .tab-bar{ display:none !important; }
+
+  body.mobile-fullscreen{
+    overflow:hidden; /* låt själva vyn scrolla istället */
+  }
+
+  body.mobile-fullscreen .mobile-backbar{
+    display:block !important;
+    position: fixed;
+    top: env(safe-area-inset-top);
+    left: 0; right: 0;
+    z-index: 9999;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(10px);
+    padding: 10px 12px;
+    border-bottom: 1px solid #e6e6e6;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  }
+  body.mobile-fullscreen .mobile-back{
+    display:inline-flex !important;
+    align-items:center;
+    gap:8px;
+  }
+
+  body.mobile-fullscreen #participantView,
+  body.mobile-fullscreen #coachView{
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    overflow:auto;
+    background:#f7f7fb;
+    padding-top: calc(56px + env(safe-area-inset-top));
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Spara yta: göm rubrik som dubblar info */
+  body.mobile-fullscreen #participantView #viewTitle,
+  body.mobile-fullscreen #coachView #viewTitle{
+    display:none !important;
+  }
+
+  /* Dag/datum får egen "säker zon" under backbaren */
+  body.mobile-fullscreen .mobile-day-header{
+    position: sticky;
+    top: calc(56px + env(safe-area-inset-top));
+    z-index: 50;
+    background:#f7f7fb;
+    padding: 8px 0 6px;
+    margin: 0;
+  }
+}
+
 </style>
 
 <!-- =========================
@@ -2243,7 +2309,11 @@ function showView(id){
   if(id==="coachView") initMobileCoach();
 
   // Mobil: helskärm endast i coach/deltagare
-  document.body.classList.toggle('mobile-fullscreen', isMobile() && ((id==='coachView' && ((document.getElementById('coachSelect')?.value)||'')) || (id==='participantView' && ((document.getElementById('nameSelect')?.value)||''))));
+    // Mobil: helskärm endast i schema när val är gjort
+  const hasParticipant = !!(document.getElementById('nameSelect')?.value);
+  const hasCoach = !!(document.getElementById('coachSelect')?.value);
+  const wantFull = isMobile() && ((id==='participantView' && hasParticipant) || (id==='coachView' && hasCoach));
+  document.body.classList.toggle('mobile-fullscreen', wantFull);
 }
 
 // Mobil: tillbaka från helskärm-dagschema
