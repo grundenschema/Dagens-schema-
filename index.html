@@ -1628,16 +1628,36 @@ function renderCardsGenericForDate(name,isCoach,targetEl,dateKeyStr){
 /* Swipe-engine med motstånd (stopp i kanterna) */
 function attachDaySwipe(opts){
   const surface = opts.surface;
-  // iOS: undvik dubbla listeners (kan annars hoppa flera dagar)
-  if(surface && surface.__swipeAttached) return;
+  // iOS: undvik dubbla listeners, men tillåt uppdatering av callbacks
+  if(surface && surface.__swipeAttached){
+    // uppdatera state och återanvänd samma listeners
+    surface.__swipeState = {
+      getIndex: opts.getIndex,
+      setIndex: opts.setIndex,
+      maxIndex: opts.maxIndex,
+      onEdge: opts.onEdge || function(){},
+      onChange: opts.onChange || function(){}
+    };
+    return;
+  }
   if(surface) surface.__swipeAttached = true;
-  const getIndex = opts.getIndex;
-  const setIndex = opts.setIndex;
-  const maxIndex = opts.maxIndex; // inclusive
-  const onEdge = opts.onEdge || function(){};
-  const onChange = opts.onChange || function(){};
+  if(surface) surface.__swipeState = {
+    getIndex: opts.getIndex,
+    setIndex: opts.setIndex,
+    maxIndex: opts.maxIndex,
+    onEdge: opts.onEdge || function(){},
+    onChange: opts.onChange || function(){}
+  };
+  const state = surface.__swipeState;
+  const getIndex = ()=>state.getIndex();
+  const setIndex = (v)=>state.setIndex(v);
+  const maxIndex = ()=>state.maxIndex;
+  const onEdge = (w)=>state.onEdge(w);
+  const onChange = (i)=>state.onChange(i);
 
   let startX=0, startY=0, dx=0, dy=0, dragging=false, horizontal=false;
+
+  let lastCommitTs = 0;
 
   function rubberband(dist){
     // mjuk motståndskurva
@@ -1676,7 +1696,7 @@ function attachDaySwipe(opts){
 
     const idx = getIndex();
     const atStart = idx<=0;
-    const atEnd = idx>=maxIndex;
+    const atEnd = idx>=maxIndex();
 
     let move = dx;
 
@@ -1698,17 +1718,21 @@ function attachDaySwipe(opts){
 
     const idx = getIndex();
     const atStart = idx<=0;
-    const atEnd = idx>=maxIndex;
+    const atEnd = idx>=maxIndex();
 
     const threshold = 60; // px
 
     // dx>0 = svep höger (tillbaka), dx<0 = svep vänster (framåt)
+    const nowTs = Date.now();
+    if(nowTs - lastCommitTs < 220){ reset(); return; }
     if(horizontal && Math.abs(dx) > threshold){
       if(dx < 0 && !atEnd){
         setIndex(idx+1);
+        lastCommitTs = Date.now();
         onChange(getIndex());
       }else if(dx > 0 && !atStart){
         setIndex(idx-1);
+        lastCommitTs = Date.now();
         onChange(getIndex());
       }else{
         // stopp
@@ -1722,11 +1746,13 @@ function attachDaySwipe(opts){
 /* Init mobilvy för deltagare */
 let mPDays = [];
 let mPIndex = 0;
+let mPName = "";
 
 function initMobileParticipant(){
   if(!isMobile()) return;
   const name = document.getElementById("nameSelect")?.value;
   if(!name) return;
+  mPName = name;
 
   mPDays = weekDaysMonFri(new Date());
   const today = todayKey();
@@ -1745,7 +1771,7 @@ function initMobileParticipant(){
     const pretty = prettyDay(d);
     titleEl.textContent = (k===today) ? "Idag" : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
     subEl.textContent = pretty.date;
-    renderCardsGenericForDate(name,false,cardsEl,k);
+    renderCardsGenericForDate(mPName,false,cardsEl,k);
   }
 
   render();
@@ -1765,11 +1791,13 @@ function initMobileParticipant(){
 /* Init mobilvy för coach */
 let mCDays = [];
 let mCIndex = 0;
+let mCName = "";
 
 function initMobileCoach(){
   if(!isMobile()) return;
   const name = document.getElementById("coachSelect")?.value;
   if(!name) return;
+  mCName = name;
 
   mCDays = weekDaysMonFri(new Date());
   const today = todayKey();
@@ -1788,7 +1816,7 @@ function initMobileCoach(){
     const pretty = prettyDay(d);
     titleEl.textContent = (k===today) ? "Idag" : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
     subEl.textContent = pretty.date;
-    renderCardsGenericForDate(name,true,cardsEl,k);
+    renderCardsGenericForDate(mCName,true,cardsEl,k);
   }
 
   render();
@@ -1806,11 +1834,15 @@ function initMobileCoach(){
 }
 
 /* Re-init när man byter person/coach */
-document.getElementById("nameSelect")?.addEventListener("change", ()=>{ 
-  if(isMobile()) initMobileParticipant();
+document.getElementById("nameSelect")?.addEventListener("change", ()=>{
+  if(!isMobile()) return;
+  mPName = document.getElementById("nameSelect")?.value || "";
+  initMobileParticipant();
 });
-document.getElementById("coachSelect")?.addEventListener("change", ()=>{ 
-  if(isMobile()) initMobileCoach();
+document.getElementById("coachSelect")?.addEventListener("change", ()=>{
+  if(!isMobile()) return;
+  mCName = document.getElementById("coachSelect")?.value || "";
+  initMobileCoach();
 });
 
 /* Om skärmstorlek ändras (t.ex. rotering) */
