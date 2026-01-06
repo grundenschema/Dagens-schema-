@@ -2124,6 +2124,9 @@ function showView(id){
   // Mobil: init swipe-vyer om relevant
   if(id==="participantView") initMobileParticipant();
   if(id==="coachView") initMobileCoach();
+
+  // Mobil: helskärm endast i coach/deltagare
+  document.body.classList.toggle('mobile-fullscreen', isMobile() && (id==='participantView' || id==='coachView'));
 }
 
 // Mobil: tillbaka från helskärm-dagschema
