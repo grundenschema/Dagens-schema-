@@ -1135,6 +1135,46 @@ body.pictos-print #participantPictos .picto-day{
   #mPSwipe, #mCSwipe{ min-height: 55vh; }
 }
 
+
+
+/* =========================
+   MOBIL: Hel-skärm för dagschema + tillbaka
+========================= */
+.mobile-backbar{ display:none; }
+.mobile-back{ display:none; }
+
+@media (max-width: 720px){
+  /* Mer yta till schema */
+  .tab-bar{ display:none !important; } /* vi kör tillbaka-knapp istället */
+  .mobile-backbar{ display:block; max-width:1100px; margin: 6px auto 0; }
+  .mobile-back{ display:inline-flex !important; align-items:center; gap:8px; }
+
+  /* Låt vyerna använda skärmen bättre */
+  .view{ min-height: calc(100vh - 120px); } /* header + luft */
+  #mobileParticipantDayView, #mobileCoachDayView{ padding-bottom: 18px; }
+}
+
+/* "Bläddra mellan blad" - animation */
+@media (max-width: 720px){
+  .page-enter{
+    opacity: 0.01;
+    transform: translateX(36px) rotateY(-10deg);
+    transform-origin: 50% 50%;
+  }
+  .page-enter-left{
+    opacity: 0.01;
+    transform: translateX(-36px) rotateY(10deg);
+    transform-origin: 50% 50%;
+  }
+  .page-enter-active{
+    opacity: 1;
+    transform: translateX(0px) rotateY(0deg);
+    transition: opacity 180ms ease-out, transform 180ms ease-out;
+  }
+  /* ge lite perspektiv känsla */
+  #mPDayCards, #mCDayCards{ perspective: 900px; }
+}
+
 </style>
 
 <!-- =========================
@@ -1322,7 +1362,10 @@ body.print-week{ }
 
 <!-- DELTAGARE-VY -->
 <div id="participantView" class="view">
-  <div id="viewTitle">👤 Deltagarschema</div>
+  <div class="mobile-backbar">
+  <button id="btnBackFromParticipant" class="btn mobile-back">← Tillbaka</button>
+</div>
+<div id="viewTitle">👤 Deltagarschema</div>
 
 <div class="controls">
     <select id="nameSelect"><option value="">-- Välj deltagare --</option></select>
@@ -1356,7 +1399,10 @@ body.print-week{ }
 
 <!-- COACH-VY -->
 <div id="coachView" class="view">
-  <div id="viewTitle">🧑‍🏫 Coachschema</div>
+  <div class="mobile-backbar">
+  <button id="btnBackFromCoach" class="btn mobile-back">← Tillbaka</button>
+</div>
+<div id="viewTitle">🧑‍🏫 Coachschema</div>
   <div class="controls">
     <select id="coachSelect"><option value="">-- Välj coach --</option></select>
     <button id="btnCoachToday" class="btn primary">☀️ Dagens schema</button>
@@ -1729,11 +1775,11 @@ function attachDaySwipe(opts){
       if(dx < 0 && !atEnd){
         setIndex(idx+1);
         lastCommitTs = Date.now();
-        onChange(getIndex());
+        onChange(getIndex(), dx<0 ? 'forward' : 'back');
       }else if(dx > 0 && !atStart){
         setIndex(idx-1);
         lastCommitTs = Date.now();
-        onChange(getIndex());
+        onChange(getIndex(), dx<0 ? 'forward' : 'back');
       }else{
         // stopp
         onEdge(atStart ? "start" : "end");
@@ -1747,6 +1793,7 @@ function attachDaySwipe(opts){
 let mPDays = [];
 let mPIndex = 0;
 let mPName = "";
+let mPLastDir = "forward";
 
 function initMobileParticipant(){
   if(!isMobile()) return;
@@ -1769,7 +1816,8 @@ function initMobileParticipant(){
     const d = mPDays[mPIndex];
     const k = keyFromDate(d);
     const pretty = prettyDay(d);
-    titleEl.textContent = (k===today) ? "Idag" : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
+    titleEl.textContent = (k===today) ? `Idag – ${pretty.wd}` : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
+    if(k===today){ titleEl.textContent = titleEl.textContent.replace(/^Idag – /, "Idag – ")+""; }
     subEl.textContent = pretty.date;
     renderCardsGenericForDate(mPName,false,cardsEl,k);
   }
@@ -1784,7 +1832,7 @@ function initMobileParticipant(){
     onEdge: (where)=>{
       edgeEl.textContent = where ? (where==="start" ? "Första dagen i veckan" : "Sista dagen i veckan") : "";
     },
-    onChange: ()=>render()
+    onChange: (_i,dir)=>{ if(dir) mPLastDir=dir; render(); }
   });
 }
 
@@ -1792,6 +1840,7 @@ function initMobileParticipant(){
 let mCDays = [];
 let mCIndex = 0;
 let mCName = "";
+let mCLastDir = "forward";
 
 function initMobileCoach(){
   if(!isMobile()) return;
@@ -1814,7 +1863,8 @@ function initMobileCoach(){
     const d = mCDays[mCIndex];
     const k = keyFromDate(d);
     const pretty = prettyDay(d);
-    titleEl.textContent = (k===today) ? "Idag" : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
+    titleEl.textContent = (k===today) ? `Idag – ${pretty.wd}` : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
+    if(k===today){ titleEl.textContent = titleEl.textContent.replace(/^Idag – /, "Idag – ")+""; }
     subEl.textContent = pretty.date;
     renderCardsGenericForDate(mCName,true,cardsEl,k);
   }
@@ -1829,7 +1879,7 @@ function initMobileCoach(){
     onEdge: (where)=>{
       edgeEl.textContent = where ? (where==="start" ? "Första dagen i veckan" : "Sista dagen i veckan") : "";
     },
-    onChange: ()=>render()
+    onChange: (_i,dir)=>{ if(dir) mCLastDir=dir; render(); }
   });
 }
 
@@ -1991,6 +2041,10 @@ function showView(id){
   if(id==="participantView") initMobileParticipant();
   if(id==="coachView") initMobileCoach();
 }
+
+// Mobil: tillbaka från helskärm-dagschema
+document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>showView("nowView"));
+document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>showView("nowView"));
 
 
 
