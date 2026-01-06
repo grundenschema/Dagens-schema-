@@ -1339,9 +1339,10 @@ body.pictos-print #participantPictos .picto-day{
   /* Se till att dagrubriken alltid syns under backbaren */
   body.mobile-fullscreen .mobile-day-header{
     position: sticky;
-    top: calc(56px + env(safe-area-inset-top));
+    /* Ligger UNDER den sticky .controls-raden (select) */
+    top: calc(56px + env(safe-area-inset-top) + 74px);
     background:#f7f7fb;
-    z-index: 50;
+    z-index: 900; /* under .controls (1000), över kort */
     padding: 8px 0 6px;
     margin-top: 0;
   }
@@ -1434,8 +1435,9 @@ body.pictos-print #participantPictos .picto-day{
   /* Dag/datum får egen "säker zon" under backbaren */
   body.mobile-fullscreen .mobile-day-header{
     position: sticky;
-    top: calc(56px + env(safe-area-inset-top));
-    z-index: 50;
+    /* Ligger UNDER den sticky .controls-raden (select) */
+    top: calc(56px + env(safe-area-inset-top) + 74px);
+    z-index: 900;
     background:#f7f7fb;
     padding: 8px 0 6px;
     margin: 0;
@@ -2155,11 +2157,15 @@ document.getElementById("nameSelect")?.addEventListener("change", ()=>{
   if(!isMobile()) return;
   mPName = document.getElementById("nameSelect")?.value || "";
   initMobileParticipant();
+  // När ett val görs: gå till helskärm på mobil
+  if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView();
 });
 document.getElementById("coachSelect")?.addEventListener("change", ()=>{
   if(!isMobile()) return;
   mCName = document.getElementById("coachSelect")?.value || "";
   initMobileCoach();
+  // När ett val görs: gå till helskärm på mobil
+  if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView();
 });
 
 /* Om skärmstorlek ändras (t.ex. rotering) */
@@ -2324,12 +2330,9 @@ function showView(id){
 }
 
 function currentViewId(){
-  const ids=["nowView","participantView","coachView","assistantView"];
-  for(const id of ids){
-    const el=document.getElementById(id);
-    if(el && el.style.display==="block") return id;
-  }
-  return "nowView";
+  // Vi använder .active (inte style.display) eftersom vyerna styrs via klass.
+  const active = document.querySelector(".view.active");
+  return active?.id || "nowView";
 }
 
 function updateMobileFullscreenForCurrentView(){
@@ -2341,6 +2344,11 @@ function updateMobileFullscreenForCurrentView(){
   document.body.classList.toggle('mobile-fullscreen', wantFull);
 }
 
+
+
+// Mobil: håll helskärmsläget korrekt vid rotation/resize
+window.addEventListener("resize", ()=>{ if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView(); });
+window.addEventListener("orientationchange", ()=>{ if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView(); });
 // Mobil: tillbaka från helskärm-dagschema
 document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
 document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
