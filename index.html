@@ -1073,6 +1073,75 @@ body.pictos-print #participantPictos .picto-day{
   #participantWeek, #coachWeek, #compareOutput { display:none !important; }
 }
 
+
+/* Mobil: dag-rubrik som i referensbild (Idag – tisdag + datum) */
+@media (max-width: 720px){
+  body.mobile-fullscreen #viewTitle,
+  body.mobile-fullscreen .controls,
+  body.mobile-fullscreen .mobile-backbar{ display:none !important; }
+
+  /* Gör dagsvyn till "riktig" helskärm och låt korten scrolla */
+  body.mobile-fullscreen #mobileParticipantDayView,
+  body.mobile-fullscreen #mobileCoachDayView{
+    position: fixed;
+    top: env(safe-area-inset-top);
+    left: 0; right: 0;
+    bottom: env(safe-area-inset-bottom);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 14px 18px;
+  }
+
+  body.mobile-fullscreen .mobile-day-header{
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #eef3f8;
+    padding: 6px 0 4px;
+    margin: 0 0 2px;
+  }
+
+  body.mobile-fullscreen .mobile-day-title{
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    line-height: 1.05;
+  }
+  body.mobile-fullscreen .mobile-day-sub{
+    font-size: 18px;
+    font-weight: 700;
+    opacity: 0.85;
+    margin-top: 6px;
+    white-space: nowrap;
+  }
+
+  body.mobile-fullscreen .mobile-swipe-hint{
+    position: sticky;
+    top: 54px;
+    z-index: 19;
+    text-align: center;
+    font-weight: 700;
+    font-size: 18px;
+    opacity: 0.65;
+    margin: 0 0 10px;
+    padding: 6px 0 8px;
+    background: #eef3f8;
+  }
+
+  /* Back-knapp inuti dagraden */
+  body.mobile-fullscreen .mobile-inline-back{
+    padding: 8px 10px !important;
+    min-height: 40px !important;
+    border-radius: 999px !important;
+    margin-right: 8px;
+  }
+
+  /* Swipe-yta ska inte låsa scroll */
+  body.mobile-fullscreen .mobile-swipe-surface{
+    touch-action: pan-y;
+  }
+}
+
 .mobile-day-header{
   display:flex;
   align-items:baseline;
@@ -1648,6 +1717,7 @@ body.print-week{ }
   <!-- MOBIL (tittläge): Dag-för-dag med swipe (kortvy) -->
   <div id="mobileParticipantDayView" class="print-scope">
     <div class="mobile-day-header">
+      <button class="btn mobile-inline-back" id="btnBackInlineP" aria-label="Tillbaka">←</button>
       <div class="mobile-day-title" id="mPTitle">Idag</div>
       <div class="mobile-day-sub" id="mPSub"></div>
     </div>
@@ -1684,6 +1754,7 @@ body.print-week{ }
   <!-- MOBIL (tittläge): Dag-för-dag med swipe (kortvy) -->
   <div id="mobileCoachDayView" class="print-scope">
     <div class="mobile-day-header">
+      <button class="btn mobile-inline-back" id="btnBackInlineC" aria-label="Tillbaka">←</button>
       <div class="mobile-day-title" id="mCTitle">Idag</div>
       <div class="mobile-day-sub" id="mCSub"></div>
     </div>
@@ -2356,6 +2427,10 @@ document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>{ doc
 
 
 
+
+// Mobil: inline-tillbaka i dagraden
+document.getElementById("btnBackInlineP")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
+document.getElementById("btnBackInlineC")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
 document.getElementById("tabParticipant").onclick=()=>{ showView("participantView"); };
 document.getElementById("tabCoach").onclick=()=>{ showView("coachView"); };
 document.getElementById("tabNow").onclick=()=>{ showView("nowView"); renderNow(); };
