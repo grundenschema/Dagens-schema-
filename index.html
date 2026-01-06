@@ -2186,6 +2186,11 @@ async function loadData(){
     const st=document.getElementById("dataStatus"); if(st) st.style.display="block";
   }
 }
+
+// hookFullscreenOnSelect
+document.getElementById("nameSelect")?.addEventListener("change", ()=>{ updateMobileFullscreenForCurrentView(); });
+document.getElementById("coachSelect")?.addEventListener("change", ()=>{ updateMobileFullscreenForCurrentView(); });
+
 loadData();
 
 /* Klocka */
@@ -2310,6 +2315,26 @@ function showView(id){
 
   // Mobil: helskärm endast i coach/deltagare
     // Mobil: helskärm endast i schema när val är gjort
+  const hasParticipant = !!(document.getElementById('nameSelect')?.value);
+  const hasCoach = !!(document.getElementById('coachSelect')?.value);
+  const wantFull = isMobile() && ((id==='participantView' && hasParticipant) || (id==='coachView' && hasCoach));
+  document.body.classList.toggle('mobile-fullscreen', wantFull);
+  // Säkerställ korrekt läge även om val ändras
+  updateMobileFullscreenForCurrentView && updateMobileFullscreenForCurrentView();
+}
+
+function currentViewId(){
+  const ids=["nowView","participantView","coachView","assistantView"];
+  for(const id of ids){
+    const el=document.getElementById(id);
+    if(el && el.style.display==="block") return id;
+  }
+  return "nowView";
+}
+
+function updateMobileFullscreenForCurrentView(){
+  if(typeof isMobile!=="function") return;
+  const id=currentViewId();
   const hasParticipant = !!(document.getElementById('nameSelect')?.value);
   const hasCoach = !!(document.getElementById('coachSelect')?.value);
   const wantFull = isMobile() && ((id==='participantView' && hasParticipant) || (id==='coachView' && hasCoach));
