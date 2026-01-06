@@ -2155,15 +2155,11 @@ document.getElementById("nameSelect")?.addEventListener("change", ()=>{
   if(!isMobile()) return;
   mPName = document.getElementById("nameSelect")?.value || "";
   initMobileParticipant();
-  // När ett val görs: gå till helskärm på mobil
-  if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView();
 });
 document.getElementById("coachSelect")?.addEventListener("change", ()=>{
   if(!isMobile()) return;
   mCName = document.getElementById("coachSelect")?.value || "";
   initMobileCoach();
-  // När ett val görs: gå till helskärm på mobil
-  if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView();
 });
 
 /* Om skärmstorlek ändras (t.ex. rotering) */
@@ -2328,9 +2324,12 @@ function showView(id){
 }
 
 function currentViewId(){
-  // Vi använder .active (inte style.display) eftersom vyerna styrs via klass.
-  const active = document.querySelector(".view.active");
-  return active?.id || "nowView";
+  const ids=["nowView","participantView","coachView","assistantView"];
+  for(const id of ids){
+    const el=document.getElementById(id);
+    if(el && el.style.display==="block") return id;
+  }
+  return "nowView";
 }
 
 function updateMobileFullscreenForCurrentView(){
@@ -2342,11 +2341,6 @@ function updateMobileFullscreenForCurrentView(){
   document.body.classList.toggle('mobile-fullscreen', wantFull);
 }
 
-
-
-// Mobil: håll helskärmsläget korrekt vid rotation/resize
-window.addEventListener("resize", ()=>{ if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView(); });
-window.addEventListener("orientationchange", ()=>{ if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView(); });
 // Mobil: tillbaka från helskärm-dagschema
 document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
 document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
