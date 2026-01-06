@@ -1129,6 +1129,12 @@ body.pictos-print #participantPictos .picto-day{
   #tabAssistant{ display:none !important; }
 }
 
+
+
+@media (max-width: 720px){
+  #mPSwipe, #mCSwipe{ min-height: 55vh; }
+}
+
 </style>
 
 <!-- =========================
@@ -1606,7 +1612,7 @@ function renderCardsGenericForDate(name,isCoach,targetEl,dateKeyStr){
     return (list.map(x=>x.toLowerCase()).includes(name.toLowerCase())) || (r[field]||"").trim().toLowerCase()==="alla";
   }).filter(r=>dayKey(r.Datum)===dateKeyStr).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
 
-  let html=`<div class='cards'>`;
+  let html=``;
   if(!rows.length) html+="<div class='card' style='--band:#cfd8e3'><div class='row'>Ledig</div></div>";
   rows.forEach(r=>{
     html+=`<div class="card" style="--band:${colorFor(r)}">
@@ -1615,13 +1621,16 @@ function renderCardsGenericForDate(name,isCoach,targetEl,dateKeyStr){
       <div class="row">${isCoach?"👥 Deltagare: "+(r.Deltagare||"-"):"🧑‍🏫 Coach: "+(r.Coach||"-")}</div>
     </div>`;
   });
-  html+="</div>";
+  
   targetEl.innerHTML=html;
 }
 
 /* Swipe-engine med motstånd (stopp i kanterna) */
 function attachDaySwipe(opts){
   const surface = opts.surface;
+  // iOS: undvik dubbla listeners (kan annars hoppa flera dagar)
+  if(surface && surface.__swipeAttached) return;
+  if(surface) surface.__swipeAttached = true;
   const getIndex = opts.getIndex;
   const setIndex = opts.setIndex;
   const maxIndex = opts.maxIndex; // inclusive
@@ -1657,8 +1666,9 @@ function attachDaySwipe(opts){
     dy=e.touches[0].clientY - startY;
 
     if(!horizontal){
-      if(Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)*1.2){
-        horizontal=true;
+      // lättare att fånga horisontell swipe på iPhone
+      if(Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)){
+        horizontal = true;
       }else{
         return;
       }
@@ -1804,14 +1814,6 @@ document.getElementById("coachSelect")?.addEventListener("change", ()=>{
 });
 
 /* Om skärmstorlek ändras (t.ex. rotering) */
-window.addEventListener("resize", ()=>{
-  if(isMobile()){
-    // init om det finns val
-    initMobileParticipant();
-    initMobileCoach();
-  }
-});
-
 function weekdayName(d) {
   return ["söndag","måndag","tisdag","onsdag","torsdag","fredag","lördag"][d];
 }
@@ -2035,7 +2037,7 @@ function renderCardsGeneric(name,isCoach,targetEl){
     return (list.map(x=>x.toLowerCase()).includes(name.toLowerCase())) || (r[field]||"").trim().toLowerCase()==="alla";
   }).filter(r=>dayKey(r.Datum)===today).sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
 
-  let html=`<div class='cards'>`;
+  let html=``;
   if(!rows.length) html+="<div class='card' style='--band:#cfd8e3'><div class='row'>Inga aktiviteter idag.</div></div>";
   rows.forEach(r=>{
     html+=`<div class="card" style="--band:${colorFor(r)}">
@@ -2044,7 +2046,7 @@ function renderCardsGeneric(name,isCoach,targetEl){
       <div class="row">${isCoach?"👥 Deltagare: "+(r.Deltagare||"-"):"🧑‍🏫 Coach: "+(r.Coach||"-")}</div>
     </div>`;
   });
-  html+="</div>";
+  
   targetEl.innerHTML=html;
 }
 
