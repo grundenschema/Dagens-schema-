@@ -9,6 +9,45 @@
 
 <style id="dynamicPageStyle">
 @media print { /* @page removed (handled dynamically) */}
+
+
+/* ===== v33: FIX för mobil dagschema ===== */
+@media (max-width: 720px){
+  /* Visa INTE dagsvyn (rubrik/hint + kortlista) innan val är gjort */
+  body:not(.mobile-day-mode) #mobileParticipantDayView,
+  body:not(.mobile-day-mode) #mobileCoachDayView{ display:none !important; }
+
+  body:not(.mobile-day-mode) .mobile-day-header,
+  body:not(.mobile-day-mode) .mobile-swipe-hint{ display:none !important; }
+
+  /* Dagläge: fast rubrik + scroll under */
+  body.mobile-day-mode{ overflow:hidden; }
+  body.mobile-day-mode #mobileParticipantDayView,
+  body.mobile-day-mode #mobileCoachDayView{
+    position: fixed;
+    top: env(safe-area-inset-top);
+    left: 0; right: 0;
+    bottom: env(safe-area-inset-bottom);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 14px 18px;
+    background: #eef3f8;
+  }
+  body.mobile-day-mode .mobile-day-header{
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: #eef3f8;
+    margin: 0 0 2px;
+  }
+  body.mobile-day-mode .mobile-swipe-hint{
+    position: sticky;
+    top: 54px;
+    z-index: 29;
+    background: #eef3f8;
+  }
+}
+
 </style>
 
 <style>
@@ -1513,6 +1552,89 @@ body.pictos-print #participantPictos .picto-day{
   }
 }
 
+
+/* ===== MOBIL DAGLÄGE (en enda tillbaka + fast rubrik) ===== */
+@media (max-width: 720px){
+  body.mobile-day-mode #viewTitle,
+  body.mobile-day-mode .controls,
+  body.mobile-day-mode .mobile-backbar,
+  body.mobile-day-mode .mobile-back{ display:none !important; }
+
+  /* Visa endast swipe-dagsvyn i dagläge */
+  body.mobile-day-mode #mobileParticipantDayView,
+  body.mobile-day-mode #mobileCoachDayView{ display:block !important; }
+
+  /* Gör dagsvyn till helskärms-scroll även utan mobile-fullscreen */
+  body.mobile-day-mode #mobileParticipantDayView,
+  body.mobile-day-mode #mobileCoachDayView{
+    position: fixed;
+    top: env(safe-area-inset-top);
+    left: 0; right: 0;
+    bottom: env(safe-area-inset-bottom);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 14px 18px;
+    background: #eef3f8;
+  }
+
+  /* Rubrik + hint ska ligga fast överst, korten under */
+  body.mobile-day-mode .mobile-day-header{
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: #eef3f8;
+    padding: 6px 0 4px;
+    margin: 0 0 2px;
+  }
+
+  body.mobile-day-mode .mobile-swipe-hint{
+    position: sticky;
+    top: 54px;
+    z-index: 29;
+    background: #eef3f8;
+  }
+}
+
+
+
+
+/* ===== v33: FIX för mobil dagschema ===== */
+@media (max-width: 720px){
+  /* Visa INTE dagsvyn (rubrik/hint + kortlista) innan val är gjort */
+  body:not(.mobile-day-mode) #mobileParticipantDayView,
+  body:not(.mobile-day-mode) #mobileCoachDayView{ display:none !important; }
+
+  body:not(.mobile-day-mode) .mobile-day-header,
+  body:not(.mobile-day-mode) .mobile-swipe-hint{ display:none !important; }
+
+  /* Dagläge: fast rubrik + scroll under */
+  body.mobile-day-mode{ overflow:hidden; }
+  body.mobile-day-mode #mobileParticipantDayView,
+  body.mobile-day-mode #mobileCoachDayView{
+    position: fixed;
+    top: env(safe-area-inset-top);
+    left: 0; right: 0;
+    bottom: env(safe-area-inset-bottom);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 14px 18px;
+    background: #eef3f8;
+  }
+  body.mobile-day-mode .mobile-day-header{
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: #eef3f8;
+    margin: 0 0 2px;
+  }
+  body.mobile-day-mode .mobile-swipe-hint{
+    position: sticky;
+    top: 54px;
+    z-index: 29;
+    background: #eef3f8;
+  }
+}
+
 </style>
 
 <!-- =========================
@@ -1635,6 +1757,45 @@ body.pictos-print #participantPictos .picto-day{
 @media print { @page { size: A4 landscape; margin: 10mm; } }
 body.print-pictos{ }
 body.print-week{ }
+
+
+/* ===== v33: FIX för mobil dagschema ===== */
+@media (max-width: 720px){
+  /* Visa INTE dagsvyn (rubrik/hint + kortlista) innan val är gjort */
+  body:not(.mobile-day-mode) #mobileParticipantDayView,
+  body:not(.mobile-day-mode) #mobileCoachDayView{ display:none !important; }
+
+  body:not(.mobile-day-mode) .mobile-day-header,
+  body:not(.mobile-day-mode) .mobile-swipe-hint{ display:none !important; }
+
+  /* Dagläge: fast rubrik + scroll under */
+  body.mobile-day-mode{ overflow:hidden; }
+  body.mobile-day-mode #mobileParticipantDayView,
+  body.mobile-day-mode #mobileCoachDayView{
+    position: fixed;
+    top: env(safe-area-inset-top);
+    left: 0; right: 0;
+    bottom: env(safe-area-inset-bottom);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 14px 18px;
+    background: #eef3f8;
+  }
+  body.mobile-day-mode .mobile-day-header{
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: #eef3f8;
+    margin: 0 0 2px;
+  }
+  body.mobile-day-mode .mobile-swipe-hint{
+    position: sticky;
+    top: 54px;
+    z-index: 29;
+    background: #eef3f8;
+  }
+}
+
 </style>
 
 
@@ -1656,6 +1817,45 @@ body.print-week{ }
     display:block !important;
   }
 }
+
+
+/* ===== v33: FIX för mobil dagschema ===== */
+@media (max-width: 720px){
+  /* Visa INTE dagsvyn (rubrik/hint + kortlista) innan val är gjort */
+  body:not(.mobile-day-mode) #mobileParticipantDayView,
+  body:not(.mobile-day-mode) #mobileCoachDayView{ display:none !important; }
+
+  body:not(.mobile-day-mode) .mobile-day-header,
+  body:not(.mobile-day-mode) .mobile-swipe-hint{ display:none !important; }
+
+  /* Dagläge: fast rubrik + scroll under */
+  body.mobile-day-mode{ overflow:hidden; }
+  body.mobile-day-mode #mobileParticipantDayView,
+  body.mobile-day-mode #mobileCoachDayView{
+    position: fixed;
+    top: env(safe-area-inset-top);
+    left: 0; right: 0;
+    bottom: env(safe-area-inset-bottom);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 14px 18px;
+    background: #eef3f8;
+  }
+  body.mobile-day-mode .mobile-day-header{
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: #eef3f8;
+    margin: 0 0 2px;
+  }
+  body.mobile-day-mode .mobile-swipe-hint{
+    position: sticky;
+    top: 54px;
+    z-index: 29;
+    background: #eef3f8;
+  }
+}
+
 </style>
 
 
@@ -2395,7 +2595,9 @@ function showView(id){
   const hasParticipant = !!(document.getElementById('nameSelect')?.value);
   const hasCoach = !!(document.getElementById('coachSelect')?.value);
   const wantFull = isMobile() && ((id==='participantView' && hasParticipant) || (id==='coachView' && hasCoach));
-  document.body.classList.toggle('mobile-fullscreen', wantFull);
+  // Vi använder endast mobile-day-mode för mobilens dagschema (undviker dubbel-layout)
+  document.body.classList.remove('mobile-fullscreen');
+  document.body.classList.toggle('mobile-day-mode', wantFull);
   // Säkerställ korrekt läge även om val ändras
   updateMobileFullscreenForCurrentView && updateMobileFullscreenForCurrentView();
 }
@@ -2412,7 +2614,8 @@ function updateMobileFullscreenForCurrentView(){
   const hasParticipant = !!(document.getElementById('nameSelect')?.value);
   const hasCoach = !!(document.getElementById('coachSelect')?.value);
   const wantFull = isMobile() && ((id==='participantView' && hasParticipant) || (id==='coachView' && hasCoach));
-  document.body.classList.toggle('mobile-fullscreen', wantFull);
+  document.body.classList.remove('mobile-fullscreen');
+  document.body.classList.toggle('mobile-day-mode', wantFull);
 }
 
 
@@ -2421,16 +2624,16 @@ function updateMobileFullscreenForCurrentView(){
 window.addEventListener("resize", ()=>{ if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView(); });
 window.addEventListener("orientationchange", ()=>{ if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView(); });
 // Mobil: tillbaka från helskärm-dagschema
-document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
-document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
+document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen","mobile-day-mode"); showView("nowView"); });
+document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen","mobile-day-mode"); showView("nowView"); });
 
 
 
 
 
 // Mobil: inline-tillbaka i dagraden
-document.getElementById("btnBackInlineP")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
-document.getElementById("btnBackInlineC")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
+document.getElementById("btnBackInlineP")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen","mobile-day-mode"); showView("nowView"); });
+document.getElementById("btnBackInlineC")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen","mobile-day-mode"); showView("nowView"); });
 document.getElementById("tabParticipant").onclick=()=>{ showView("participantView"); };
 document.getElementById("tabCoach").onclick=()=>{ showView("coachView"); };
 document.getElementById("tabNow").onclick=()=>{ showView("nowView"); renderNow(); };
