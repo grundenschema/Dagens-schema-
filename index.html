@@ -1275,6 +1275,17 @@ body.pictos-print #participantPictos .picto-day{
 
 
 /* Desktop: flik-ordning Deltagare → Pågår nu → Coach */
+@media (min-width: 721px){
+  .tab-bar{ display:flex; gap:8px; align-items:center; justify-content:flex-start; flex-wrap:wrap; }
+  #tabParticipant{ order:1; }
+  #tabNow{ order:2; }
+  #tabCoach{ order:3; }
+  #tabAssistant{ order:4; }
+  .tab-row-mobile{ display:contents; } /* påverka inte desktop */
+}
+
+
+
 /* =========================
    STARTVY: centrerade knappar (webb + mobil)
 ========================= */
@@ -1339,26 +1350,10 @@ body.pictos-print #participantPictos .picto-day{
 
 
 /* =========================
-   STARTVY (webb): Coach + Deltagare bredvid varandra och bredare knappar
+   WEBB: centrera översta knappar
 ========================= */
-@media (min-width: 721px){
+@media (min-width:721px){
   .tab-bar{
-    justify-content:center;
-    gap:12px;
-  }
-  .tab-row-mobile{
-    display:flex;
-    gap:12px;
-    align-items:center;
-  }
-  #tabCoach, #tabParticipant{
-    padding: 12px 18px;
-    min-width: 240px;
-    justify-content:center;
-  }
-  #tabNow{
-    padding: 12px 18px;
-    min-width: 240px;
     justify-content:center;
   }
 }
@@ -2230,12 +2225,12 @@ function showView(id){
   if(id==="coachView") initMobileCoach();
 
   // Mobil: helskärm endast i coach/deltagare
-  document.body.classList.toggle('mobile-fullscreen', isMobile() && ((id==='coachView' && (document.getElementById('coachSelect')?.value||'')) || (id==='participantView' && (document.getElementById('nameSelect')?.value||''))));
+  document.body.classList.toggle('mobile-fullscreen', isMobile() && ((id==='coachView' && ((document.getElementById('coachSelect')?.value)||'')) || (id==='participantView' && ((document.getElementById('nameSelect')?.value)||''))));
 }
 
 // Mobil: tillbaka från helskärm-dagschema
-document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); }); showView("nowView"); });
-document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); }); showView("nowView"); });
+document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
+document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
 
 
 
