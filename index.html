@@ -2230,12 +2230,12 @@ function showView(id){
   if(id==="coachView") initMobileCoach();
 
   // Mobil: helskärm endast i coach/deltagare
-  document.body.classList.toggle('mobile-fullscreen', isMobile() && ((id==='coachView' && ((document.getElementById('coachSelect')?.value)||'')) || (id==='participantView' && ((document.getElementById('nameSelect')?.value)||''))));
+  document.body.classList.toggle('mobile-fullscreen', isMobile() && ((id==='coachView' && (document.getElementById('coachSelect')?.value||'')) || (id==='participantView' && (document.getElementById('nameSelect')?.value||''))));
 }
 
 // Mobil: tillbaka från helskärm-dagschema
-document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
-document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); });
+document.getElementById("btnBackFromParticipant")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); }); showView("nowView"); });
+document.getElementById("btnBackFromCoach")?.addEventListener("click", ()=>{ document.body.classList.remove("mobile-fullscreen"); showView("nowView"); }); showView("nowView"); });
 
 
 
