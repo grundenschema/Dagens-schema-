@@ -1145,9 +1145,9 @@ body.pictos-print #participantPictos .picto-day{
 
 @media (max-width: 720px){
   /* Mer yta till schema */
-  .tab-bar{ display:none !important; } /* vi kör tillbaka-knapp istället */
-  .mobile-backbar{ display:block; max-width:1100px; margin: 6px auto 0; }
-  .mobile-back{ display:inline-flex !important; align-items:center; gap:8px; }
+  body.mobile-fullscreen .tab-bar{ display:none !important; } /* dölj endast i helskärm-vy */
+  body.mobile-fullscreen .mobile-backbar{ display:block; max-width:1100px; margin: 6px auto 0; }
+  body.mobile-fullscreen .mobile-back{ display:inline-flex !important; align-items:center; gap:8px; }
 
   /* Låt vyerna använda skärmen bättre */
   .view{ min-height: calc(100vh - 120px); } /* header + luft */
