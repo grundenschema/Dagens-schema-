@@ -3313,6 +3313,22 @@ function byggTrunkeradNamnlista(namn, maxTecken){
   return med.join(", ") + (med.length < namn.length ? " m.fl." : "");
 }
 
+// Krymper texten i ett 30-minutersblock (coach-half/part-half) stegvis tills
+// den får plats på en rad, istället för att klippas med "...". Körs efter
+// att blocket redan är i DOM:en (så scrollWidth/clientWidth är korrekta).
+// Global funktion - används av både renderBlocksGeneric och renderSingleWeek.
+function krympHalvblockTillsDetFarPlats(block){
+  if (!block.classList.contains("coach-half") && !block.classList.contains("part-half")) return;
+  const basStorlek = parseFloat(getComputedStyle(block).fontSize);
+  let storlek = basStorlek;
+  let steg = 0;
+  while (block.scrollWidth > block.clientWidth + 1 && steg < 16 && storlek > 6.5) {
+    storlek -= 0.5;
+    block.style.fontSize = storlek + "px";
+    steg++;
+  }
+}
+
 function renderBlocksGeneric(name,isCoach,headerEl,gridEl){
   const slots=makeSlots();
   const days=["måndag","tisdag","onsdag","torsdag","fredag"];
@@ -3381,7 +3397,7 @@ if(duration>30){
     const coachList = splitNames(r.Coach||"");
     const coachTextKort = byggTrunkeradNamnlista(coachList, 18);
     block.classList.add("part-half");
-      block.innerHTML=`🕒 ${r.Start||""} ${emojiFor(r)} <span class="act">${(r.Aktivitet||"")}</span> – 🧑‍🏫 ${coachTextKort}`;
+      block.innerHTML=`🕒 ${r.Start||""} <span class="act">${(r.Aktivitet||"")}</span> – ${coachTextKort}`;
   }
 }
 
@@ -3391,7 +3407,7 @@ if(duration>30){
     // därför kollas skärmbredden här också, inte bara adminUnlocked.
     const arMobil = window.innerWidth <= 720;
     block.onclick = (adminUnlocked && !arMobil) ? () => oppnaRedigeraModal(r) : null;
-    requestAnimationFrame(()=>{const cellH=firstCell.clientHeight||28;const topOff=((sCl-slotMins[baseIdx])/30)*cellH;const h=((eCl-sCl)/30)*cellH;block.style.top=(2+topOff)+"px";block.style.height=Math.max(10,h-4)+"px";block.style.zIndex=10;});
+    requestAnimationFrame(()=>{const cellH=firstCell.clientHeight||28;const topOff=((sCl-slotMins[baseIdx])/30)*cellH;const h=((eCl-sCl)/30)*cellH;block.style.top=(2+topOff)+"px";block.style.height=Math.max(10,h-4)+"px";block.style.zIndex=10;krympHalvblockTillsDetFarPlats(block);});
     firstCell.appendChild(block);
   });
 }
@@ -3645,11 +3661,11 @@ function renderSingleWeek(name,isCoach,compact=false){
           ${emojiFor(r)} <span class="act">${r.Aktivitet||""}</span><br>
           ${isCoach?"👥 "+(r.Deltagare||"-"):"🧑‍🏫 "+(r.Coach||"-")}`;
       }else{
-        block.innerHTML=`${emojiFor(r)} <span class="act">${r.Aktivitet||""}</span> – ${isCoach ? "👥 "+(r.Deltagare||"-") : "🧑‍🏫 "+(r.Coach||"-")}`;
+        block.innerHTML=`🕒 ${r.Start||""} <span class="act">${r.Aktivitet||""}</span> – ${isCoach ? (r.Deltagare||"-") : (r.Coach||"-")}`;
       }
     }
 
-    requestAnimationFrame(()=>{const cellH=firstCell.clientHeight||26;const topOff=((sCl-slotMins[baseIdx])/30)*cellH;const h=((eCl-sCl)/30)*cellH;block.style.top=(2+topOff)+"px";block.style.height=Math.max(10,h-4)+"px";block.style.zIndex=10;});
+    requestAnimationFrame(()=>{const cellH=firstCell.clientHeight||26;const topOff=((sCl-slotMins[baseIdx])/30)*cellH;const h=((eCl-sCl)/30)*cellH;block.style.top=(2+topOff)+"px";block.style.height=Math.max(10,h-4)+"px";block.style.zIndex=10;krympHalvblockTillsDetFarPlats(block);});
     firstCell.appendChild(block);
   });
   return container;
