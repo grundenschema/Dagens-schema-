@@ -1847,13 +1847,17 @@ body.pictos-print #participantPictos .picto-day{
     /* blockera sidbrytning */
     break-inside: avoid !important;
     page-break-inside: avoid !important;
-    overflow: hidden !important;
-
-    /* skala ner lite (Firefox/Chrome) */
-    transform: scale(0.92) !important;
-    transform-origin: top left !important;
-    width: 108.7% !important; /* 1/0.92 */
+    overflow: visible !important;
   }
+
+  /* Tidsradernas höjd väximer till att fylla sidan istället för att lämna
+     tomt utrymme längst ner (A4 liggande, 10mm marginal = 190mm användbart,
+     minus ca 35mm för logga/rubrik/dagnamnsraden = ca 155mm kvar till de
+     16 tidsraderna 08:00-15:30, alltså ca 9.5mm/rad). JS räknar om
+     aktivitetsblockens position/höjd efter att detta trätt i kraft, se
+     "applyMode" och beforeprint-lyssnaren nedan - annars skulle blocken
+     bli kvar på sina gamla, för små pixelpositioner.) */
+  body.print-week .block-cell{ min-height: 9.5mm !important; }
 
   body.print-week .block-header{ font-size: .80rem !important; }
   body.print-week .block-time{ font-size: .72rem !important; }
@@ -4420,6 +4424,23 @@ window.addEventListener("afterprint", ()=>{
     }else{
       document.body.classList.add("print-week");
       setPage("landscape");
+
+      // Blockens position/höjd sattes i pixlar utifrån skärmens radhöjd när
+      // schemat senast ritades - print-CSS:en ovan gör raderna större, så
+      // vi måste rita om schemat en gång till nu när den större radhöjden
+      // faktiskt gäller, annars hamnar aktiviteterna kvar på sina gamla,
+      // för små positioner och matchar inte de nya (högre) cellerna.
+      requestAnimationFrame(() => {
+        const activeView = document.querySelector(".view.active");
+        if (!activeView) return;
+        if (activeView.id === "participantView") {
+          const name = document.getElementById("nameSelect")?.value;
+          if (name) renderBlocksGeneric(name, false, document.getElementById("pBlockHeader"), document.getElementById("pBlockGrid"));
+        } else if (activeView.id === "coachView") {
+          const coach = document.getElementById("coachSelect")?.value;
+          if (coach) renderBlocksGeneric(coach, true, document.getElementById("cBlockHeader"), document.getElementById("cBlockGrid"));
+        }
+      });
     }
   }
 
@@ -4428,6 +4449,20 @@ window.addEventListener("afterprint", ()=>{
     document.body.classList.remove("print-week","print-pictos","pictos-print");
     // tillbaka till standard (landscape) så veckoschema känns "normalt"
     setPage("landscape");
+
+    // Rita om till normal (skärm-) radhöjd igen, av samma anledning som
+    // innan utskrift - annars kan blocken bli kvar i utskriftsstorlek.
+    requestAnimationFrame(() => {
+      const activeView = document.querySelector(".view.active");
+      if (!activeView) return;
+      if (activeView.id === "participantView") {
+        const name = document.getElementById("nameSelect")?.value;
+        if (name) renderBlocksGeneric(name, false, document.getElementById("pBlockHeader"), document.getElementById("pBlockGrid"));
+      } else if (activeView.id === "coachView") {
+        const coach = document.getElementById("coachSelect")?.value;
+        if (coach) renderBlocksGeneric(coach, true, document.getElementById("cBlockHeader"), document.getElementById("cBlockGrid"));
+      }
+    });
   });
 
   // Om användaren växlar vy precis innan print (Chrome kan vara seg)
