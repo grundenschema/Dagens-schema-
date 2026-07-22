@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bildstöd vecka – utskrift</title>
+<style>
+@page { size: A4 landscape; margin: 6mm; }
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background:#f0f4f8;
+  color:#111;
+  padding:14px;
+}
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  max-width:1200px;
+  margin:0 auto 10px auto;
+}
+header .title{ font-weight:900; font-size:18px; }
+.controls{ display:flex; gap:10px; }
+.btn{
+  font-size:16px;
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid #cfd8e3;
+  background:#fff;
+  cursor:pointer;
+}
+.btn:hover{ background:#eef3fb; }
+
+.hint{ text-align:center; margin:18mm auto 0 auto; font-size:14px; color:#333; max-width:700px; }
+
+.schemanamn{
+  text-align:center;
+  font-weight:900;
+  font-size:20pt;
+  margin:0 auto 2mm;
+  width: var(--sidaB, 285mm);
+}
+
+/* Liggande A4: 297mm bred, 210mm hög. Marginal 6mm runt om. */
+:root{
+  --sidaB: 285mm;
+  --sidaH: 178mm;
+  --rubrikH: 8mm;
+  --gap: 1.2mm;
+  --maxRader: 8;
+  --ramAvdrag: 0.7mm;
+  /* OBS: griden har (1 rubrikrad + maxRader aktivitetsrader) = maxRader+1
+     rader, vilket ger maxRader mellanrum - INTE maxRader-1. Tidigare drogs
+     bara maxRader-1 av, vilket gjorde varje kolumn exakt ett gap (1,2mm)
+     högre än sidan, så sista radens text kapades av overflow:hidden.
+     --ramAvdrag kompenserar för .veckoschemas egen ram (border-box). */
+  --radH: calc((var(--sidaH) - var(--ramAvdrag) - var(--rubrikH) - (var(--maxRader) * var(--gap))) / var(--maxRader));
+}
+
+.veckoschema{
+  display:grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2mm;
+  width: var(--sidaB);
+  height: var(--sidaH);
+  margin:0 auto;
+  background:white;
+  border:1.2px solid #000;
+}
+
+.dag{
+  border-right: 0.75px solid #000;
+  overflow:hidden;
+  display:grid;
+  grid-template-rows: var(--rubrikH) repeat(var(--maxRader), var(--radH));
+  row-gap: var(--gap);
+}
+.dag:last-child{ border-right:none; }
+
+.dag-rubrik{
+  text-align:center;
+  font-weight:900;
+  font-size:10pt;
+  line-height: var(--rubrikH);
+  height: var(--rubrikH);
+  border-bottom:0.75px solid #000;
+}
+.dag-mandag .dag-rubrik{ background:#a8d98a; }
+.dag-tisdag .dag-rubrik{ background:#8ec8ec; }
+.dag-onsdag .dag-rubrik{ background:#ffffff; }
+.dag-torsdag .dag-rubrik{ background:#b98a5a; color:white; }
+.dag-fredag .dag-rubrik{ background:#f5e05a; }
+
+.post{
+  height: var(--radH);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:0.15mm;
+  padding: 0.25mm 1mm;
+  overflow:hidden;
+  border-bottom:0.75px solid #ccc;
+}
+.post.lunchrad{ background:#fffbe6; border-top:1px solid #e0c34a; border-bottom:1px solid #e0c34a; }
+.post.tom-fyllnad{ visibility:hidden; }
+/* Undvik dubbla/krockande linjer: raden precis före lunch ska inte ha egen
+   kantlinje (lunchradens gula border-top räcker), och sista raden i varje
+   kolumn ska inte ha egen kantlinje (schemats ytterkant räcker). */
+.post:has(+ .lunchrad){ border-bottom: none; }
+.post:last-child{ border-bottom: none; }
+
+.post .tidrad{ display:flex; align-items:center; gap:1mm; }
+.post .tidrad svg{ display:block; width: var(--klockStorlek, 24px); height: var(--klockStorlek, 24px); }
+.post .tid{ font-size: var(--tidStorlek, 6.5pt); font-weight:800; white-space:nowrap; line-height:1; }
+.post .bild{ display:flex; align-items:center; justify-content:flex-end; flex:1; min-height:0; }
+.post .bild img{ max-height:100%; max-width: var(--bildStorlek, 20mm); object-fit:contain; }
+.post .bild .emoji{ font-size: var(--emojiStorlek, 22pt); }
+.post .namn{ font-size: var(--namnStorlek, 7.2pt); font-weight:700; line-height:1.25; text-align:center; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; flex-shrink:0; }
+
+.ledig-dag{
+  grid-column: 1/2;
+  grid-row: 2 / -1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  font-size:11pt;
+  color:#888;
+  text-align:center;
+  padding:4mm;
+}
+
+.kredit{
+  text-align:center;
+  font-size:8pt;
+  color:#666;
+  margin-top:5mm;
+  width: var(--sidaB, 285mm);
+  margin-left:auto; margin-right:auto;
+}
+
+@media print{
+  body{ background:#fff; padding:0; }
+  header{ display:none !important; }
+  .btn{ display:none !important; }
+  .hint{ display:none !important; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title">Bildstöd – vecka</div>
+  <div class="controls">
+    <button class="btn" id="btnBack">⬅︎ Tillbaka</button>
+    <button class="btn" id="btnPrint">🖨️ Skriv ut</button>
+  </div>
+</header>
+
+<div id="output"></div>
+
+<script>
+// Samma bildkarta som dagschemat (bildstod_print_v11.html) - aktivitetsnamn
+// -> ARASAAC/OpenMoji-bildadress. Saknas aktiviteten här faller den tillbaka
+// på emoji. Källor: ARASAAC (CC BY-NC-SA), OpenMoji (CC BY-SA).
+const PICTO_BILDER = {
+  "Ateljé": "https://globalsymbols.com/uploads/production/image/imagefile/15869/17_15870_e6942be9-ba7f-4cad-b521-4009e099b495.png",
+  "Ateljén": "https://globalsymbols.com/uploads/production/image/imagefile/15869/17_15870_e6942be9-ba7f-4cad-b521-4009e099b495.png",
+  "Autentiskt relaterande": "https://globalsymbols.com/uploads/production/image/imagefile/15126/17_15127_dc576e8b-1e66-427c-b721-dc28352ea457.png",
+  "Avslappning": "https://globalsymbols.com/uploads/production/image/imagefile/24053/17_24054_2b953703-553a-4501-aa33-76cf7c8577be.png",
+  "Bad": "https://globalsymbols.com/uploads/production/image/imagefile/21219/17_21220_46d90149-0be1-4061-9dc8-660f8083e822.png",
+  "Behandling": "https://globalsymbols.com/uploads/production/image/imagefile/18690/17_18691_399a0b2a-4e38-4125-a222-107a01d236bf.png",
+  "Behandlingar": "https://globalsymbols.com/uploads/production/image/imagefile/18690/17_18691_399a0b2a-4e38-4125-a222-107a01d236bf.png",
+  "Biljard": "https://kuha.papunet.net/api/image/37083?lang=se",
+  "Egen musikproduktion": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Film": "https://globalsymbols.com/uploads/production/image/imagefile/20763/17_20764_c5fbb443-017a-447d-8706-307f8f671fb6.png",
+  "Filmgruppen": "https://globalsymbols.com/uploads/production/image/imagefile/91461/17_91462_516a56fc-2b86-45a4-b157-21bc52d418f0.png",
+  "Filmkunskap": "https://globalsymbols.com/uploads/production/image/imagefile/20763/17_20764_c5fbb443-017a-447d-8706-307f8f671fb6.png",
+  "Foto": "https://globalsymbols.com/uploads/production/image/imagefile/21852/17_21853_fa7305e0-a2bf-4362-9e0c-a4fd1bcccb03.png",
+  "Frukost": "https://globalsymbols.com/uploads/production/image/imagefile/22048/17_22049_5d15e20c-8654-4f80-b4c7-6a7bc7a20f6f.png",
+  "Föreningsgruppen": "https://globalsymbols.com/uploads/production/image/imagefile/90134/17_90135_766590c7-7893-4430-b1eb-6f62662bbce2.png",
+  "Gaming": "https://globalsymbols.com/uploads/production/image/imagefile/14077/17_14078_f2076265-a72e-4141-8f3c-72b1e5ab5ce0.png",
+  "Gruppmöte": "https://globalsymbols.com/uploads/production/image/imagefile/90134/17_90135_766590c7-7893-4430-b1eb-6f62662bbce2.png",
+  "Gym": "https://globalsymbols.com/uploads/production/image/imagefile/20757/17_20758_5c18bbe3-3899-464e-8ea4-eee80c32feef.png",
+  "Gym Slottskogens Gym": "https://globalsymbols.com/uploads/production/image/imagefile/20757/17_20758_5c18bbe3-3899-464e-8ea4-eee80c32feef.png",
+  "Gåträning": "https://globalsymbols.com/uploads/production/image/imagefile/22772/17_22773_0c40a5dc-cc65-48c3-b474-ae152d95c374.png",
+  "Gåträning / byte till rullstol": "https://globalsymbols.com/uploads/production/image/imagefile/22772/17_22773_0c40a5dc-cc65-48c3-b474-ae152d95c374.png",
+  "Handla": "https://globalsymbols.com/uploads/production/image/imagefile/18737/17_18738_601b8b5f-ea0b-4c9c-bfb6-7afd8ea1f850.png",
+  "Handling": "https://globalsymbols.com/uploads/production/image/imagefile/18737/17_18738_601b8b5f-ea0b-4c9c-bfb6-7afd8ea1f850.png",
+  "Kommunikation": "https://globalsymbols.com/uploads/production/image/imagefile/20141/17_20142_b0ca6955-0a02-46e3-92f2-2e90ab85bfb5.png",
+  "Kulturpromenad": "https://globalsymbols.com/uploads/production/image/imagefile/45995/17_45996_5d08e7f1-682d-4a7b-873c-00767961ba5a.png",
+  "Ladda stol": "https://kuha.papunet.net/api/image/25895?lang=se",
+  "Lokalvård": "https://globalsymbols.com/uploads/production/image/imagefile/19201/17_19202_d6559eb6-c8ba-47ea-8926-f17f6f03fce3.png",
+  "Lunch": "https://globalsymbols.com/uploads/production/image/imagefile/22049/17_22050_45e2e39f-cbb1-4790-879b-82c0d8c8600f.png",
+  "Lunch Anders B": "https://globalsymbols.com/uploads/production/image/imagefile/22049/17_22050_45e2e39f-cbb1-4790-879b-82c0d8c8600f.png",
+  "Lunch Mio": "https://globalsymbols.com/uploads/production/image/imagefile/22049/17_22050_45e2e39f-cbb1-4790-879b-82c0d8c8600f.png",
+  "Lunchpromenad": "https://globalsymbols.com/uploads/production/image/imagefile/45099/17_45100_7b922e9d-7fed-45a6-baf4-d81585864780.png",
+  "Manusarbete": "https://globalsymbols.com/uploads/production/image/imagefile/18486/17_18487_ed68deab-09e0-4580-8799-78b1bed9c2c5.png",
+  "Mediagruppen": "https://globalsymbols.com/uploads/production/image/imagefile/15121/17_15122_f3d06bca-097f-4152-ab7d-87e377d28a7f.png",
+  "Medicin": "https://globalsymbols.com/uploads/production/image/imagefile/22806/17_22807_2cd9c984-ba4f-450f-983c-57b1c58d964f.png",
+  "morgonrutiner": "https://globalsymbols.com/uploads/production/image/imagefile/22048/17_22049_5d15e20c-8654-4f80-b4c7-6a7bc7a20f6f.png",
+  "Musik": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Musik veckomöte": "https://globalsymbols.com/uploads/production/image/imagefile/45970/17_45971_20061863-6cc3-4f64-bde5-d88845ef2ba1.png",
+  "Musikdokumentär": "https://globalsymbols.com/uploads/production/image/imagefile/20763/17_20764_c5fbb443-017a-447d-8706-307f8f671fb6.png",
+  "Musikproduktion": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Musikquizz": "https://kuha.papunet.net/api/image/10230?lang=se",
+  "Musikutbyte": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Måndagsmöte": "https://d18vdu4p71yql0.cloudfront.net/libraries/arasaac/meeting_2.png.varianted-skin.png",
+  "Padel": "https://globalsymbols.com/uploads/production/image/imagefile/45875/17_45876_8fb73cc2-b9eb-41ea-a94c-708ec7dc5f54.png",
+  "Pod": "https://globalsymbols.com/uploads/production/image/imagefile/46615/17_46616_d1f2df66-9748-4077-b6d4-8002f4e5e41d.png",
+  "Pod sidbenor": "https://globalsymbols.com/uploads/production/image/imagefile/46615/17_46616_d1f2df66-9748-4077-b6d4-8002f4e5e41d.png",
+  "Pod Sidbenor": "https://globalsymbols.com/uploads/production/image/imagefile/46615/17_46616_d1f2df66-9748-4077-b6d4-8002f4e5e41d.png",
+  "Poesi": "https://globalsymbols.com/uploads/production/image/imagefile/20115/17_20116_8cb3621c-e44d-4dc0-b1f6-b66beb05ce00.png",
+  "Poesigrupp": "https://globalsymbols.com/uploads/production/image/imagefile/20115/17_20116_8cb3621c-e44d-4dc0-b1f6-b66beb05ce00.png",
+  "Poesigruppen": "https://globalsymbols.com/uploads/production/image/imagefile/20115/17_20116_8cb3621c-e44d-4dc0-b1f6-b66beb05ce00.png",
+  "Promenad": "https://globalsymbols.com/uploads/production/image/imagefile/45099/17_45100_7b922e9d-7fed-45a6-baf4-d81585864780.png",
+  "Relax Massagestol": "https://globalsymbols.com/uploads/production/image/imagefile/18690/17_18691_399a0b2a-4e38-4125-a222-107a01d236bf.png",
+  "Rep och jam": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Samtal": "https://globalsymbols.com/uploads/production/image/imagefile/20141/17_20142_b0ca6955-0a02-46e3-92f2-2e90ab85bfb5.png",
+  "Samtal onsdag eller torsdag": "https://globalsymbols.com/uploads/production/image/imagefile/20141/17_20142_b0ca6955-0a02-46e3-92f2-2e90ab85bfb5.png",
+  "Skrivgruppen": "https://globalsymbols.com/uploads/production/image/imagefile/18486/17_18487_ed68deab-09e0-4580-8799-78b1bed9c2c5.png",
+  "Spelgruppen": "https://globalsymbols.com/uploads/production/image/imagefile/16111/17_16112_5a348a88-231c-432d-b9c0-75d7db180e0f.png",
+  "Sömnad": "https://globalsymbols.com/uploads/production/image/imagefile/17747/17_17748_ee036703-ee3a-4036-af92-2d49d11b47dc.png",
+  "Teatergruppen": "https://globalsymbols.com/uploads/production/image/imagefile/45186/17_45187_638828ee-65a2-472f-8f5e-d655c9db7823.png",
+  "Toa, promenad": "https://globalsymbols.com/uploads/production/image/imagefile/45099/17_45100_7b922e9d-7fed-45a6-baf4-d81585864780.png",
+  "Transkibering": "https://globalsymbols.com/uploads/production/image/imagefile/15450/17_15451_071f0a09-5ca9-40e7-bce1-ca6bb8d71ae5.png",
+  "Transkribering": "https://globalsymbols.com/uploads/production/image/imagefile/15450/17_15451_071f0a09-5ca9-40e7-bce1-ca6bb8d71ae5.png",
+  "Trummor": "https://globalsymbols.com/uploads/production/image/imagefile/20477/17_20478_5707acd8-4721-44ac-a19e-c0a974ee3489.png",
+  "Uppstart": "https://kuha.papunet.net/api/image/22979?lang=se",
+  "Utflykt": "https://globalsymbols.com/uploads/production/image/imagefile/45099/17_45100_7b922e9d-7fed-45a6-baf4-d81585864780.png",
+  "Vocal": "https://kuha.papunet.net/api/image/38276?lang=se",
+  "Warhammer": "https://globalsymbols.com/uploads/production/image/imagefile/16848/17_16849_d088f45b-031a-455b-b22f-05df0a144a6e.png",
+  "Yoga": "https://globalsymbols.com/uploads/production/image/imagefile/18777/17_18778_715a40e5-3fc6-420a-a4a2-3bab9327390c.png",
+  "Öppen verkstad": "https://globalsymbols.com/uploads/production/image/imagefile/19354/17_19355_84de2a2f-f810-4a14-83f4-d06c67e6f565.png"
+};
+
+// Ritar en analog klocka (SVG) utifrån en tidssträng som "09:30".
+function analogKlocka(tidStr, storlek){
+  const m = /(\d{1,2}):(\d{2})/.exec(tidStr || "");
+  if (!m) return "";
+  storlek = storlek || 24;
+  const h = parseInt(m[1], 10) % 12;
+  const min = parseInt(m[2], 10);
+  const minAngle = min * 6;
+  const hourAngle = (h + min / 60) * 30;
+  const cx = 30, cy = 30, r = 27;
+  function point(angleDeg, length) {
+    const rad = (angleDeg - 90) * Math.PI / 180;
+    return [cx + length * Math.cos(rad), cy + length * Math.sin(rad)];
+  }
+  let marks = "";
+  for (let i = 0; i < 12; i++) {
+    const a = i * 30;
+    const [x1, y1] = point(a, r - 3);
+    const [x2, y2] = point(a, r - (i % 3 === 0 ? 9 : 5));
+    marks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#000" stroke-width="${i % 3 === 0 ? 2.2 : 1.3}"/>`;
+  }
+  const [hx, hy] = point(hourAngle, 13);
+  const [mx, my] = point(minAngle, 22);
+  return `<svg width="${storlek}" height="${storlek}" viewBox="0 0 60 60" aria-hidden="true">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#000" stroke-width="2.5"/>
+    ${marks}
+    <line x1="${cx}" y1="${cy}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+    <line x1="${cx}" y1="${cy}" x2="${mx.toFixed(1)}" y2="${my.toFixed(1)}" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="2.2" fill="#000"/>
+  </svg>`;
+}
+
+function byggPost(item, ärLunchRad){
+  const el = document.createElement("div");
+  el.className = "post" + (ärLunchRad ? " lunchrad" : "");
+  const bildUrl = PICTO_BILDER[item.label];
+  const bildHtml = bildUrl
+    ? `<img src="${bildUrl}" alt="${item.label || ''}" />`
+    : `<div class="emoji">${item.emoji || "✨"}</div>`;
+  el.innerHTML = `
+    <div class="tidrad">${analogKlocka(item.time, 24)}<span class="tid">${item.time || ""}</span></div>
+    <div class="bild">${bildHtml}</div>
+    <div class="namn">${item.label || ""}</div>
+  `;
+  return el;
+}
+
+function byggTomFyllnad(){
+  const el = document.createElement("div");
+  el.className = "post tom-fyllnad";
+  el.innerHTML = '<div class="tidrad"><span class="tid"> </span></div><div class="bild"><div class="emoji"> </div></div><div class="namn"> </div>';
+  return el;
+}
+
+(function(){
+  function getData(){
+    try{
+      const raw = localStorage.getItem("PICTO_VECKO_DATA_V1");
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    try{
+      if(window.opener && window.opener.__PICTO_VECKO_DATA__) return window.opener.__PICTO_VECKO_DATA__;
+    }catch(e){}
+    return null;
+  }
+
+  function goBack(){
+    const backUrl = (localStorage.getItem("PICTO_BACK_URL") || "").trim();
+    if(backUrl){ location.href = backUrl; return; }
+    history.back();
+  }
+
+  document.getElementById("btnBack").addEventListener("click", goBack);
+  document.getElementById("btnPrint").addEventListener("click", ()=>window.print());
+
+  const data = getData();
+  const out = document.getElementById("output");
+
+  if(!data || !data.dagar || !data.dagar.length){
+    out.innerHTML = "<div class='hint'>Ingen bildstödsdata mottagen.<br>Öppna huvudfilen och klicka Bildstöd vecka därifrån.</div>";
+    return;
+  }
+
+  // Dela varje dags aktiviteter i "före lunch" / lunch / "efter lunch",
+  // så lunch kan få en gemensam, fast rad i alla fem kolumner.
+  const dagKlasser = ["dag-mandag","dag-tisdag","dag-onsdag","dag-torsdag","dag-fredag"];
+  const dagar = data.dagar.map((dag, i) => {
+    const lunchIdx = dag.items.findIndex(it => it.isLunch);
+    let fore, lunch, efter;
+    if (lunchIdx === -1) {
+      fore = dag.items; lunch = null; efter = [];
+    } else {
+      fore = dag.items.slice(0, lunchIdx);
+      lunch = dag.items[lunchIdx];
+      efter = dag.items.slice(lunchIdx + 1);
+    }
+    return { weekday: dag.weekday, fore, lunch, efter, klass: dagKlasser[i] || "" };
+  });
+
+  const dagarMedLunch = dagar.filter(d => d.lunch);
+  const maxFore = Math.max(1, ...dagar.map(d => d.fore.length));
+  const maxEfter = Math.max(0, ...dagar.map(d => d.efter.length));
+  const harNagonLunch = dagarMedLunch.length > 0;
+
+  // Ankarraden (lunch) ligger direkt efter den längsta "före lunch"-listan.
+  // Totalt antal rader = före + (lunchrad om någon har lunch) + efter.
+  const totalRader = maxFore + (harNagonLunch ? 1 : 0) + maxEfter;
+  const effektivt = Math.max(4, Math.min(8, totalRader));
+
+  document.documentElement.style.setProperty("--maxRader", totalRader);
+
+  // ===== Storleksberäkning: garantera att ALLT får plats på sidan =====
+  // Tidigare användes fasta "golv"-värden (pt/mm) som text/bild klämdes mot -
+  // det funkade inte när antalet rader blev stort, eftersom golvet inte var
+  // kopplat till hur mycket utrymme som faktiskt fanns kvar.
+  //
+  // Nu: räkna ut den VERKLIGA radhöjden (mm) för just den här veckan, dela
+  // upp den i tid-rad / namn / bild som ANDELAR av den höjden. Bilden har
+  // flex:1 i CSS och tar automatiskt det utrymme som blir över - så länge
+  // tid-raden och namnet hålls till en bestämd (krympande) andel kan bilden
+  // aldrig tryckas bort helt, oavsett hur många aktiviteter veckan har.
+  const sidaH_mm = 178, rubrikH_mm = 8, gap_mm = 1.2, ramAvdrag_mm = 0.7;
+  // Samma korrigering som i CSS: maxRader+1 rader ger maxRader mellanrum.
+  const radH_mm = (sidaH_mm - ramAvdrag_mm - rubrikH_mm - totalRader * gap_mm) / totalRader;
+
+  // Fast "spill" per post (padding + interna mellanrum + kantlinje) som inte
+  // går att krympa bort helt - dras av innan andelarna räknas ut.
+  const spill_mm = 0.5 + 0.3 + 0.7;
+  const ledigYta_mm = Math.max(radH_mm - spill_mm, 3);
+
+  // Andelen till tid-rad/namn minskar ju fler rader det blir, men ligger nu
+  // generellt högre än innan (prioriterar större text/klocka framför
+  // bildens storlek, enligt önskemål - bilden krymper mer istället).
+  const skala01 = Math.min(1, Math.max(0, (totalRader - 4) / 12));
+  const tidradAndel = 0.27 - (0.27 - 0.19) * skala01;
+  const namnAndel   = 0.36 - (0.36 - 0.25) * skala01;
+
+  const tidradH_mm = ledigYta_mm * tidradAndel;
+  const namnH_mm   = ledigYta_mm * namnAndel;
+  const bildH_mm   = Math.max(ledigYta_mm - tidradH_mm - namnH_mm, 2);
+
+  const mmTillPt = mm => mm * 2.8346;
+  const mmTillPx = mm => mm * 3.7795;
+
+  // BUGFIX: tidigare faktorer (0.62/0.68/1.05) var godtyckliga och tog inte
+  // hänsyn till att namnet nu tillåts bli 3 rader (line-clamp:3) - vilket
+  // kräver MINDRE textstorlek per rad, inte mer. Resultatet blev att texten
+  // blev för stor för sitt tilldelade utrymme och tryckte sista raden
+  // utanför sidans/rutans gräns (klipptes bort helt).
+  //
+  // Korrekt modell: en radbox tar line-height * fontSize per rad. Vi
+  // dimensionerar för att 2 rader garanterat ska få plats (vanligast) - en
+  // eventuell 3:e rad (line-clamp:3) är en bonusmarginal för långa namn,
+  // inte något storleken förutsätter. SAKERHET<1 lämnar marginal mot
+  // padding/kantlinjer så inget nosar exakt på gränsen.
+  const SAKERHET = 0.95;
+  const NAMN_RADER_DESIGN = 2;
+  const NAMN_LINEHEIGHT = 1.25;
+
+  // Tak - höjda jämfört med innan (större text/klocka tillåts nu), bilden
+  // har fortsatt ett tak men prioriteras lägre än text.
+  const TAK = { tid:16, klocka:52, emoji:38, bild:36, namn:18 };
+  const root = document.documentElement.style;
+  root.setProperty("--tidStorlek", Math.min(Math.max(mmTillPt(tidradH_mm) * SAKERHET, 2.8), TAK.tid).toFixed(2) + "pt");
+  root.setProperty("--klockStorlek", Math.min(Math.max(mmTillPx(tidradH_mm) * SAKERHET, 6), TAK.klocka).toFixed(0) + "px");
+  root.setProperty("--namnStorlek", Math.min(Math.max(mmTillPt(namnH_mm / (NAMN_RADER_DESIGN * NAMN_LINEHEIGHT)) * SAKERHET, 2.8), TAK.namn).toFixed(2) + "pt");
+  root.setProperty("--emojiStorlek", Math.min(Math.max(mmTillPt(bildH_mm) * 0.6, 5), TAK.emoji).toFixed(2) + "pt");
+  root.setProperty("--bildStorlek", Math.min(bildH_mm, TAK.bild).toFixed(2) + "mm");
+
+  const namnDiv = document.createElement("div");
+  namnDiv.className = "schemanamn";
+  namnDiv.textContent = "Schema: " + (data.name || "");
+  out.appendChild(namnDiv);
+
+  const wrap = document.createElement("div");
+  wrap.className = "veckoschema";
+
+  dagar.forEach(dag => {
+    const dagDiv = document.createElement("div");
+    dagDiv.className = "dag " + dag.klass;
+
+    const rubrik = document.createElement("div");
+    rubrik.className = "dag-rubrik";
+    rubrik.textContent = dag.weekday;
+    dagDiv.appendChild(rubrik);
+
+    if (!dag.fore.length && !dag.lunch && !dag.efter.length) {
+      const ledig = document.createElement("div");
+      ledig.className = "ledig-dag";
+      ledig.textContent = "Ledig dag";
+      dagDiv.appendChild(ledig);
+      wrap.appendChild(dagDiv);
+      return;
+    }
+
+    // Före lunch, upp till maxFore (fyll ut med osynliga tomma rader).
+    dag.fore.forEach(item => dagDiv.appendChild(byggPost(item, false)));
+    for (let i = dag.fore.length; i < maxFore; i++) dagDiv.appendChild(byggTomFyllnad());
+
+    // Lunchraden - gemensam för alla dagar som har lunch.
+    if (harNagonLunch) {
+      if (dag.lunch) dagDiv.appendChild(byggPost(dag.lunch, true));
+      else dagDiv.appendChild(byggTomFyllnad());
+    }
+
+    // Efter lunch, upp till maxEfter.
+    dag.efter.forEach(item => dagDiv.appendChild(byggPost(item, false)));
+    for (let i = dag.efter.length; i < maxEfter; i++) dagDiv.appendChild(byggTomFyllnad());
+
+    wrap.appendChild(dagDiv);
+  });
+
+  out.appendChild(wrap);
+
+  const kredit = document.createElement("div");
+  kredit.className = "kredit";
+  kredit.textContent = "Piktogram: ARASAAC (CC BY-NC-SA), Sergio Palao / Regeringen i Aragonien · Papunets bildbank, papunet.net (CC BY-NC-SA) · Pool 8 Ball: OpenMoji-projektet (CC BY-SA)";
+  out.appendChild(kredit);
+
+  // ===== Självkorrigerande sista steg =====
+  // Istället för att förlita sig på uträknade uppskattningar av textstorlek
+  // (som visat sig avvika från verklig rendering i olika webbläsare/typsnitt)
+  // mäter vi nu FAKTISK höjd i den webbläsare som faktiskt visar sidan, och
+  // krymper stegvis tills allt garanterat får plats. Det tar bort behovet av
+  // att gissa millimetervärden i förväg - webbläsaren avgör facit.
+  function allaPosterFarPlats(){
+    const poster = wrap.querySelectorAll(".post:not(.tom-fyllnad)");
+    for (const p of poster){
+      // scrollHeight ger innehållets verkliga höjd även om overflow:hidden
+      // döljer det visuellt - så vi kan upptäcka overflow innan det syns.
+      if (p.scrollHeight > p.clientHeight + 0.5) return false;
+    }
+    return true;
+  }
+
+  function krympTillsDetFarPlats(){
+    const basTid    = parseFloat(root.getPropertyValue("--tidStorlek"));
+    const basKlocka = parseFloat(root.getPropertyValue("--klockStorlek"));
+    const basEmoji  = parseFloat(root.getPropertyValue("--emojiStorlek"));
+    const basBild   = parseFloat(root.getPropertyValue("--bildStorlek"));
+    const basNamn   = parseFloat(root.getPropertyValue("--namnStorlek"));
+
+    let skalfaktor = 1.0;
+    let forsok = 0;
+    while (forsok < 40 && skalfaktor > 0.35){
+      if (allaPosterFarPlats()) return;
+      skalfaktor -= 0.025;
+      root.setProperty("--tidStorlek", Math.max(basTid*skalfaktor, 2.5).toFixed(2) + "pt");
+      root.setProperty("--klockStorlek", Math.max(basKlocka*skalfaktor, 6).toFixed(0) + "px");
+      root.setProperty("--emojiStorlek", Math.max(basEmoji*skalfaktor, 4).toFixed(2) + "pt");
+      root.setProperty("--bildStorlek", Math.max(basBild*skalfaktor, 3).toFixed(2) + "mm");
+      root.setProperty("--namnStorlek", Math.max(basNamn*skalfaktor, 2.5).toFixed(2) + "pt");
+      forsok++;
+    }
+  }
+
+  krympTillsDetFarPlats();
+})();
+</script>
+</body>
+</html>

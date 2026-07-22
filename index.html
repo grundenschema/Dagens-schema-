@@ -12,7 +12,7 @@
 
 
 /* ===== v33: FIX för mobil dagschema ===== */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   /* Visa INTE dagsvyn (rubrik/hint + kortlista) innan val är gjort */
   body:not(.mobile-day-mode) #mobileParticipantDayView,
   body:not(.mobile-day-mode) #mobileCoachDayView{ display:none !important; }
@@ -91,9 +91,65 @@ body.mobile-day-mode .mobile-titlebar{
   display: none !important;
 }
 
+/* Staplade navigeringslänkar i Verktygslådan - "Startsida" och
+   "Verktygslådan" på var sin rad ovanför den vanliga rubriken, istället
+   för en horisontell brödsmulestig. */
+.vt-navlankar{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:2px;
+  max-width:700px;
+  margin:0 auto 10px auto;
+  padding:0 4px;
+}
+.vt-navlankar .vt-navlank{
+  color:#888;
+  cursor:pointer;
+  background:none;
+  border:none;
+  font:inherit;
+  font-size:13px;
+  padding:2px 0;
+  text-align:left;
+}
+.vt-navlankar .vt-navlank:hover{ color:#1a73e8; text-decoration:underline; }
+
 </style>
 
 <style>
+.nu-grid{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  max-width:750px;
+  margin:0 auto;
+}
+/* Pågår nu återanvänder .card-utseendet (vit bakgrund + färgad vänsterkant)
+   för att se likadant ut som dagschemat - .nu-kort ger bara små justeringar
+   utöver det, se JS för --band (färg) och grayscale-filter (kommande). */
+.nu-kort{
+  opacity: 1;
+}
+/* Ihopfällbara sektioner (Assistent-fliken) */
+.assist-accordion-item {
+  background: var(--card-bg,#fff); border-radius: 12px; margin-bottom: 12px; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.assist-accordion-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; cursor: pointer; user-select: none;
+}
+.assist-accordion-head h2 { margin: 0; font-size: 16px; }
+.assist-accordion-arrow { transition: transform 0.2s ease; font-size: 13px; color: #888; flex-shrink:0; margin-left:10px; }
+.assist-accordion-item.open .assist-accordion-arrow { transform: rotate(90deg); }
+.assist-accordion-body {
+  max-height: 0; overflow: hidden; transition: max-height 0.25s ease;
+  padding: 0 18px;
+}
+.assist-accordion-item.open .assist-accordion-body {
+  max-height: none; overflow: visible; padding: 0 18px 18px;
+}
 :root {
   --bg:#f0f4f8;
   --card-bg:#fff;
@@ -151,8 +207,8 @@ button.tab {
 }
 button.tab:hover { background:#eef3fb; }
 button.tab.active { background:var(--blue); color:#fff; border-color:var(--blue); }
-@media (max-width:700px){ .tab-bar{ grid-template-columns:1fr 1fr; } }
-@media (min-width:701px){ .tab-bar{ grid-template-columns:repeat(4,1fr); } }
+@media screen and (max-width: 700px){ .tab-bar{ grid-template-columns:1fr 1fr; } }
+@media screen and (min-width:701px){ .tab-bar{ grid-template-columns:repeat(4,1fr); } }
 
 /* Selects & action-knappar under flikarna */
 .controls {
@@ -172,6 +228,42 @@ select, .btn {
   cursor:pointer;
 }
 .btn:hover { background:#eef3fb; }
+/* Notiser - ersätter alert() med något som matchar resten av appens
+   utseende istället för webbläsarens gråa systemruta. */
+.notis {
+  background:white; border-radius:12px; padding:14px 16px; box-shadow:0 4px 16px rgba(0,0,0,0.22);
+  max-width:420px; font-size:14px; line-height:1.4; white-space:pre-line;
+  display:flex; align-items:flex-start; gap:10px; pointer-events:auto;
+  animation: notisIn .18s ease;
+}
+@keyframes notisIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
+.notis-info { border-left:4px solid #1a73e8; }
+.notis-error { border-left:4px solid #c00; }
+.notis-success { border-left:4px solid #16a34a; }
+.notis .notis-stang { background:none;border:none;font-size:16px;cursor:pointer;color:#999;flex-shrink:0;line-height:1;padding:0; }
+/* Admin-markerad knapp: samma grundknapp, bara en tunn orange kant + låsikon
+   i hörnet - inte en egen knappfamilj. Se designregler.md. */
+.vt-admin-knapp { border-color:#fdba74 !important; border-width:1.5px; position:relative; }
+.vt-admin-knapp:hover { background:#fff7ed; }
+.vt-admin-knapp .vt-lasikon { position:absolute; top:6px; right:8px; font-size:12px; opacity:.65; }
+/* Verktygslådans hemmeny: FAST knappbredd (inte "dela raden lika"), så alla
+   sju knappar blir exakt lika stora oavsett om det råkar vara 3 eller 4 på
+   samma rad. Två separata rader (öppna / kräver inloggning) som radbryter
+   av sig själva om det inte får plats, t.ex. på en smal skärm. */
+.vt-meny-rad { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
+.vt-meny-knapp {
+  flex: 0 1 150px;
+  min-width: 130px;
+  max-width: 170px;
+  padding: 20px 12px;
+  font-size: 15px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+@media screen and (min-width: 560px) {
+  .vt-meny-knapp { flex-basis: 160px; max-width: 180px; }
+}
 .btn.primary { background:#fff; border-color:#cfd8e3; }
 .btn.primary.active, .btn.primary:active {
   background:var(--blue);
@@ -184,7 +276,7 @@ select, .btn {
   display:flex;
   flex-direction:column;
   gap:10px;
-  max-width:1100px;
+  max-width:750px;
   margin:0 auto;
 }
 .card {
@@ -234,7 +326,7 @@ select, .btn {
   position:absolute;
   left:2px;
   right:2px;
-  top:2px;
+  top:4px;
   border-radius:10px;
   padding:6px 8px;
   line-height:1.25;
@@ -252,11 +344,6 @@ select, .btn {
 /* =========================
    Jämförelse (i assistenten)
 ========================= */
-.compare-wrap {
-  display:grid;
-  gap:16px;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-}
 .compare-item {
   background:#fff;
   border:1px solid var(--border);
@@ -323,7 +410,7 @@ select, .btn {
 /* =========================
    Små skärmar – större klickytor
 ========================= */
-@media (max-width:700px) {
+@media screen and (max-width: 700px) {
   body { padding:10px; }
   select, .btn { width:100%; }
 }
@@ -332,8 +419,8 @@ select, .btn {
    Utskrift – skriv bara ut aktivt schema
 ========================= */
 @media print {
-  /* Dölj navigering, knappar, flikar och header */
-  header, .tab-bar, button.btn, .controls {
+  /* Dölj navigering, knappar, flikar, header och adminbannern */
+  header, .tab-bar, button.btn, .controls, #adminBanner, #adminBannerSpacer {
     display: none !important;
     visibility: hidden !important;
   }
@@ -402,7 +489,7 @@ select, .btn {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items:start;
 }
-@media (max-width: 820px){
+@media screen and (max-width: 820px){
   .compare-wrap{ grid-template-columns: 1fr; }
 }
 
@@ -977,7 +1064,7 @@ body.pictos-print #participantPictos .picto-day{
 /* =========================
    Mobiloptimering
 ========================= */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   body{ padding: 10px !important; }
   .view{ padding: 10px !important; }
 
@@ -1041,7 +1128,7 @@ body.pictos-print #participantPictos .picto-day{
   }
 
 /* Super-små skärmar */
-@media (max-width: 380px){
+@media screen and (max-width: 380px){
   #viewTitle{ font-size: 18px !important; }
   .btn, select{ font-size: 15px !important; }
   .picto-act .e{ font-size: 46px !important; }
@@ -1051,13 +1138,14 @@ body.pictos-print #participantPictos .picto-day{
 /* =========================
    Mobilfix (städad vy)
 ========================= */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   /* Ta bort onödiga flikar i mobilen */
   #tabAssistant { display:none !important; }
   #assistantView { display:none !important; }
 
-  /* Bildstöd-knappen behövs inte i mobilen */
+  /* Bildstöd-knapparna behövs inte i mobilen */
   #btnParticipantPictos { display:none !important; }
+  #btnParticipantPictosVecka { display:none !important; }
 
   /* Större väljare, särskilt coach */
   #coachSelect, #nameSelect{
@@ -1144,10 +1232,10 @@ body.pictos-print #participantPictos .picto-day{
    - Stopp med "motstånd" i kanterna
 ========================= */
 #mobileParticipantDayView, #mobileCoachDayView { display:none; max-width:1100px; margin:0 auto; }
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   #mobileParticipantDayView, #mobileCoachDayView { display:block !important; }
   /* Mobil = tittläge: dölj utskriftsknappar och veckovy-knappar */
-  #btnParticipantWeek, #btnParticipantPictos, #btnPrintParticipant,
+  #btnParticipantWeek, #btnParticipantPictos, #btnParticipantPictosVecka, #btnPrintParticipant,
   #btnCoachWeek, #btnPrintCoach,
   #tabAssistant { display:none !important; }
 
@@ -1157,7 +1245,7 @@ body.pictos-print #participantPictos .picto-day{
 
 
 /* Mobil: dag-rubrik som i referensbild (Idag – tisdag + datum) */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   body.mobile-fullscreen #viewTitle,
   body.mobile-fullscreen .controls,
   body.mobile-fullscreen .mobile-backbar{ display:none !important; }
@@ -1261,30 +1349,36 @@ body.pictos-print #participantPictos .picto-day{
 /* =========================
    UI: Dölj "Skriv ut" (globalt)
 ========================= */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   #btnPrintParticipant, #btnPrintCoach, #btnPrintNow, #btnPrintCompare { display:none !important; }
 }
 
 
 
 /* Mobil: ta bort "Dagens schema"-knappar (Idag är default + swipe) */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   #btnParticipantToday, #btnCoachToday { display:none !important; }
 }
 
 /* Mobil: Pågår nu över Coach/Deltagare */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   .tab-bar{ display:flex; flex-direction:column; gap:8px; align-items:stretch; }
   #tabNow{ width:100%; order:1; }
   #tabCoach, #tabParticipant{ width:49%; }
   .tab-row-mobile{ display:flex; gap:8px; order:2; }
   /* flytta in coach/deltagare i en rad via wrapper */
   #tabAssistant{ display:none !important; }
+
+  /* Mobilversionen ska vara en enkel, redigeringsfri snabbtitt: Deltagare,
+     Coach och Pågår nu räcker. Verktygslådan (adminverktyg) och
+     Logga in/Start (som bara är relevanta för administration/redigering,
+     vilket inte ska gå att göra på mobil) döljs helt. */
+  #tabVerktyg, #tabAdmin, #tabLogout, #tabStart { display:none !important; }
 }
 
 
 
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   #mPSwipe, #mCSwipe{ min-height: 55vh; }
 }
 
@@ -1296,7 +1390,7 @@ body.pictos-print #participantPictos .picto-day{
 .mobile-backbar{ display:none; }
 .mobile-back{ display:none; }
 
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   /* Mer yta till schema */
   body.mobile-fullscreen .tab-bar{ display:none !important; } /* dölj endast i helskärm-vy */
   body.mobile-fullscreen .mobile-backbar{ display:block; max-width:1100px; margin: 6px auto 0; }
@@ -1308,7 +1402,7 @@ body.pictos-print #participantPictos .picto-day{
 }
 
 /* "Bläddra mellan blad" - animation */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   .page-enter{
     opacity: 0.01;
     transform: translateX(36px) rotateY(-10deg);
@@ -1330,7 +1424,7 @@ body.pictos-print #participantPictos .picto-day{
 
 
 
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   .mobile-swipe-hint{
     font-size: 12px;
     color: #555;
@@ -1353,7 +1447,7 @@ body.pictos-print #participantPictos .picto-day{
 /* =========================
    MOBIL: Riktig helskärm i schema + tillbaka till start
 ========================= */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   body.mobile-fullscreen header{ display:none !important; }
   body.mobile-fullscreen #dataStatus{ display:none !important; }
   body.mobile-fullscreen #debugPanel{ display:none !important; }
@@ -1412,27 +1506,69 @@ body.pictos-print #participantPictos .picto-day{
 
 
 
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   body.mobile-fullscreen #mobileCoachDayView{ padding-top: 6px; }
   body.mobile-fullscreen .mobile-day-header{ margin-top: 8px; }
 }
 
 
 
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   .mobile-swipe-hint{ font-weight:600; }
 }
 
 
 
 /* Desktop: flik-ordning Deltagare → Pågår nu → Coach */
-@media (min-width: 721px){
-  .tab-bar{ display:flex; gap:8px; align-items:center; justify-content:flex-start; flex-wrap:wrap; }
-  #tabParticipant{ order:1; }
-  #tabNow{ order:2; }
+@media screen and (min-width: 721px){
+  .tab-bar{ display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap; }
+  #tabNow{ order:1; }
+  #tabParticipant{ order:2; }
   #tabCoach{ order:3; }
-  #tabAssistant{ order:4; }
   .tab-row-mobile{ display:contents; } /* påverka inte desktop */
+
+  /* Start + Verktyg + Logga in/ut flyttas till ett litet hörnkluster uppe
+     till höger, så huvudfokus hamnar på schemat (Deltagare/Coach). Logga
+     in/Logga ut delar samma plats (bara en av dem syns åt gången). */
+  #tabStart, #tabVerktyg, #tabAdmin, #tabLogout {
+    position: fixed;
+    top: 14px;
+    z-index: 600;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 50px;
+    padding: 4px 2px;
+    font-size: 17px;
+    line-height: 1.1;
+    gap: 2px;
+  }
+  #tabStart .corner-label, #tabVerktyg .corner-label, #tabAdmin .corner-label, #tabLogout .corner-label {
+    font-size: 10px;
+    font-weight: 700;
+  }
+  #tabAdmin, #tabLogout { right: 16px; }
+  #tabVerktyg   { right: 82px; }
+  #tabStart     { right: 148px; }
+
+  /* Adminbannern ligger ovanpå allt (top:0) - flytta ner hörnknapparna så
+     de inte hamnar dolda bakom den när adminläget är upplåst. */
+  body.admin-active #tabAdmin,
+  body.admin-active #tabLogout,
+  body.admin-active #tabVerktyg,
+  body.admin-active #tabStart { top: 46px; }
+}
+
+/* På breda skärmar får hörnknapparna vara en aning större, så de inte
+   känns bortglömda i ett hörn av en stor skärm. */
+@media screen and (min-width: 1300px){
+  #tabStart, #tabVerktyg, #tabAdmin, #tabLogout { width: 68px; height: 58px; font-size: 20px; }
+  #tabStart .corner-label, #tabVerktyg .corner-label, #tabAdmin .corner-label, #tabLogout .corner-label { font-size: 11px; }
+  #tabAdmin, #tabLogout { right: 24px; }
+  #tabVerktyg   { right: 98px; }
+  #tabStart     { right: 172px; }
 }
 
 
@@ -1443,7 +1579,7 @@ body.pictos-print #participantPictos .picto-day{
 .tab-bar{
   justify-content:center;
 }
-@media (max-width:720px){
+@media screen and (max-width: 720px){
   .tab-bar{
     display:flex;
     flex-direction:column;
@@ -1460,7 +1596,7 @@ body.pictos-print #participantPictos .picto-day{
 /* =========================
    MOBIL: helskärm när val är gjort (coach/deltagare)
 ========================= */
-@media (max-width:720px){
+@media screen and (max-width: 720px){
   body.mobile-fullscreen .tab-bar{ display:none !important; }
 
   body.mobile-fullscreen .mobile-backbar{
@@ -1504,7 +1640,7 @@ body.pictos-print #participantPictos .picto-day{
 /* =========================
    WEBB: centrera översta knappar
 ========================= */
-@media (min-width:721px){
+@media screen and (min-width:721px){
   .tab-bar{
     justify-content:center;
   }
@@ -1515,14 +1651,14 @@ body.pictos-print #participantPictos .picto-day{
 /* =========================
    WEBB: Coach + Deltagare bredvid varandra (som tidigare)
 ========================= */
-@media (min-width: 721px){
+@media screen and (min-width: 721px){
   .tab-row-mobile{
     display:flex;
     gap:12px;
     align-items:center;
     justify-content:center;
   }
-  #tabCoach, #tabParticipant{
+  #tabCoach, #tabParticipant, #tabNow{
     min-width: 240px;
     justify-content:center;
   }
@@ -1537,7 +1673,7 @@ body.pictos-print #participantPictos .picto-day{
 .mobile-backbar{ display:none; }
 .mobile-back{ display:none; }
 
-@media (max-width:720px){
+@media screen and (max-width: 720px){
   body.mobile-fullscreen header{ display:none !important; }
   body.mobile-fullscreen #dataStatus{ display:none !important; }
   body.mobile-fullscreen .tab-bar{ display:none !important; }
@@ -1597,7 +1733,7 @@ body.pictos-print #participantPictos .picto-day{
 
 
 /* ===== MOBIL DAGLÄGE (en enda tillbaka + fast rubrik) ===== */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   body.mobile-day-mode #viewTitle,
   body.mobile-day-mode .controls,
   body.mobile-day-mode .mobile-backbar,
@@ -1642,7 +1778,7 @@ body.pictos-print #participantPictos .picto-day{
 
 
 /* ===== v33: FIX för mobil dagschema ===== */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   /* Visa INTE dagsvyn (rubrik/hint + kortlista) innan val är gjort */
   body:not(.mobile-day-mode) #mobileParticipantDayView,
   body:not(.mobile-day-mode) #mobileCoachDayView{ display:none !important; }
@@ -1803,7 +1939,7 @@ body.print-week{ }
 
 
 /* ===== v33: FIX för mobil dagschema ===== */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   /* Visa INTE dagsvyn (rubrik/hint + kortlista) innan val är gjort */
   body:not(.mobile-day-mode) #mobileParticipantDayView,
   body:not(.mobile-day-mode) #mobileCoachDayView{ display:none !important; }
@@ -1863,7 +1999,7 @@ body.print-week{ }
 
 
 /* ===== v33: FIX för mobil dagschema ===== */
-@media (max-width: 720px){
+@media screen and (max-width: 720px){
   /* Visa INTE dagsvyn (rubrik/hint + kortlista) innan val är gjort */
   body:not(.mobile-day-mode) #mobileParticipantDayView,
   body:not(.mobile-day-mode) #mobileCoachDayView{ display:none !important; }
@@ -1915,9 +2051,36 @@ body.print-week{ }
   <img src="https://cdn.prod.website-files.com/63e24702f042c50ffc91818b/646239316cf71bde35bcc2b4_grunden-DV-logo%20copy.png"
        alt="Grunden DV logotyp" id="homeLogo">
   <div id="clock"></div>
+  <div style="font-size:10px;opacity:0.6;margin-top:2px;">v5.6</div>
   <div id="logoFallback" style="display:none;font-weight:900;font-size:18px;">Grunden DV</div>
 </header>
 
+
+<div id="adminBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:8000;background:#1a73e8;color:white;text-align:center;padding:6px;font-size:13px;font-weight:700;letter-spacing:.3px;">
+  🔓 Adminläge aktivt &nbsp;·&nbsp; <button onclick="lasAdminPanel()" style="background:none;border:none;color:inherit;font:inherit;cursor:pointer;text-decoration:underline;padding:0;">Lås</button>
+</div>
+<div style="height:0" id="adminBannerSpacer"></div>
+<div id="visaKodOverlay" style="display:none;position:fixed;inset:0;background:#f0f4f8;z-index:99998;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:14px;padding:28px;width:90%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.2);text-align:center;">
+    <div style="font-size:32px;margin-bottom:8px;">🔒</div>
+    <div style="font-weight:800;font-size:16px;margin-bottom:6px;">Ange kod för att se schemat</div>
+    <div style="font-size:13px;color:#888;margin-bottom:16px;">Fråga din chef/samordnare om koden.</div>
+    <input type="password" id="visaKodInput" placeholder="Kod" onkeydown="if(event.key==='Enter') kontrolleraVisaKod();" style="width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;outline:none;margin-bottom:10px;text-align:center;" />
+    <button onclick="kontrolleraVisaKod()" style="width:100%;padding:11px;background:#1a73e8;color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">Fortsätt</button>
+    <div id="visaKodFel" style="color:#c00;font-size:13px;margin-top:8px;display:none;">Fel kod, försök igen.</div>
+  </div>
+</div>
+
+<div id="notisStack" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;align-items:center;max-width:92%;pointer-events:none;"></div>
+
+<div id="globalSaveIndicator" style="display:none;position:fixed;bottom:24px;right:24px;z-index:99999;
+  background:#1a73e8;color:#fff;padding:16px 24px;border-radius:12px;font-size:18px;font-weight:800;
+  box-shadow:0 4px 16px rgba(0,0,0,0.35);">💾 Sparar mot kalendern...</div>
+
+<button id="btnNyAktivitetFlytande" onclick="oppnaNyAktivitetTom()" title="Lägg till ny aktivitet"
+  style="display:none;align-items:center;justify-content:center;position:fixed;bottom:24px;left:24px;z-index:9998;width:56px;height:56px;
+  border-radius:50%;background:#1a73e8;color:#fff;border:none;font-size:28px;font-weight:700;
+  box-shadow:0 4px 16px rgba(0,0,0,0.3);cursor:pointer;line-height:0;">+</button>
 
 <div id="dataStatus" style="max-width:1100px;margin:0 auto 10px;display:none;
   background:#fff3cd;border:1px solid #ffeeba;color:#856404;
@@ -1932,17 +2095,20 @@ body.print-week{ }
 
 <!-- Flikar -->
 <div class="tab-bar">
-  <button id="tabNow" class="tab active">🔔 Pågår nu</button>
   <div class="tab-row-mobile">
     <button id="tabCoach" class="tab">🧑‍🏫 Coach</button>
-    <button id="tabParticipant" class="tab">👤 Deltagare</button>
+    <button id="tabParticipant" class="tab active">👤 Deltagare</button>
   </div>
-  <button id="tabAssistant" class="tab">🤖 Assistent</button>
+  <button id="tabNow" class="tab">🔔 Pågår nu</button>
+  <button id="tabStart" class="tab" onclick="showView('participantView')">🏠 <span class="corner-label">Start</span></button>
+  <button id="tabVerktyg" class="tab" onclick="showView('verktygView')">🧰 <span class="corner-label">Verktyg</span></button>
+  <button id="tabAdmin" class="tab" onclick="toggleAdminKodPanel()">🔒 <span class="corner-label">Logga in</span></button>
+  <button id="tabLogout" class="tab" onclick="lasAdminPanel()" style="display:none;">🚪 <span class="corner-label">Logga ut</span></button>
 </div>
 
 
 <!-- DELTAGARE-VY -->
-<div id="participantView" class="view">
+<div id="participantView" class="view active">
   <div class="mobile-backbar">
   <button id="btnBackFromParticipant" class="btn mobile-back">← Tillbaka</button>
 </div>
@@ -1952,7 +2118,8 @@ body.print-week{ }
     <select id="nameSelect"><option value="">-- Välj deltagare --</option></select>
     <button id="btnParticipantToday" class="btn primary">☀️ Dagens schema</button>
     <button id="btnParticipantWeek" class="btn primary">📆 Schema</button>
-    <button id="btnParticipantPictos" class="btn primary">🖼️ Bildstöd (vecka)</button>
+    <button id="btnParticipantPictos" class="btn primary">🖼️ Bildstöd dag</button>
+    <button id="btnParticipantPictosVecka" class="btn primary">🗓️ Bildstöd vecka</button>
     <button id="btnPrintParticipant" class="btn">🖨️ Skriv ut</button>
   </div>
 <div id="participantDay" class="cards print-scope"></div>
@@ -1979,6 +2146,168 @@ body.print-week{ }
 
 <div id="participantPictos" class="print-scope" style="display:none;"></div>
 
+</div>
+
+<!-- SÖK-VY -->
+<!-- VERKTYGSLÅDA -->
+<div id="verktygView" class="view">
+<div id="vtNavLankar" class="vt-navlankar"></div>
+<div id="viewTitle">🧰 Verktygslådan</div>
+
+  <!-- HEMMENY -->
+  <div id="verktygMeny" style="max-width:700px;margin:0 auto;">
+    <div class="vt-meny-rad">
+      <button onclick="visaVerktygssida('vtSok')" class="btn primary vt-meny-knapp">🔍<br>Sök</button>
+      <button onclick="visaVerktygssida('vtCompare')" class="btn primary vt-meny-knapp">📊<br>Jämför scheman</button>
+      <button onclick="visaVerktygssida('vtSick')" class="btn primary vt-meny-knapp">🩺<br>Sjukfrånvaro</button>
+    </div>
+    <div class="vt-meny-rad" style="margin-top:12px;">
+      <button id="vtBtnLaggTill" onclick="vtKlickAdminKnapp('vtLaggTill')" class="btn primary vt-admin-knapp vt-meny-knapp"><span class="vt-lasikon">🔒</span>➕<br>Lägg till person</button>
+      <button id="vtBtnTaBort" onclick="vtKlickAdminKnapp('vtTaBort')" class="btn primary vt-admin-knapp vt-meny-knapp"><span class="vt-lasikon">🔒</span>🗑<br>Ta bort person</button>
+      <button id="vtBtnKrock" onclick="vtKlickAdminKnapp('vtKrock')" class="btn primary vt-admin-knapp vt-meny-knapp"><span class="vt-lasikon">🔒</span>⚠️<br>Hantera krockar</button>
+      <button id="vtBtnHistorik" onclick="vtKlickAdminKnapp('vtHistorik')" class="btn primary vt-admin-knapp vt-meny-knapp"><span class="vt-lasikon">🔒</span>🕒<br>Hantera historik</button>
+    </div>
+  </div>
+
+  <!-- UNDERSIDA: SÖK -->
+  <div id="vtSok" class="vt-sida" style="display:none;">
+    
+    <div style="max-width:600px;margin:0 auto;">
+      <div style="position:relative;">
+        <input type="text" id="sokInput" placeholder="Skriv namn eller aktivitet..."
+          oninput="sokISchema()"
+          style="width:100%;padding:12px 16px;border:1.5px solid #cfd8e3;border-radius:12px;font-size:15px;outline:none;background:white;box-shadow:0 2px 8px rgba(0,0,0,0.06);" />
+        <button onclick="document.getElementById('sokInput').value='';sokISchema();"
+          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;cursor:pointer;color:#999;">×</button>
+      </div>
+      <div id="sokResultat" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- UNDERSIDA: JÄMFÖR SCHEMAN -->
+  <div id="vtCompare" class="vt-sida" style="display:none;">
+    
+    <div id="comparePanel" style="max-width:460px;margin:0 auto;">
+      <p style="font-size:13px;color:#666;text-align:center;margin-bottom:14px;">Välj upp till 4 personer att jämföra, tryck sedan Enter.</p>
+
+      <div style="margin-bottom:14px;">
+        <div id="compareChips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:5px;"></div>
+        <div style="position:relative;">
+          <input type="text" id="compareInput" placeholder="🔍 Sök namn (deltagare eller coach)..." style="width:100%;padding:7px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;" />
+          <div id="compareDropdown" style="position:absolute;z-index:9999;background:white;border:1.5px solid #ddd;border-radius:8px;width:100%;max-height:200px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:12px;">
+        <button id="btnShowCompare" class="btn primary">Visa valda scheman</button>
+        <button id="btnPrintCompare" class="btn">Skriv ut</button>
+      </div>
+    </div>
+    <div id="compareOutput" class="print-scope" style="display:none;">
+      <button id="btnCompareTillbaka" class="btn" style="margin-bottom:12px;">← Till valen</button>
+      <div id="compareOutputInner"></div>
+    </div>
+  </div>
+
+  <!-- UNDERSIDA: SJUKFRÅNVARO -->
+  <div id="vtSick" class="vt-sida" style="display:none;">
+    
+    <div id="sickPanel">
+      <div class="controls">
+        <select id="sickCoachSelect"><option value="">-- Välj sjuk coach --</option></select>
+        <label style="display:inline-flex;gap:8px;align-items:center;">
+          <input type="checkbox" id="chkFullWeek" checked> Visa hela veckan
+        </label>
+      </div>
+      <div id="sickResult"></div>
+    </div>
+  </div>
+
+  <!-- UNDERSIDA: LÄGG TILL PERSON (bara inloggad) -->
+  <div id="vtLaggTill" class="vt-sida" style="display:none;">
+    
+    <div style="max-width:500px;margin:0 auto;background:white;border-radius:12px;padding:4px;">
+      <div style="font-weight:800;font-size:15px;color:#1a73e8;margin-bottom:10px;">➕ Lägg till ny person</div>
+      <p style="font-size:13px;color:#555;margin-bottom:12px;">Personen läggs till i namnlistan med ett blankt schema - inga aktiviteter kopplas automatiskt. Vill du koppla personen till en aktivitet direkt, gör det istället genom att skriva deras namn i Deltagare/Coach-fältet när du redigerar den aktiviteten.</p>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <label style="font-size:13px;"><input type="radio" name="nyPersonTyp" value="deltagare" checked> Deltagare</label>
+        <label style="font-size:13px;"><input type="radio" name="nyPersonTyp" value="coach"> Coach</label>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="nyPersonNamn" placeholder="Namn..." style="flex:1;padding:10px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;" />
+        <button type="button" onclick="skapaNyPerson()" style="padding:10px 16px;background:#1a73e8;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;">Skapa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNDERSIDA: TA BORT PERSON (bara inloggad) -->
+  <div id="vtTaBort" class="vt-sida" style="display:none;">
+    
+    <div id="taBortPersonPanel" style="max-width:600px;margin:0 auto;background:white;border-radius:12px;padding:4px;">
+      <div style="font-weight:800;font-size:15px;color:#c00;margin-bottom:10px;">🗑 Ta bort person från schema</div>
+      <p style="font-size:13px;color:#555;margin-bottom:12px;">Namnet tas bort från alla framtida aktiviteter. Aktiviteterna och övriga deltagare påverkas inte.</p>
+      <div style="display:flex;gap:8px;">
+        <div style="position:relative;flex:1;">
+          <input type="text" id="taBortInput" placeholder="Skriv namn..."
+            oninput="visaTaBortForhandsgranska()"
+            style="width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;" />
+          <div id="taBortDropdown" style="position:absolute;z-index:9999;background:white;border:1.5px solid #ddd;border-radius:8px;width:100%;max-height:180px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+        </div>
+        <button onclick="utforTaBort()" style="padding:10px 16px;background:#c00;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;">Ta bort</button>
+      </div>
+      <div id="taBortForhandsgranska" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- UNDERSIDA: KROCKAR (bara inloggad) -->
+  <div id="vtKrock" class="vt-sida" style="display:none;">
+
+    <div style="text-align:center;margin-bottom:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn primary" onclick="visaKrockar()">🔄 Kontrollera krockar</button>
+      <button class="btn" onclick="visaGodkandaKrockar()">✅ Titta på godkända <span id="antalGodkandaEtikett"></span></button>
+    </div>
+
+    <!-- Snabbtitt: klicka på ett namn i listan nedan för att se personens
+         veckoschema här, utan att lämna krock-listan. -->
+    <div id="krockSnabbtitt" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;" onclick="if(event.target===this) this.style.display='none';">
+      <div style="background:white;border-radius:14px;padding:16px;width:92%;max-width:620px;max-height:85vh;box-shadow:0 8px 32px rgba(0,0,0,0.25);display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-shrink:0;">
+          <div id="krockSnabbtittNamn" style="font-weight:800;color:#1a73e8;font-size:16px;"></div>
+          <button id="krockSnabbtittStang" onclick="document.getElementById('krockSnabbtitt').style.display='none';" style="background:none;border:none;font-size:22px;cursor:pointer;color:#999;line-height:1;">×</button>
+        </div>
+        <div style="overflow:auto;flex:1;">
+          <div id="krockSnabbtittSkala" style="transform:scale(0.62);transform-origin:top left;width:161%;">
+            <div id="krockSnabbtittHeader" class="block-header"></div>
+            <div id="krockSnabbtittGrid" class="block-grid" style="position:relative;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="krockResultat" style="margin:0 auto;max-width:700px;"></div>
+  </div>
+
+  <!-- UNDERSIDA: HISTORIK (bara inloggad) -->
+  <div id="vtHistorik" class="vt-sida" style="display:none;">
+    
+    <div style="max-width:700px;margin:0 auto;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+        <button class="btn primary" onclick="visaHistorik()">Visa 10 senaste</button>
+        <span style="font-size:13px;color:#888;">eller filtrera på datum:</span>
+        <input type="date" id="historikFran" style="padding:6px 10px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;" />
+        <span style="font-size:13px;color:#888;">till</span>
+        <input type="date" id="historikTill" style="padding:6px 10px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;" />
+        <button class="btn" onclick="visaHistorik(true)">Filtrera</button>
+      </div>
+      <div id="historikResultat"></div>
+    </div>
+  </div>
+
+  <!-- Adminläge låses upp via knappen "Logga in" i menyn ovan - detta
+       element behålls tomt/dolt bara för att andra funktioner i koden
+       pekar på det vid namn. -->
+  <div id="adminLockPanel" style="display:none;"></div>
+  <div id="adminPanel" style="display:none;visibility:hidden;height:0;overflow:hidden;"></div>
 </div>
 
 <!-- COACH-VY -->
@@ -2017,7 +2346,7 @@ body.print-week{ }
 </div>
 
 <!-- PÅGÅR NU-VY -->
-<div id="nowView" class="view active">
+<div id="nowView" class="view">
   <div id="viewTitle">🔔 Pågår just nu</div>
   <div id="nowContainer" class="print-scope"></div>
   <div style="text-align:center;margin-top:10px;">
@@ -2025,46 +2354,12 @@ body.print-week{ }
   </div>
 </div>
 
-<!-- ASSISTENT-VY -->
-<div id="assistantView" class="view">
-  <div id="viewTitle">🤖 Schema-assistenten</div>
-
-  <div id="comparePanel" class="panel">
-    <h2>Jämför scheman</h2>
-    <div class="chip-title">Coacher</div>
-    <div id="coachListCompare" class="chip-group"></div>
-    <div class="chip-title">Deltagare</div>
-    <div id="participantListCompare" class="chip-group"></div>
-    <div style="text-align:center; margin-top:12px;">
-      <button id="btnShowCompare" class="btn primary">Visa valda scheman</button>
-      <button id="btnPrintCompare" class="btn">Skriv ut</button>
-    </div>
-  </div>
-
-  <div id="compareOutput" class="print-scope" style="display:none;"></div>
-
-  <div id="sickPanel" class="panel">
-    <h2>🩺 Hitta ersättare</h2>
-    <div class="controls">
-      <select id="sickCoachSelect"><option value="">-- Välj sjuk coach --</option></select>
-      <label style="display:inline-flex;gap:8px;align-items:center;">
-        <input type="checkbox" id="chkFullWeek" checked> Visa hela veckan
-      </label>
-    </div>
-    <div id="sickResult"></div>
-  </div>
-
-  <div class="controls" style="justify-content:center;margin-top:8px;">
-    <button id="btnOpenCompare" class="btn primary">Öppna jämförelse</button>
-    <button id="btnOpenSick" class="btn primary">🩺 Öppna ersättare</button>
-  </div>
-</div>
 
 <script>
 /* =========================
    DATA & KONFIG
 ========================= */
-const url="https://script.google.com/macros/s/AKfycbyrif6NVB3DPkmSam6kOX_M3xcXcrkBGFKVznDV2PRrUxIrN0q9c16VCgNQ7fFtrwBS/exec";
+const url="https://script.google.com/macros/s/AKfycbx1WUFIXUqn7x0Fj4K7bXeSeZujJGl3l0vJVA-oGquxRThR00Lm7GNQ4uG5TGQOgpgK/exec";
 
 /* Emoji & färg per aktivitet */
 const aktivitetFarger = {
@@ -2254,10 +2549,12 @@ function renderCardsGenericForDate(name,isCoach,targetEl,dateKeyStr){
   let html=``;
   if(!rows.length) html+="<div class='card' style='--band:#cfd8e3'><div class='row'>Ledig</div></div>";
   rows.forEach(r=>{
+    const deltagareNamn = (r.Deltagare || "-").replace(/\./g, "").trim() || "-";
+    const coachNamn = (r.Coach || "-").replace(/\./g, "").trim() || "-";
     html+=`<div class="card" style="--band:${colorFor(r)}">
       <h3>${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h3>
       <div class="row">🕒 ${r.Start||""}–${r.Slut||""}</div>
-      <div class="row">${isCoach?"👥 Deltagare: "+(r.Deltagare||"-"):"🧑‍🏫 Coach: "+(r.Coach||"-")}</div>
+      <div class="row">${isCoach?"👥 Deltagare: "+deltagareNamn:"🧑‍🏫 Coach: "+coachNamn}</div>
     </div>`;
   });
   
@@ -2409,7 +2706,7 @@ function initMobileParticipant(){
     const d = mPDays[mPIndex];
     const k = keyFromDate(d);
     const pretty = prettyDay(d);
-    titleEl.textContent = (k===today) ? `Idag – ${pretty.wd}` : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
+    titleEl.textContent = mPName + " – " + ((k===today) ? `Idag, ${pretty.wd}` : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1)));
 subEl.textContent = pretty.date;
     renderCardsGenericForDate(mPName,false,cardsEl,k);
   }
@@ -2455,7 +2752,7 @@ function initMobileCoach(){
     const d = mCDays[mCIndex];
     const k = keyFromDate(d);
     const pretty = prettyDay(d);
-    titleEl.textContent = (k===today) ? `Idag – ${pretty.wd}` : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1));
+    titleEl.textContent = mCName + " – " + ((k===today) ? `Idag, ${pretty.wd}` : (pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1)));
 subEl.textContent = pretty.date;
     renderCardsGenericForDate(mCName,true,cardsEl,k);
   }
@@ -2476,15 +2773,32 @@ subEl.textContent = pretty.date;
 
 /* Re-init när man byter person/coach */
 document.getElementById("nameSelect")?.addEventListener("change", ()=>{
-  if(!isMobile()) return;
-  mPName = document.getElementById("nameSelect")?.value || "";
+  const name = document.getElementById("nameSelect")?.value || "";
+  if(!isMobile()){
+    // Desktop: visa veckoschemat direkt, utan extra knapptryck.
+    if(!name) return;
+    document.getElementById("participantDay").style.display="none";
+    document.getElementById("participantPictos").style.display="none";
+    document.getElementById("participantWeek").style.display="block";
+    renderBlocksGeneric(name,false,document.getElementById("pBlockHeader"),document.getElementById("pBlockGrid"));
+    return;
+  }
+  mPName = name;
   initMobileParticipant();
   // När ett val görs: gå till helskärm på mobil
   if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView();
 });
 document.getElementById("coachSelect")?.addEventListener("change", ()=>{
-  if(!isMobile()) return;
-  mCName = document.getElementById("coachSelect")?.value || "";
+  const name = document.getElementById("coachSelect")?.value || "";
+  if(!isMobile()){
+    // Desktop: visa veckoschemat direkt, utan extra knapptryck.
+    if(!name) return;
+    document.getElementById("coachDay").style.display="none";
+    document.getElementById("coachWeek").style.display="block";
+    renderBlocksGeneric(name,true,document.getElementById("cBlockHeader"),document.getElementById("cBlockGrid"));
+    return;
+  }
+  mCName = name;
   initMobileCoach();
   // När ett val görs: gå till helskärm på mobil
   if(typeof updateMobileFullscreenForCurrentView === "function") updateMobileFullscreenForCurrentView();
@@ -2498,18 +2812,84 @@ function weekdayName(d) {
 
 /* DATA */
 let DATA=[];
+let RRULES_MAP = {}; // masterId -> RRULE-sträng, hämtat i ett enda anrop tillsammans med schemat
+let LISTOR_DELTAGARE=[];
+let LISTOR_COACHER=[];
+let LISTOR_AKTIVITETER=[];
 
 /* Ladda data + init */
-async function loadData(){
+async function loadData(skipSync){
+  // Spara nuvarande tillstånd
+  const sparadVy = document.querySelector(".view.active")?.id || null;
+  const sparadCoach = document.getElementById("coachSelect")?.value || null;
+  const sparadDeltagare = document.getElementById("nameSelect")?.value || null;
+  const coachVecka = document.getElementById("coachWeek")?.style.display !== "none";
+  const coachDag = document.getElementById("coachDay")?.style.display !== "none";
+  const deltVecka = document.getElementById("participantWeek")?.style.display !== "none";
+  const deltDag = document.getElementById("participantDay")?.style.display !== "none";
+  // Vilken undersida i Verktygslådan som eventuellt visas just nu - så en
+  // bakgrundsuppdatering inte nollställer tillbaka till hemmenyn, och så att
+  // en öppen krock-lista kan uppdateras (lösta krockar ska försvinna av sig
+  // själva, inte kräva ett manuellt klick på "Kontrollera nu").
+  const sparadVtSida = Array.from(document.querySelectorAll(".vt-sida")).find(el => el.style.display !== "none")?.id || null;
+
   try{
-    const res=await fetch(url+"?t="+Date.now());
+    const res=await fetch(url+"?t="+Date.now()+(skipSync?"&skipsync=1":"")+"&visakod="+encodeURIComponent(VISAKOD_VARDE));
     const json=await res.json();
     DATA=json.data||[];
+    RRULES_MAP = json.rrules || {};
+    if(json.listor) { LISTOR_DELTAGARE = (json.listor.deltagare||[]).sort((a,b)=>a.localeCompare(b,'sv')); LISTOR_COACHER = (json.listor.coacher||[]).sort((a,b)=>a.localeCompare(b,'sv')); LISTOR_AKTIVITETER = (json.listor.aktiviteter||[]).sort((a,b)=>a.localeCompare(b,'sv')); }
+    try{ localStorage.setItem("SCHEMA_CACHE_V1", JSON.stringify(json)); }catch(_e){}
     const st=document.getElementById("dataStatus"); if(st) st.style.display="none";
     fillLists(); fillCompareLists(); fillSickList();
-    renderNow(); // startvy
-    // Mobil-init om val redan finns
+
+    // Återställ vy och val
+    if(sparadVy === "verktygView"){
+      // Rör inte om till hemmenyn - man ska stanna kvar på samma undersida
+      // efter en bakgrundsuppdatering. Om krock-listan är öppen, rita om
+      // den så att lösta krockar försvinner av sig själva.
+      if (sparadVtSida === "vtKrock") {
+        const sparadScrollY = window.scrollY;
+        visaKrockar().then(() => {
+          // Återställ scroll-positionen - annars hoppar man alltid upp till
+          // toppen av listan, även om man jobbade längre ner i den.
+          window.scrollTo(0, sparadScrollY);
+        });
+      }
+    } else if(sparadVy && sparadVy !== "nowView"){
+      showView(sparadVy);
+      if(sparadVy === "coachView" && sparadCoach){
+        const sel = document.getElementById("coachSelect");
+        if(sel) sel.value = sparadCoach;
+        if(coachVecka){
+          document.getElementById("coachDay").style.display="none";
+          document.getElementById("coachWeek").style.display="block";
+          renderBlocksGeneric(sparadCoach,true,document.getElementById("cBlockHeader"),document.getElementById("cBlockGrid"));
+        } else if(coachDag){
+          document.getElementById("coachWeek").style.display="none";
+          document.getElementById("coachDay").style.display="block";
+          renderCardsGeneric(sparadCoach,true,document.getElementById("coachDay"));
+        }
+      }
+      if(sparadVy === "participantView" && sparadDeltagare){
+        const sel = document.getElementById("nameSelect");
+        if(sel) sel.value = sparadDeltagare;
+        if(deltVecka){
+          document.getElementById("participantDay").style.display="none";
+          document.getElementById("participantWeek").style.display="block";
+          renderBlocksGeneric(sparadDeltagare,false,document.getElementById("pBlockHeader"),document.getElementById("pBlockGrid"));
+        } else if(deltDag){
+          document.getElementById("participantWeek").style.display="none";
+          document.getElementById("participantDay").style.display="block";
+          renderCardsGeneric(sparadDeltagare,false,document.getElementById("participantDay"));
+        }
+      }
+    } else {
+      renderNow();
+    }
+
     if(isMobile()) { initMobileParticipant(); initMobileCoach(); }
+    if(adminUnlocked) ritaAdminSchema();
   }catch(e){ console.error("Kunde inte hämta data:", e);
     const st=document.getElementById("dataStatus"); if(st) st.style.display="block";
   }
@@ -2519,7 +2899,92 @@ async function loadData(){
 document.getElementById("nameSelect")?.addEventListener("change", ()=>{ updateMobileFullscreenForCurrentView(); });
 document.getElementById("coachSelect")?.addEventListener("change", ()=>{ updateMobileFullscreenForCurrentView(); });
 
-loadData();
+/* Visa senast sparade schema direkt vid start; färsk data hämtas sedan i bakgrunden. */
+function primeFromCache(){
+  try{
+    const raw = localStorage.getItem("SCHEMA_CACHE_V1");
+    if(!raw) return;
+    const json = JSON.parse(raw);
+    DATA = json.data || [];
+    RRULES_MAP = json.rrules || {};
+    if(json.listor){
+      LISTOR_DELTAGARE = (json.listor.deltagare||[]).sort((a,b)=>a.localeCompare(b,'sv'));
+      LISTOR_COACHER = (json.listor.coacher||[]).sort((a,b)=>a.localeCompare(b,'sv'));
+      LISTOR_AKTIVITETER = (json.listor.aktiviteter||[]).sort((a,b)=>a.localeCompare(b,'sv'));
+    }
+    fillLists(); fillCompareLists(); fillSickList(); renderNow();
+
+    // Återställ senast vald deltagare (t.ex. om man klickat "Tillbaka" från
+    // ett bildstöd, vilket laddar om hela sidan och annars tappar valet).
+    try{
+      const senast = localStorage.getItem("SENAST_VALD_DELTAGARE");
+      const n = document.getElementById("nameSelect");
+      if (senast && n && Array.from(n.options).some(o => o.value === senast)) {
+        n.value = senast;
+        n.dispatchEvent(new Event("change"));
+      }
+    }catch(_e){}
+  }catch(_e){}
+}
+primeFromCache();
+
+// Visningskod: krävs för att överhuvudtaget se schemat, inte bara för att
+// redigera. Sparas i webbläsaren efter första godkända inmatning, så man
+// slipper skriva den varje gång på samma enhet.
+// Sätt till false under intensiv testning - matcha samma switch
+// (VISNINGSKOD_AKTIV) i Code_LIVE.gs. Kom ihåg att sätta tillbaka till true
+// innan skarp drift igen.
+const VISAKOD_AKTIV = false;
+let VISAKOD_VARDE = localStorage.getItem("VISAKOD_V1") || "";
+
+async function kontrolleraVisaKod(){
+  const inp = document.getElementById("visaKodInput");
+  const fel = document.getElementById("visaKodFel");
+  const kod = (inp?.value || "").trim();
+  if (!kod) return;
+  try {
+    const res = await fetch(url + "?t=" + Date.now() + "&visakod=" + encodeURIComponent(kod));
+    const json = await res.json();
+    if (json && json.behovsVisakod) {
+      if (fel) fel.style.display = "block";
+      return;
+    }
+    // Rätt kod - spara och kör igång sidan på riktigt.
+    VISAKOD_VARDE = kod;
+    try { localStorage.setItem("VISAKOD_V1", kod); } catch(e){}
+    document.getElementById("visaKodOverlay").style.display = "none";
+    startaAppen();
+  } catch(e) {
+    if (fel) { fel.textContent = "Kunde inte nå servern. Försök igen."; fel.style.display = "block"; }
+  }
+}
+
+// Vid sidladdning: har vi redan en sparad kod, kör igång direkt. Annars,
+// visa rutan och vänta på att koden skrivs in.
+if (!VISAKOD_AKTIV || VISAKOD_VARDE) {
+  startaAppen();
+} else {
+  document.getElementById("visaKodOverlay").style.display = "flex";
+}
+
+// Startar upp sidan på riktigt (hämtar färsk data osv). Körs bara efter att
+// visningskoden godkänts - antingen direkt (redan sparad i webbläsaren från
+// tidigare) eller efter att man skrivit in den första gången.
+function startaAppen(){
+  // Om admin redan var upplåst i den här fliken innan en omladdning (F5),
+  // återupplås automatiskt - man slipper skriva koden på nytt varje gång.
+  // sessionStorage rensas när fliken/webbläsaren stängs, så det är inte en
+  // permanent inloggning. Väntar till "load" så aktiveraAdminLage() (som
+  // definieras längre ner i filen) garanterat finns innan den anropas.
+  window.addEventListener("load", () => {
+    try {
+      if (sessionStorage.getItem("adminUnlocked") === "1" && typeof aktiveraAdminLage === "function") {
+        aktiveraAdminLage();
+      }
+    } catch(e) {}
+  });
+  loadData();
+}
 
 /* Klocka */
 function updateClock(){
@@ -2565,30 +3030,14 @@ function fillLists(){
   uniqueTokens("Deltagare").forEach(v=>n.innerHTML+=`<option>${v}</option>`);
   uniqueTokens("Coach").forEach(v=>c.innerHTML+=`<option>${v}</option>`);
 }
+let _compareKopplat = false;
 function fillCompareLists(){
-  const cWrap=document.getElementById("coachListCompare");
-  const pWrap=document.getElementById("participantListCompare");
-  if(!cWrap||!pWrap) return;
-  cWrap.innerHTML=""; pWrap.innerHTML="";
-  uniqueTokens("Coach").forEach(c=>{
-    const id="c_"+btoa(encodeURIComponent(c)).replace(/=/g,"");
-    cWrap.insertAdjacentHTML("beforeend",`
-      <label class="chip" for="${id}"><input id="${id}" type="checkbox" class="chk-coach" value="${c}"><span>${c}</span></label>
-    `);
-  });
-  uniqueTokens("Deltagare").forEach(n=>{
-    const id="p_"+btoa(encodeURIComponent(n)).replace(/=/g,"");
-    pWrap.insertAdjacentHTML("beforeend",`
-      <label class="chip" for="${id}"><input id="${id}" type="checkbox" class="chk-delt" value="${n}"><span>${n}</span></label>
-    `);
-  });
-  document.querySelectorAll(".chip").forEach(chip=>{
-    chip.addEventListener("click",()=>{
-      const inp=chip.querySelector("input");
-      inp.checked=!inp.checked;
-      chip.classList.toggle("active",inp.checked);
-    });
-  });
+  // Chip-inmatningen behöver bara kopplas in EN gång - förslagen hämtas
+  // färskt (LISTOR_DELTAGARE/LISTOR_COACHER) varje gång man skriver, så
+  // inget behöver byggas om vid varje dataladdning längre.
+  if (_compareKopplat) return;
+  _compareKopplat = true;
+  compareKopplaInput();
 }
 function fillSickList(){
   const s=document.getElementById("sickCoachSelect");
@@ -2608,7 +3057,20 @@ function showView(id){
   if(id==="participantView") document.getElementById("tabParticipant").classList.add("active");
   if(id==="coachView") document.getElementById("tabCoach").classList.add("active");
   if(id==="nowView") document.getElementById("tabNow").classList.add("active");
-  if(id==="assistantView") document.getElementById("tabAssistant").classList.add("active");
+  if(id==="verktygView") {
+    document.getElementById("tabVerktyg")?.classList.add("active");
+    if (typeof visaVerktygsmeny === "function") visaVerktygsmeny();
+  }
+
+  // Deltagare/Coach bär inget sammanhang med sig in i Verktygslådan (söker
+  // man t.ex. fram en person där hoppar man inte till just den personens
+  // schema) - dölj dem så vägen ut går via Verktygslådans egna knappar
+  // ("← Verktygslådan") eller loggan, istället för att av misstag byta
+  // sektion mitt i ett sök/jämförelse.
+  const doljIVerktyg = (id === "verktygView");
+  document.getElementById("tabParticipant").style.display = doljIVerktyg ? "none" : "";
+  document.getElementById("tabCoach").style.display = doljIVerktyg ? "none" : "";
+  document.getElementById("tabNow").style.display = doljIVerktyg ? "none" : "";
 
   // ===== Alternativ 3: Nollställ visningen vid vybyte, men behåll val i listorna =====
   if(id==="participantView"){
@@ -2705,11 +3167,10 @@ document.getElementById("btnBackInlineP")?.addEventListener("click", ()=>{ exitD
 document.getElementById("btnBackInlineC")?.addEventListener("click", ()=>{ exitDayMode(); showView("nowView"); });
 document.getElementById("tabParticipant").onclick=()=>{ showView("participantView"); };
 document.getElementById("tabCoach").onclick=()=>{ showView("coachView"); };
-document.getElementById("tabNow").onclick=()=>{ showView("nowView"); renderNow(); };
-document.getElementById("tabAssistant").onclick=()=>{ showView("assistantView"); };
+document.getElementById("tabNow")?.addEventListener("click", ()=>{ showView("nowView"); renderNow(); });
 
 /* Loggan = hem (pågår nu) */
-document.getElementById("homeLogo").addEventListener("click",()=>{ showView("nowView"); renderNow(); });
+document.getElementById("homeLogo").addEventListener("click",()=>{ showView("participantView"); });
 
 /* =========================
    PÅGÅR NU + KOMMANDE
@@ -2719,48 +3180,60 @@ function renderNow(){
   const today=todayKey();
   const now=new Date();
   const minsNow=now.getHours()*60 + now.getMinutes();
-  const all = DATA.filter(r=> dayKey(r.Datum)===today )
-    .sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
 
-  const ongo = all.filter(r=>{
-    const [sh,sm]=(r.Start||"00:00").split(":").map(Number);
-    const [eh,em]=(r.Slut||"00:00").split(":").map(Number);
-    const s=sh*60+sm, e=eh*60+em;
-    return minsNow>=s && minsNow<=e;
-  });
-  const next = all.filter(r=>{
-    const [sh,sm]=(r.Start||"00:00").split(":").map(Number);
-    const s=sh*60+sm;
-    return s>minsNow;
-  });
+  function minuter(tidStr){
+    const [h,m] = (tidStr||"00:00").split(":").map(Number);
+    return h*60 + (m||0);
+  }
+
+  // Bara pågående + kommande - redan avslutade aktiviteter tas bort helt
+  // (för mycket information annars). Listan börjar alltså alltid med "nu".
+  const relevanta = DATA.filter(r=> dayKey(r.Datum)===today && minuter(r.Slut) >= minsNow)
+    .sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
 
   const label = new Intl.DateTimeFormat("sv-SE",{ weekday:"long", day:"numeric", month:"long"}).format(now);
   const time = now.toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"});
 
   let html = `<div class="section-title">⏱️ ${label} – kl. ${time}</div>`;
 
-  html += `<div class="section-title">🔔 Pågår nu</div>`;
-  if(!ongo.length) html += `<div class="cards"><div class="card" style="--band:#cfd8e3"><div class="row" style="text-align:center">Inga aktiviteter pågår just nu.</div></div></div>`;
-  else{
-    html += `<div class="cards">` + ongo.map(r => `
-      <div class="card" style="--band:${colorFor(r)}">
-        <h3>${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h3>
-        <div class="row">🕒 ${r.Start||""}–${r.Slut||""}</div>
-        <div class="row">🧑‍🏫 Coach: ${r.Coach||"-"}</div>
-        <div class="row">👥 Deltagare: ${r.Deltagare||"-"}</div>
-      </div>`).join("") + `</div>`;
-  }
+  if(!relevanta.length){
+    html += `<div style="text-align:center;color:#888;padding:16px;font-size:14px;">Inget mer planerat idag.</div>`;
+  } else {
+    function byggKort(r, pagar){
+      const deltagare = (r.Deltagare || "-").replace(/\./g, "").trim() || "-";
+      const coach = (r.Coach || "-").replace(/\./g, "").trim() || "-";
+      const pagarMarkor = pagar ? `<span style="font-size:11px;font-weight:800;color:#c0392b;margin-left:6px;">● PÅGÅR</span>` : "";
 
-  html += `<div class="section-title">⏭️ Kommande idag</div>`;
-  if(!next.length) html += `<div class="cards"><div class="card" style="--band:#cfd8e3"><div class="row" style="text-align:center">Inget mer planerat idag.</div></div></div>`;
-  else{
-    html += `<div class="cards">` + next.map(r => `
-      <div class="card" style="--band:${colorFor(r)}">
-        <h3>${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}</h3>
+      // Pågående: full färg på kanten. Kommande: samma färg men gråskala +
+      // något sänkt opacitet, så man fortfarande ser vilken "typ" av
+      // aktivitet det är (samma färgband), men den sticker inte ut lika
+      // mycket. Återanvänder .card-utseendet (vit bakgrund + färgad
+      // vänsterkant) för att matcha dagschemat exakt.
+      const filterStil = pagar ? "" : "filter:grayscale(1);opacity:0.75;";
+
+      return `<div class="card nu-kort" style="--band:${colorFor(r)};${filterStil}">
+        <h3>${emojiFor(r)} ${r.Aktivitet||""}${pagarMarkor}</h3>
         <div class="row">🕒 ${r.Start||""}–${r.Slut||""}</div>
-        <div class="row">🧑‍🏫 Coach: ${r.Coach||"-"}</div>
-        <div class="row">👥 Deltagare: ${r.Deltagare||"-"}</div>
-      </div>`).join("") + `</div>`;
+        <div class="row">👥 ${deltagare}</div>
+        <div class="row">🧑‍🏫 ${coach}</div>
+      </div>`;
+    }
+
+    const pagaende = relevanta.filter(r => minsNow >= minuter(r.Start) && minsNow <= minuter(r.Slut));
+    const kommande = relevanta.filter(r => minsNow < minuter(r.Start));
+
+    if (pagaende.length) {
+      html += `<div class="nu-grid">` + pagaende.map(r => byggKort(r, true)).join("") + `</div>`;
+    }
+
+    if (kommande.length) {
+      html += `<div class="section-title" style="margin-top:24px;">⏭️ Kommande</div>`;
+      html += `<div class="nu-grid">` + kommande.map(r => byggKort(r, false)).join("") + `</div>`;
+    }
+
+    if (!pagaende.length && !kommande.length) {
+      html += `<div style="text-align:center;color:#888;padding:16px;font-size:14px;">Inget mer planerat idag.</div>`;
+    }
   }
 
   cont.innerHTML = html;
@@ -2819,6 +3292,23 @@ function slotIndexForMin(min, slotMins){
   return slotMins.length-1;
 }
 
+// Bygger en namnlista som stannar inom en ungefärlig teckengräns, istället
+// för ett fast antal namn - eftersom namn varierar mycket i längd ("Mio" vs
+// "Alexander Kim"). Lägger till "m.fl." om något föll bort.
+function byggTrunkeradNamnlista(namn, maxTecken){
+  if (!namn || !namn.length) return "-";
+  const med = [];
+  let langd = 0;
+  for (let i = 0; i < namn.length; i++){
+    const tillagd = (med.length ? 2 : 0) + namn[i].length; // ", " = 2 tecken
+    if (med.length > 0 && langd + tillagd > maxTecken) break;
+    med.push(namn[i]);
+    langd += tillagd;
+  }
+  if (med.length === 0) med.push(namn[0]); // visa minst ett namn
+  return med.join(", ") + (med.length < namn.length ? " m.fl." : "");
+}
+
 function renderBlocksGeneric(name,isCoach,headerEl,gridEl){
   const slots=makeSlots();
   const days=["måndag","tisdag","onsdag","torsdag","fredag"];
@@ -2863,7 +3353,7 @@ const deltagareCount = deltagareList.length;
 
 if(duration>30){
   if(isCoach){
-    const deltagarRad = (deltagareCount>0) ? deltagareList.join(", ") : "-";
+    const deltagarRad = byggTrunkeradNamnlista(deltagareList, 30);
     block.innerHTML=`<div class="title">🕒 ${r.Start||""}–${r.Slut||""}</div>
       ${emojiFor(r)} <span class="act">${r.Aktivitet||""}</span><br>
       👥 ${deltagarRad}`;
@@ -2881,41 +3371,160 @@ if(duration>30){
     const one=(deltagareCount===1)?(" • "+deltagareList[0]):"";
     block.innerHTML=`<span class="time">⏱️ ${r.Start||""}</span> <span class="act">${act}</span>${one}`;
   }else{
-    // deltagarvy oförändrad
+    // Deltagarvy: coach-namn krymps till "m.fl." om det är för många för att
+    // få plats snyggt i ett kort (30 min) block. Deltagaren ser ändå minst
+    // en coach - det viktiga är att veta var/med vem, inte hela listan.
+    const coachList = splitNames(r.Coach||"");
+    const coachTextKort = byggTrunkeradNamnlista(coachList, 18);
     block.classList.add("part-half");
-      block.innerHTML=`🕒 ${r.Start||""} ${emojiFor(r)} <span class="act">${(r.Aktivitet||"")}</span> – 🧑‍🏫 ${(r.Coach||"-")}`;
+      block.innerHTML=`🕒 ${r.Start||""} ${emojiFor(r)} <span class="act">${(r.Aktivitet||"")}</span> – 🧑‍🏫 ${coachTextKort}`;
   }
 }
 
+    block.__eventData = r;
+    block.style.cursor = adminUnlocked ? "pointer" : "default";
+    // Mobil ska vara en ren snabbtitt utan redigering, oavsett adminläge -
+    // därför kollas skärmbredden här också, inte bara adminUnlocked.
+    const arMobil = window.innerWidth <= 720;
+    block.onclick = (adminUnlocked && !arMobil) ? () => oppnaRedigeraModal(r) : null;
     requestAnimationFrame(()=>{const cellH=firstCell.clientHeight||28;const topOff=((sCl-slotMins[baseIdx])/30)*cellH;const h=((eCl-sCl)/30)*cellH;block.style.top=(2+topOff)+"px";block.style.height=Math.max(10,h-4)+"px";block.style.zIndex=10;});
     firstCell.appendChild(block);
   });
 }
 
 /* =========================
+   ASSISTENT – Ihopfällbara sektioner
+========================= */
+// Navigering inom Verktygslådan: en hemmeny + undersidor, en åt gången.
+// Ingen accordion, ingen stapling - bara en sak synlig i taget, med en
+// tydlig väg tillbaka till hemmenyn från varje undersida.
+function visaVerktygsmeny(){
+  document.querySelectorAll(".vt-sida").forEach(el => el.style.display = "none");
+  const meny = document.getElementById("verktygMeny");
+  if (meny) meny.style.display = "block";
+  const snabbtitt = document.getElementById("krockSnabbtitt");
+  if (snabbtitt) snabbtitt.style.display = "none";
+
+  const navlankar = document.getElementById("vtNavLankar");
+  if (navlankar) navlankar.innerHTML = "";
+
+  const vt = document.querySelector("#verktygView #viewTitle");
+  if (vt) vt.textContent = "🧰 Verktygslådan";
+}
+
+// Klick på en admin-markerad knapp i Verktygslådan: om inloggad, navigera
+// dit som vanligt. Om inte, öppna inloggningsrutan direkt istället för att
+// bara visa en låst knapp utan vägledning.
+// Låser/låser upp admin-knapparna i Verktygslådans hemmeny VISUELLT - de är
+// alltid synliga och klickbara, bara utseendet (orange kant + låsikon)
+// signalerar om de kräver inloggning just nu.
+function vtSattLastVisuellt(last){
+  ["vtBtnLaggTill","vtBtnTaBort","vtBtnKrock","vtBtnHistorik"].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const ikon = btn.querySelector(".vt-lasikon");
+    if (last) {
+      btn.classList.add("vt-admin-knapp");
+      if (ikon) ikon.textContent = "🔒";
+    } else {
+      btn.classList.remove("vt-admin-knapp");
+      if (ikon) ikon.textContent = "";
+    }
+  });
+}
+
+function vtKlickAdminKnapp(id){
+  if (adminUnlocked) {
+    visaVerktygssida(id);
+  } else {
+    toggleAdminKodPanel();
+  }
+}
+
+// Namn att visa i rubriken för varje undersida i Verktygslådan, så man
+// alltid ser VILKET verktyg man är inne i - inte bara att man är "någonstans
+// i Verktygslådan". Ikonen (🧰) behålls som igenkänningsmärke.
+const VT_SIDNAMN = {
+  vtSok: "Sök",
+  vtCompare: "Jämför scheman",
+  vtSick: "Sjukfrånvaro",
+  vtLaggTill: "Lägg till person",
+  vtTaBort: "Ta bort person",
+  vtKrock: "Hantera krockar",
+  vtHistorik: "Hantera historik"
+};
+
+function visaVerktygssida(id){
+  const meny = document.getElementById("verktygMeny");
+  if (meny) meny.style.display = "none";
+  document.querySelectorAll(".vt-sida").forEach(el => el.style.display = "none");
+  const sida = document.getElementById(id);
+  if (sida) sida.style.display = "block";
+
+  const vt = document.querySelector("#verktygView #viewTitle");
+  if (vt) vt.textContent = "🧰 " + (VT_SIDNAMN[id] || "Verktygslådan");
+
+  // Enkel, synlig knapp tillbaka till Verktygslådans hemmeny - dubblerar
+  // funktionen som redan finns i hörn-ikonen, men det är medvetet: för den
+  // som inte är datorvan är en tydlig knapp i själva innehållet lättare att
+  // hitta än en liten ikon i ett hörn. Estetik är sekundärt här.
+  const navlankar = document.getElementById("vtNavLankar");
+  if (navlankar) {
+    navlankar.innerHTML = '<button onclick="visaVerktygsmeny()" class="btn" style="margin-bottom:12px;">← Verktygslådan (start)</button>';
+  }
+
+  // Kör igång sidans eget innehåll om det behövs.
+  if (id === "vtSok") {
+    setTimeout(() => document.getElementById("sokInput")?.focus(), 50);
+  }
+  if (id === "vtKrock") {
+    visaKrockar();
+  }
+}
+
+// Säker mellanhand för "Redigera"-knappar i dynamiskt genererad HTML.
+// Att skriva onclick='oppnaRedigeraModal(${JSON.stringify(r)})' direkt i ett
+// attribut är sårbart: JSON.stringify escapar " men inte ' - en apostrof i
+// ett namn (t.ex. "O'Brien") skulle bryta attributet eller möjliggöra att
+// oavsiktlig/godtycklig markup smyger in. Radobjektet sparas istället i
+// minnet och hämtas via en ofarlig nyckel (bara siffror).
+let _redigeraKnappData = {};
+let _redigeraKnappCounter = 0;
+function registreraRedigeraKnapp(r){
+  const key = String(_redigeraKnappCounter++);
+  _redigeraKnappData[key] = r;
+  return key;
+}
+function oppnaRedigeraModalFranKnapp(key){
+  const r = _redigeraKnappData[key];
+  if (r) oppnaRedigeraModal(r);
+}
+
+function toggleAssistAccordion(id, korRunt){
+  const item = document.getElementById(id);
+  const wasOpen = item.classList.contains("open");
+  document.querySelectorAll(".assist-accordion-item").forEach(el => el.classList.remove("open"));
+  if (!wasOpen){
+    item.classList.add("open");
+    if (korRunt && typeof visaKrockar === "function") visaKrockar();
+  }
+}
+
+/* =========================
    ASSISTENT – Jämför
 ========================= */
-document.getElementById("btnOpenCompare").onclick=()=>{
-  document.getElementById("comparePanel").style.display="block";
-  document.getElementById("sickPanel").style.display="none";
-  document.getElementById("compareOutput").style.display="none";
-};
-document.getElementById("btnOpenSick").onclick=()=>{
-  document.getElementById("sickPanel").style.display="block";
-  document.getElementById("comparePanel").style.display="none";
-  document.getElementById("compareOutput").style.display="none";
+document.getElementById("btnCompareTillbaka").onclick = () => {
+  document.getElementById("compareOutput").style.display = "none";
+  document.getElementById("comparePanel").style.display = "block";
 };
 
 document.getElementById("btnShowCompare").onclick = () => {
-  const selected = [
-    ...document.querySelectorAll(".chk-delt:checked"),
-    ...document.querySelectorAll(".chk-coach:checked")
-  ].map(cb => ({ name: cb.value, isCoach: cb.classList.contains("chk-coach") }));
+  const selected = compareValda;
 
-  if (!selected.length) { alert("Välj minst ett namn."); return; }
-  if (selected.length > 4) { alert("Välj högst 4 personer för jämförelse."); return; }
+  if (!selected.length) { visaNotis("Välj minst ett namn.", "info"); return; }
+  if (selected.length > 4) { visaNotis("Välj högst 4 personer för jämförelse.", "info"); return; }
 
-  const out=document.getElementById("compareOutput");
+  const out=document.getElementById("compareOutputInner");
   out.innerHTML = ""; // rensa
   const wrap = document.createElement("div");
   wrap.className = "compare-wrap";
@@ -2923,15 +3532,33 @@ document.getElementById("btnShowCompare").onclick = () => {
   selected.forEach(sel => {
     const item = document.createElement("div");
     item.className = "compare-item";
+    item.style.overflowX = "auto"; // säkerhetsnät ifall skalningen inte tar
     const header = document.createElement("h3");
     header.textContent = sel.name;
     item.appendChild(header);
-    item.appendChild(renderSingleWeek(sel.name, sel.isCoach, true));
+
+    // Samma detaljerade rendering som Coach/Deltagare-flikarna och
+    // krockarnas snabbtitt-ruta - riktiga block med tid, aktivitet och
+    // alla inblandade. Skalas ner proportionerligt (samma teknik som
+    // löste krockarnas snabbtitt-ruta) så flera scheman får plats
+    // bredvid varandra utan att klippas av i kanten.
+    const skala = document.createElement("div");
+    skala.style.zoom = "0.6";
+
+    const blockHeader = document.createElement("div");
+    blockHeader.className = "block-header";
+    const blockGrid = document.createElement("div");
+    blockGrid.className = "block-grid";
+    skala.appendChild(blockHeader);
+    skala.appendChild(blockGrid);
+    item.appendChild(skala);
+    renderBlocksGeneric(sel.name, sel.isCoach, blockHeader, blockGrid);
+
     wrap.appendChild(item);
   });
 
   out.appendChild(wrap);
-  out.style.display="block";
+  document.getElementById("compareOutput").style.display="block";
   document.getElementById("comparePanel").style.display="none";
 };
 
@@ -3107,7 +3734,7 @@ function renderSick(){
 ========================= */
 document.getElementById("btnParticipantToday").onclick=()=>{
   const name=document.getElementById("nameSelect").value;
-  if(!name){ alert("Välj en deltagare."); return; }
+  if(!name){ visaNotis("Välj en deltagare.", "info"); return; }
 
   // Visa ENBART bildstöd för IDAG (ingen kort-vy)
   document.getElementById("participantDay").style.display="none";
@@ -3120,7 +3747,7 @@ document.getElementById("btnParticipantToday").onclick=()=>{
 
 document.getElementById("btnParticipantWeek").onclick=()=>{
   const name=document.getElementById("nameSelect").value;
-  if(!name){ alert("Välj en deltagare."); return; }
+  if(!name){ visaNotis("Välj en deltagare.", "info"); return; }
   // visa vecka, dölj dag
   document.getElementById("participantDay").style.display="none";
   document.getElementById("participantWeek").style.display="block";
@@ -3130,7 +3757,7 @@ document.getElementById("btnParticipantWeek").onclick=()=>{
 
 document.getElementById("btnCoachToday").onclick=()=>{
   const name=document.getElementById("coachSelect").value;
-  if(!name){ alert("Välj en coach."); return; }
+  if(!name){ visaNotis("Välj en coach.", "info"); return; }
   document.getElementById("coachWeek").style.display="none";
   document.getElementById("coachDay").style.display="block";
   renderCardsGeneric(name,true,document.getElementById("coachDay"));
@@ -3138,7 +3765,7 @@ document.getElementById("btnCoachToday").onclick=()=>{
 
 document.getElementById("btnCoachWeek").onclick=()=>{
   const name=document.getElementById("coachSelect").value;
-  if(!name){ alert("Välj en coach."); return; }
+  if(!name){ visaNotis("Välj en coach.", "info"); return; }
   document.getElementById("coachDay").style.display="none";
   document.getElementById("coachWeek").style.display="block";
   renderBlocksGeneric(name,true,document.getElementById("cBlockHeader"),document.getElementById("cBlockGrid"));
@@ -3269,9 +3896,13 @@ function printSchema(title, personName) {
   // Kör utskrift efter att layouten hunnit sätta sig
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      window.print();
-      // Återställ visning efter print-dialogen öppnats
-      setTimeout(()=>restore.forEach(fn=>fn()), 500);
+      // Extra marginal utöver skärmuppdateringarna - stora rutnät (veckovy
+      // med många rader) kan ibland behöva lite mer tid än så.
+      setTimeout(() => {
+        window.print();
+        // Återställ visning efter print-dialogen öppnats
+        setTimeout(()=>restore.forEach(fn=>fn()), 500);
+      }, 150);
     });
   });
 }
@@ -3414,7 +4045,7 @@ function buildPictosWeekData(name){
     const title = `${name} – ${weekdayName(d.getDay())}`;
 
     const items = allDayRows.slice(0,8).map(r=>({
-      time: `🕒 ${r.Start||""}`,
+      time: r.Start||"",
       emoji: emojiFor(r) || "✨",
       label: r.Aktivitet||"",
       coach: (splitNames(r.Coach||"").join(", ") || (r.Coach||"-") || "-")
@@ -3594,16 +4225,71 @@ function renderParticipantPictosToday(name){
 }
 
 // Knapp: Bildstöd (vecka)
+// Bygger data för VECKOÖVERSIKTEN (5 kolumner, en sida) - till skillnad
+// från buildPictosWeekData (dagschema, en sida per dag) skippas inte tomma
+// dagar här, de visas som "Ledig dag". Lunch-varianterna taggas som
+// isLunch=true så utskriftsfilen kan ge dem en fast, gemensam rad (ankare)
+// mellan förmiddag och eftermiddag i alla fem kolumner.
+function buildPictosVeckoOversiktData(name){
+  const allRows = DATA
+    .filter(r=>{
+      const list = splitNames(r["Deltagare"]||"");
+      return (list.map(x=>x.toLowerCase()).includes(name.toLowerCase())) ||
+             (r["Deltagare"]||"").trim().toLowerCase()==="alla";
+    })
+    .filter(r=> sanitizeName(r.Aktivitet||""));
+
+  const startMon = mondayOf(new Date());
+  let chosenDates = null;
+  for(let w=0; w<7; w++){
+    const mon = new Date(startMon);
+    mon.setDate(startMon.getDate() + w*7);
+    const dates = weekDatesMonFri(mon);
+    const hasAny = allRows.some(r => dates.includes(dayKey(r.Datum)));
+    if(hasAny){ chosenDates = dates; break; }
+  }
+  if(!chosenDates) return null;
+
+  const rows = allRows
+    .filter(r=> chosenDates.includes(dayKey(r.Datum)))
+    .sort((a,b)=> (a.Datum||"").localeCompare(b.Datum||"") || (a.Start||"").localeCompare(b.Start||""));
+
+  const byDate = {};
+  rows.forEach(r=>{
+    const k = dayKey(r.Datum);
+    (byDate[k] ||= []).push(r);
+  });
+
+  const LUNCH_NAMN = ["lunch", "lunch mio", "lunch anders b"];
+
+  const dagar = chosenDates.map(dateKeyStr=>{
+    const d = new Date(dateKeyStr);
+    const weekday = weekdayName(d.getDay());
+    const allDayRows = (byDate[dateKeyStr]||[]).slice(0,8);
+
+    const items = allDayRows.map(r=>({
+      time: r.Start||"",
+      emoji: emojiFor(r) || "✨",
+      label: r.Aktivitet||"",
+      isLunch: LUNCH_NAMN.includes((r.Aktivitet||"").trim().toLowerCase())
+    }));
+
+    return { weekday, items };
+  });
+
+  return { name, dagar };
+}
+
 const btnP = document.getElementById("btnParticipantPictos");
 if(btnP){
   btnP.addEventListener("click", ()=>{
     const name = document.getElementById("nameSelect").value;
-    if(!name){ alert("Välj en deltagare."); return; }
+    if(!name){ visaNotis("Välj en deltagare.", "info"); return; }
 
     // Bygg bildstödsdata (1 dag = 1 blad, max 8, tom dag = inget blad)
     const daysData = buildPictosWeekData(name);
     if(!daysData.length){
-      alert("Inget schema mån–fre de närmaste veckorna.");
+      visaNotis("Inget schema mån–fre de närmaste veckorna.", "info");
       return;
     }
 
@@ -3613,9 +4299,31 @@ if(btnP){
     // Spara även som fallback
     try{ localStorage.setItem("PICTO_DATA_V1", JSON.stringify(daysData)); }catch(e){}
     try{ localStorage.setItem("PICTO_BACK_URL", location.href); }catch(e){}
+    try{ localStorage.setItem("SENAST_VALD_DELTAGARE", name); }catch(e){}
 
     // Öppna separat print-fil (stående A4) – löser Firefox-låsning i liggande
     location.href = "./bildstod_print_v11.html";
+  });
+}
+
+const btnPV = document.getElementById("btnParticipantPictosVecka");
+if(btnPV){
+  btnPV.addEventListener("click", ()=>{
+    const name = document.getElementById("nameSelect").value;
+    if(!name){ visaNotis("Välj en deltagare.", "info"); return; }
+
+    const veckoData = buildPictosVeckoOversiktData(name);
+    if(!veckoData){
+      visaNotis("Inget schema mån–fre de närmaste veckorna.", "info");
+      return;
+    }
+
+    window.__PICTO_VECKO_DATA__ = veckoData;
+    try{ localStorage.setItem("PICTO_VECKO_DATA_V1", JSON.stringify(veckoData)); }catch(e){}
+    try{ localStorage.setItem("PICTO_BACK_URL", location.href); }catch(e){}
+    try{ localStorage.setItem("SENAST_VALD_DELTAGARE", name); }catch(e){}
+
+    location.href = "./bildstod_print_vecka.html";
   });
 }
 
@@ -3732,5 +4440,2154 @@ window.addEventListener("afterprint", ()=>{
 })();
 </script>
 
+
 </body>
 </html>
+<!-- ===== REDIGERA-MODAL ===== -->
+<!-- Dialog: välj tillfälle innan redigering -->
+<div id="repeatValOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9500;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:14px;padding:28px;width:90%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.2);" onclick="event.stopPropagation()">
+    <h2 style="font-size:17px;margin-bottom:6px;color:#1a73e8;">Redigera återkommande aktivitet</h2>
+    <p id="repeatValAktivitet" style="font-size:13px;color:#555;margin-bottom:16px;"></p>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button onclick="oppnaModalMedVal('single')" style="padding:12px 16px;background:white;border:1.5px solid #ddd;border-radius:8px;font-size:14px;cursor:pointer;text-align:left;">
+        📅 Bara detta tillfälle
+      </button>
+      <button onclick="oppnaModalMedVal('future')" style="padding:12px 16px;background:white;border:1.5px solid #ddd;border-radius:8px;font-size:14px;cursor:pointer;text-align:left;">
+        📅→ Detta och alla framtida tillfällen
+      </button>
+      <button onclick="oppnaModalMedVal('all')" style="padding:12px 16px;background:white;border:1.5px solid #ddd;border-radius:8px;font-size:14px;cursor:pointer;text-align:left;">
+        📆 Alla tillfällen i serien
+      </button>
+      <button onclick="document.getElementById('repeatValOverlay').style.display='none'" style="padding:10px;background:#f1f3f4;border:none;border-radius:8px;font-size:13px;cursor:pointer;margin-top:4px;">
+        Avbryt
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="redigeraOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9600;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:14px;padding:20px;width:90%;max-width:460px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);" onclick="event.stopPropagation()">
+    <h2 id="rModalRubrik" style="font-size:16px;margin-bottom:12px;color:#1a73e8;">Redigera aktivitet</h2>
+
+    <!-- SEKTION: VAD & NÄR -->
+    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f1f3f5;">
+      <div style="margin-bottom:10px;">
+        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px;text-transform:uppercase;">Aktivitet</label>
+        <div style="position:relative;">
+          <input type="text" id="rAktivitet" placeholder="Skriv eller välj aktivitet..." style="width:100%;padding:7px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;" />
+          <div id="rAktivitetDropdown" style="position:absolute;z-index:9999;background:white;border:1.5px solid #ddd;border-radius:8px;width:100%;max-height:200px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px;text-transform:uppercase;">Datum</label>
+        <input type="date" id="rDatum" style="width:100%;padding:7px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;" />
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px;text-transform:uppercase;">Starttid</label>
+          <div style="display:flex;gap:4px;">
+            <select id="rStartTimme" onchange="uppdateraTidFalt('rStart')" style="flex:1;padding:7px 4px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;"></select>
+            <select id="rStartMin" onchange="uppdateraTidFalt('rStart')" style="flex:1;padding:7px 4px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;"></select>
+          </div>
+          <input type="hidden" id="rStart" />
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px;text-transform:uppercase;">Sluttid</label>
+          <div style="display:flex;gap:4px;">
+            <select id="rSlutTimme" onchange="uppdateraTidFalt('rSlut')" style="flex:1;padding:7px 4px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;"></select>
+            <select id="rSlutMin" onchange="uppdateraTidFalt('rSlut')" style="flex:1;padding:7px 4px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;"></select>
+          </div>
+          <input type="hidden" id="rSlut" />
+        </div>
+      </div>
+    </div>
+
+    <!-- SEKTION: VEM -->
+    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f1f3f5;">
+      <div style="margin-bottom:10px;">
+        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px;text-transform:uppercase;">Deltagare</label>
+        <div id="rDeltagareChips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:5px;"></div>
+        <input type="text" id="rDeltagareInput" placeholder="Namn + Enter" style="width:100%;padding:7px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;" />
+      </div>
+
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px;text-transform:uppercase;">Coach</label>
+        <div id="rCoachChips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:5px;"></div>
+        <input type="text" id="rCoachInput" placeholder="Namn + Enter" style="width:100%;padding:7px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;" />
+      </div>
+    </div>
+
+    <!-- SEKTION: HUR OFTA -->
+    <div>
+      <div style="margin-bottom:10px;">
+        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px;text-transform:uppercase;">Upprepning</label>
+        <div id="rruleInfo" style="display:none;background:#e8f0fe;border-radius:8px;padding:12px 14px;font-size:15px;color:#1a3a6b;font-weight:700;margin-bottom:8px;"></div>
+        <select id="rRepeat" onchange="visaRepeatOptions()" style="width:100%;padding:7px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;background:white;">
+          <option value="none">Upprepas inte</option>
+          <option value="daily">Varje dag</option>
+          <option value="weekly">Varje vecka</option>
+          <option value="custom">Anpassad (välj dagar)</option>
+        </select>
+      </div>
+
+      <!-- Anpassade dagar -->
+      <div id="rCustomDays" style="display:none;margin-bottom:10px;">
+        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:8px;text-transform:uppercase;">Välj veckodagar</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <label style="display:inline-flex;align-items:center;gap:4px;background:#f1f3f4;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;font-weight:600;"><input type="checkbox" value="MO" style="margin:0"> Mån</label>
+          <label style="display:inline-flex;align-items:center;gap:4px;background:#f1f3f4;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;font-weight:600;"><input type="checkbox" value="TU" style="margin:0"> Tis</label>
+          <label style="display:inline-flex;align-items:center;gap:4px;background:#f1f3f4;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;font-weight:600;"><input type="checkbox" value="WE" style="margin:0"> Ons</label>
+          <label style="display:inline-flex;align-items:center;gap:4px;background:#f1f3f4;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;font-weight:600;"><input type="checkbox" value="TH" style="margin:0"> Tor</label>
+          <label style="display:inline-flex;align-items:center;gap:4px;background:#f1f3f4;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;font-weight:600;"><input type="checkbox" value="FR" style="margin:0"> Fre</label>
+        </div>
+      </div>
+
+      <!-- Slutdatum -->
+      <div id="rEndDateWrap" style="display:none;margin-bottom:10px;">
+        <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px;text-transform:uppercase;">Slutar</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <select id="rEndType" onchange="visaEndType()" style="padding:7px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;background:white;">
+            <option value="never">Aldrig</option>
+            <option value="date">På datum</option>
+            <option value="count">Efter antal</option>
+          </select>
+          <input type="date" id="rEndDate" style="display:none;padding:7px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;" />
+          <input type="number" id="rEndCount" min="1" max="52" value="10" placeholder="Antal gånger" style="display:none;padding:7px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;" />
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button onclick="stangRedigeraModal()" style="flex:1;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;background:#f1f3f4;color:#444;">Avbryt</button>
+      <button id="rBtnRadera" onclick="visaRaderaDialog()" style="flex:1;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;background:#fee2e2;color:#991b1b;">🗑 Radera</button>
+      <button id="rBtnSpara" onclick="sparaFranModal()" style="flex:1;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;background:#1a73e8;color:white;">💾 Spara</button>
+    </div>
+
+    <div id="rStatusBar" style="margin-top:12px;text-align:center;font-size:13px;color:#888;"></div>
+
+    <!-- Raderingsdialogruta -->
+    <div id="raderaDialog" style="display:none;margin-top:12px;background:#fff5f5;border:1.5px solid #fca5a5;border-radius:10px;padding:14px;">
+      <div style="font-weight:700;color:#c00;margin-bottom:10px;">Vilka tillfällen vill du radera?</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button onclick="utforRadera('single')" style="padding:10px;background:white;border:1.5px solid #ddd;border-radius:8px;font-size:14px;cursor:pointer;text-align:left;">
+          📅 Bara detta tillfälle
+        </button>
+        <button onclick="utforRadera('future')" style="padding:10px;background:white;border:1.5px solid #ddd;border-radius:8px;font-size:14px;cursor:pointer;text-align:left;">
+          📅→ Detta och alla framtida tillfällen
+        </button>
+        <button onclick="utforRadera('all')" style="padding:10px;background:#fee2e2;border:1.5px solid #fca5a5;border-radius:8px;font-size:14px;cursor:pointer;text-align:left;color:#991b1b;">
+          🗑 Alla tillfällen i serien
+        </button>
+        <button onclick="document.getElementById('raderaDialog').style.display='none'" style="padding:8px;background:#f1f3f4;border:none;border-radius:8px;font-size:13px;cursor:pointer;">
+          Avbryt
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== REDIGERA-MODAL ===== */
+const ADMIN_URL = "https://script.google.com/macros/s/AKfycbx1WUFIXUqn7x0Fj4K7bXeSeZujJGl3l0vJVA-oGquxRThR00Lm7GNQ4uG5TGQOgpgK/exec";
+
+/* Skickar till Apps Script OCH läser svaret (så sidan slipper chansa på väntetid).
+   Faller tillbaka till kort marginal om svaret inte kan läsas i någon webbläsare. */
+// Ersätter alert() med en liten notis som matchar appens utseende.
+// typ: "info" (standard), "error", eller "success".
+function visaNotis(text, typ){
+  typ = typ || "info";
+  const stack = document.getElementById("notisStack");
+  if (!stack) { alert(text); return; } // säkerhetsnät om något oväntat saknas
+  const ikon = typ === "error" ? "⚠️" : (typ === "success" ? "✅" : "ℹ️");
+  const el = document.createElement("div");
+  el.className = "notis notis-" + typ;
+  const textSpan = document.createElement("span");
+  textSpan.style.flex = "1";
+  textSpan.textContent = text; // textContent, inte innerHTML - undviker HTML-injektion
+  const ikonSpan = document.createElement("span");
+  ikonSpan.style.fontSize = "18px";
+  ikonSpan.style.flexShrink = "0";
+  ikonSpan.textContent = ikon;
+  const stangBtn = document.createElement("button");
+  stangBtn.className = "notis-stang";
+  stangBtn.textContent = "×";
+  stangBtn.onclick = () => el.remove();
+  el.appendChild(ikonSpan);
+  el.appendChild(textSpan);
+  el.appendChild(stangBtn);
+  stack.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = "opacity .3s";
+    el.style.opacity = "0";
+    setTimeout(() => el.remove(), 300);
+  }, 6000);
+}
+
+async function postAdmin(payload){
+  try{
+    const res = await fetch(ADMIN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(Object.assign({ kod: (typeof ADMIN_KOD_TYPAD !== "undefined" ? ADMIN_KOD_TYPAD : "") }, payload))
+    });
+    const txt = await res.text();
+    let parsed = null;
+    try { parsed = JSON.parse(txt); } catch(_e){ /* inget giltigt JSON-svar */ }
+    if (!res.ok || !parsed) {
+      return { success: false, error: "Oväntat svar från servern (HTTP " + res.status + ")" + (txt ? (": " + txt.slice(0,200)) : "") };
+    }
+    return parsed;
+  }catch(_e){
+    return { success: false, error: "Kunde inte nå servern (nätverksfel): " + (_e && _e.message ? _e.message : String(_e)) };
+  }
+}
+
+
+let rDeltagare = [];
+let rCoach = [];
+
+/* Ritar om precis den vy som visas just nu, utifrån aktuell DATA.
+   Används för att visa ändringar direkt på skärmen innan bakgrundssynken
+   hunnit klart. Rör inte val i listor eller vilken flik som är aktiv. */
+function refreshVisibleContent(){
+  const activeView = document.querySelector(".view.active")?.id || "nowView";
+
+  if(activeView === "coachView"){
+    const coach = document.getElementById("coachSelect")?.value;
+    if(coach){
+      const coachVecka = document.getElementById("coachWeek")?.style.display !== "none";
+      if(coachVecka){
+        renderBlocksGeneric(coach,true,document.getElementById("cBlockHeader"),document.getElementById("cBlockGrid"));
+      } else {
+        renderCardsGeneric(coach,true,document.getElementById("coachDay"));
+      }
+    }
+  } else if(activeView === "participantView"){
+    const namn = document.getElementById("nameSelect")?.value;
+    if(namn){
+      const deltVecka = document.getElementById("participantWeek")?.style.display !== "none";
+      if(deltVecka){
+        renderBlocksGeneric(namn,false,document.getElementById("pBlockHeader"),document.getElementById("pBlockGrid"));
+      } else {
+        renderCardsGeneric(namn,false,document.getElementById("participantDay"));
+      }
+    }
+  } else if(activeView === "nowView"){
+    renderNow();
+  }
+
+  if(adminUnlocked && typeof ritaAdminSchema === "function") ritaAdminSchema();
+}
+let rAktivitetId = null;
+
+function rRenderChips(arr, containerId) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = "";
+  arr.forEach((n, i) => {
+    const c = document.createElement("span");
+    c.style.cssText = "display:inline-flex;align-items:center;gap:5px;background:#e8f0fe;border:1px solid #c5d8fc;color:#1a3a6b;border-radius:999px;padding:4px 10px 4px 11px;font-size:12px;font-weight:600;";
+    c.innerHTML = `${n} <button type="button" style="background:none;border:none;color:#6b87c0;font-size:14px;cursor:pointer;padding:0;line-height:1;" onclick="rTaBortChip('${containerId}',${i})">×</button>`;
+    el.appendChild(c);
+  });
+}
+
+function rTaBortChip(containerId, idx) {
+  if (containerId === "rDeltagareChips") rDeltagare.splice(idx, 1);
+  else rCoach.splice(idx, 1);
+  rRenderChips(containerId === "rDeltagareChips" ? rDeltagare : rCoach, containerId);
+}
+
+// Jämför scheman: chip-baserad sökning bland BEFINTLIGA deltagare/coacher,
+// ett enda sökfält istället för separata Deltagare/Coach-fält - färre klick.
+// Till skillnad från rKopplaInput (redigeringsrutan) finns ingen "lägg till
+// som ny person"-väg här - det hör inte hemma i en jämförelsevy.
+let compareValda = []; // [{name, isCoach}]
+
+function compareRenderChips() {
+  const el = document.getElementById("compareChips");
+  if (!el) return;
+  el.innerHTML = "";
+  compareValda.forEach((p, i) => {
+    const c = document.createElement("span");
+    c.style.cssText = "display:inline-flex;align-items:center;gap:5px;background:#e8f0fe;border:1px solid #c5d8fc;color:#1a3a6b;border-radius:999px;padding:4px 10px 4px 11px;font-size:12px;font-weight:600;";
+    const ikon = p.isCoach ? "🧑‍🏫" : "👤";
+    c.innerHTML = `${ikon} ${p.name} <button type="button" style="background:none;border:none;color:#6b87c0;font-size:14px;cursor:pointer;padding:0;line-height:1;" onclick="compareTaBortChip(${i})">×</button>`;
+    el.appendChild(c);
+  });
+}
+
+function compareTaBortChip(idx) {
+  compareValda.splice(idx, 1);
+  compareRenderChips();
+}
+
+function compareKopplaInput() {
+  const inp = document.getElementById("compareInput");
+  const dropdown = document.getElementById("compareDropdown");
+  if (!inp || !dropdown) return;
+
+  function alleNamn() {
+    return [...new Set([...LISTOR_DELTAGARE, ...LISTOR_COACHER])];
+  }
+  function redanValda() {
+    return compareValda.map(p => p.name);
+  }
+  function valjNamn(namn) {
+    if (compareValda.length >= 4) { visaNotis("Du kan välja högst 4 personer totalt.", "info"); return; }
+    if (!compareValda.some(p => p.name.toLowerCase() === namn.toLowerCase())) {
+      const isCoach = !LISTOR_DELTAGARE.some(n => n.toLowerCase() === namn.toLowerCase()) && LISTOR_COACHER.some(n => n.toLowerCase() === namn.toLowerCase());
+      compareValda.push({ name: namn, isCoach });
+      compareRenderChips();
+    }
+    inp.value = "";
+  }
+
+  function visaForslag(filter) {
+    acByggLista(dropdown, alleNamn(), filter, valjNamn, redanValda());
+  }
+
+  inp.addEventListener("input", () => visaForslag(inp.value));
+  inp.addEventListener("focus", () => visaForslag(inp.value));
+  inp.addEventListener("blur", () => setTimeout(() => dropdown.style.display = "none", 150));
+  inp.addEventListener("keydown", e => {
+    if (acHanteraTangent(e, dropdown)) return;
+    // Inget i förslagslistan valdes just nu - om Enter trycks och minst en
+    // person redan är vald, visa jämförelsen direkt istället för att kräva
+    // ett extra klick på "Visa valda scheman".
+    if (e.key === "Enter" && compareValda.length > 0) {
+      e.preventDefault();
+      document.getElementById("btnShowCompare")?.click();
+    }
+  });
+}
+
+// ===== Delad autocomplete-logik (sortering, "börjar med", tangentbord) =====
+// Används av redigeringsrutans Deltagare/Coach, Jämför scheman, och Ta bort
+// person - samma beteende och känsla överallt på sidan.
+
+function acMarkera(dropdown, idx) {
+  dropdown._acIndex = idx;
+  Array.from(dropdown.children).forEach((el, i) => {
+    el.style.background = (i === idx) ? "#f0f4ff" : "white";
+  });
+}
+
+// Bygger listan i dropdown-elementet. alla: alla möjliga namn. filterText:
+// det som skrivits. onValj(namn): anropas när ett namn väljs (klick eller
+// Enter). redanValda: valfri lista att exkludera (redan tillagda chips).
+function acByggLista(dropdown, alla, filterText, onValj, redanValda) {
+  const filtered = alla
+    .filter(n => n.toLowerCase().startsWith(filterText.toLowerCase()))
+    .filter(n => !redanValda || !redanValda.some(r => r.toLowerCase() === n.toLowerCase()))
+    .sort((a, b) => a.localeCompare(b, "sv"));
+
+  dropdown.innerHTML = "";
+  dropdown._acFiltered = filtered;
+  dropdown._acOnValj = onValj;
+  dropdown._acIndex = 0;
+
+  if (!filterText || !filtered.length) { dropdown.style.display = "none"; return; }
+
+  filtered.slice(0, 8).forEach((n, i) => {
+    const item = document.createElement("div");
+    item.textContent = n;
+    item.style.cssText = "padding:8px 12px;cursor:pointer;font-size:14px;border-bottom:1px solid #f0f0f0;" + (i === 0 ? "background:#f0f4ff;" : "");
+    item.onmousedown = (e) => { e.preventDefault(); onValj(n); dropdown.style.display = "none"; };
+    item.onmouseover = () => acMarkera(dropdown, i);
+    dropdown.appendChild(item);
+  });
+  dropdown.style.display = "block";
+}
+
+// Kopplas till inputens keydown-lyssnare. Returnerar true om tangenten
+// hanterades här (pil upp/ner/Enter-med-träff), false annars - så
+// anroparen kan falla tillbaka till egen logik (t.ex. "lägg till ny").
+function acHanteraTangent(e, dropdown) {
+  if (dropdown.style.display === "none" || !dropdown._acFiltered || !dropdown._acFiltered.length) return false;
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    acMarkera(dropdown, Math.min((dropdown._acIndex || 0) + 1, Math.min(dropdown._acFiltered.length, 8) - 1));
+    return true;
+  }
+  if (e.key === "ArrowUp") {
+    e.preventDefault();
+    acMarkera(dropdown, Math.max((dropdown._acIndex || 0) - 1, 0));
+    return true;
+  }
+  if (e.key === "Enter") {
+    const val = dropdown._acFiltered[dropdown._acIndex || 0];
+    if (val) {
+      e.preventDefault();
+      dropdown._acOnValj(val);
+      dropdown.style.display = "none";
+      return true;
+    }
+  }
+  return false;
+}
+
+function rKopplaInput(inputId, getArr, chipsId, getSuggestions, typ) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+
+  // Skapa dropdown-lista
+  const wrapper = inp.parentNode;
+  const dropdown = document.createElement("div");
+  dropdown.style.cssText = "position:absolute;z-index:9999;background:white;border:1.5px solid #ddd;border-radius:8px;max-height:200px;overflow-y:auto;width:100%;box-shadow:0 4px 12px rgba(0,0,0,0.1);display:none;";
+  wrapper.style.position = "relative";
+  wrapper.appendChild(dropdown);
+
+  function visaSuggestions(filter) {
+    const suggestions = getSuggestions ? getSuggestions() : [];
+    const arr = getArr();
+    acByggLista(dropdown, suggestions, filter, (namn) => {
+      const a = getArr();
+      if (!a.some(x => x.toLowerCase() === namn.toLowerCase())) {
+        a.push(namn);
+        rRenderChips(a, chipsId);
+      }
+      inp.value = "";
+    }, arr);
+  }
+
+  inp.addEventListener("input", () => visaSuggestions(inp.value));
+  inp.addEventListener("focus", () => visaSuggestions(inp.value));
+  inp.addEventListener("blur", () => setTimeout(() => dropdown.style.display = "none", 150));
+
+  inp.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { acHanteraTangent(e, dropdown); return; }
+    if (e.key === "Enter" || e.key === ",") {
+      // Om dropdown har en markerad träff, välj den - annars faller vi
+      // igenom till "lägg till som ny person"-flödet nedan.
+      if (acHanteraTangent(e, dropdown)) return;
+      e.preventDefault();
+      const v = inp.value.trim();
+      if (!v) return;
+      const arr = getArr();
+      if (arr.some(n => n.toLowerCase() === v.toLowerCase())) {
+        inp.value = "";
+        dropdown.style.display = "none";
+        return;
+      }
+      const suggestions = getSuggestions ? getSuggestions() : [];
+      const finnsILista = suggestions.some(n => n.toLowerCase() === v.toLowerCase());
+      if (finnsILista) {
+        // Exakt match — lägg till direkt
+        const exakt = suggestions.find(n => n.toLowerCase() === v.toLowerCase());
+        arr.push(exakt);
+        rRenderChips(arr, chipsId);
+      } else {
+        // Inte i listan — kolla om det liknar ett befintligt namn (t.ex.
+        // felstavning) innan vi frågar om det ska läggas till som nytt.
+        const liknande = suggestions.filter(n => {
+          const nl = n.toLowerCase(), vl = v.toLowerCase();
+          return nl.includes(vl) || vl.includes(nl);
+        });
+        let fortsatt;
+        if (liknande.length) {
+          fortsatt = confirm(
+            v + " finns inte i listan, men ett snarlikt namn gör det: " + liknande.join(", ") +
+            "\n\nÄr du säker på att \"" + v + "\" är en ny, annan person och inte en felstavning?"
+          );
+        } else {
+          fortsatt = confirm(v + " finns inte i listan.\nVill du lägga till som nytt namn?");
+        }
+        if (fortsatt) {
+          arr.push(v);
+          rRenderChips(arr, chipsId);
+          // Spara permanent i Listor, så det finns med som förslag nästa gång.
+          if (typ && typeof postAdmin === "function") {
+            postAdmin({ action: "leggTillLista", typ: typ, namn: v }).then(svar => {
+              if (svar && svar.success) {
+                if (typ === "coach") LISTOR_COACHER.push(v);
+                else if (typ === "deltagare") LISTOR_DELTAGARE.push(v);
+              }
+            });
+          }
+        }
+      }
+      inp.value = "";
+      dropdown.style.display = "none";
+    }
+    if (e.key === "Escape") { dropdown.style.display = "none"; }
+  });
+}
+
+let _redigerLangdMin = 60; // aktivitetens längd i minuter - används för att auto-fylla sluttid
+
+function tidTillMinuter(t){
+  if (!t || t.indexOf(":") === -1) return 0;
+  const [h,m] = t.split(":").map(Number);
+  return h*60+m;
+}
+
+async function skapaNyPerson(){
+  const namn = (document.getElementById("nyPersonNamn")?.value || "").trim();
+  if (!namn) { visaNotis("Skriv ett namn.", "info"); return; }
+  const typ = document.querySelector('input[name="nyPersonTyp"]:checked')?.value || "deltagare";
+  const lista = typ === "coach" ? LISTOR_COACHER : LISTOR_DELTAGARE;
+
+  // Exakt samma namn (oavsett stora/små bokstäver eller mellanslag) - inget
+  // nytt att göra, informera och avbryt.
+  const exaktMatch = lista.find(n => n.trim().toLowerCase() === namn.toLowerCase());
+  if (exaktMatch) {
+    visaNotis("\"" + exaktMatch + "\" finns redan i listan. Inget nytt lades till.", "info");
+    return;
+  }
+
+  // Snarlikt namn (t.ex. samma förnamn, eller ett namn som är en delsträng
+  // av ett annat) - varna så en felstavning inte skapar en dubblett av
+  // misstag, men tillåt att fortsätta om det verkligen är en ny person.
+  const liknande = lista.filter(n => {
+    const nl = n.trim().toLowerCase(), vl = namn.toLowerCase();
+    return nl.includes(vl) || vl.includes(nl);
+  });
+  if (liknande.length) {
+    const fortsatt = confirm(
+      "Snarlikt namn finns redan i listan: " + liknande.join(", ") +
+      "\n\nÄr du säker på att \"" + namn + "\" är en ny, annan person och inte en felstavning?"
+    );
+    if (!fortsatt) return;
+  }
+
+  document.getElementById("nyPersonNamn").value = "";
+
+  // Skapar bara personen i Listor (blankt schema) - inga aktiviteter
+  // kopplas. Vill man koppla personen till en aktivitet, görs det separat
+  // genom att skriva namnet i Deltagare/Coach-fältet när man redigerar den.
+  if (typ === "coach") LISTOR_COACHER.push(namn);
+  else LISTOR_DELTAGARE.push(namn);
+
+  const svar = await postAdmin({ action: "leggTillLista", typ: typ, namn: namn });
+  if (svar && svar.success) {
+    visaNotis(namn + " är tillagd" + (typ === "coach" ? " som coach." : " som deltagare.") + "\n\nLägg till aktiviteter för personen separat, när du är redo.", "success");
+    document.getElementById("nyPersonNamn")?.focus();
+  } else {
+    visaNotis("Kunde inte spara " + namn + (svar && svar.error ? ": " + svar.error : "") + ". Försök igen.", "error");
+  }
+}
+
+// Öppnar redigeringsrutan tom, för att skapa en helt ny aktivitet utan att
+// först behöva klicka in sig på en specifik ruta i schemat.
+function oppnaNyAktivitetTom(){
+  if (!adminUnlocked) return;
+  const idag = new Date();
+  const datumStr = idag.getFullYear() + "-" + String(idag.getMonth()+1).padStart(2,"0") + "-" + String(idag.getDate()).padStart(2,"0");
+  oppnaRedigeraModal({
+    EventId: null,
+    Aktivitet: "",
+    Datum: datumStr,
+    Start: "09:00",
+    Slut: "10:00",
+    Deltagare: "",
+    Coach: ""
+  });
+}
+
+function oppnaRedigeraModal(r) {
+  if (r.EventId && String(r.EventId).indexOf("temp_") === 0) {
+    visaNotis("Den här aktiviteten sparas fortfarande mot kalendern.\n\nStäng den här rutan, vänta några sekunder, och klicka sedan på aktiviteten igen.", "info");
+    return;
+  }
+  rDeltagare = [];
+  rCoach = [];
+  rAktivitetId = r.EventId || null;
+  // Nollställ - vald typ (bara detta/framtida/alla) avgörs på nytt vid Spara
+  // för just den här aktiviteten, oavsett hur modalen öppnades (klick i
+  // schemat, Sök, eller krock-listan). Förhindrar att ett tidigare valt
+  // typ av misstag återanvänds för en helt annan aktivitet.
+  if (typeof _redigeraTyp !== "undefined") _redigeraTyp = "single";
+
+  // Stöd för klick på tom cell (__datum, __start, __slut)
+  const datum = r.Datum || r.__datum || "";
+  const start = r.Start || r.__start || "09:00";
+  const slut  = r.Slut  || r.__slut  || "10:00";
+
+  _redigerLangdMin = tidTillMinuter(slut) - tidTillMinuter(start);
+  if (_redigerLangdMin <= 0) _redigerLangdMin = 60;
+
+  document.getElementById("rAktivitet").value = r.Aktivitet || "";
+  document.getElementById("rDatum").value = datum;
+  setTidValde("rStart", start);
+  setTidValde("rSlut", slut);
+
+  // Filtrera bort punkt-placeholder
+  const filtreraNamn = str => (str||"").split(/,\s*/).filter(n => n.trim() && n.trim() !== ".");
+  filtreraNamn(r.Deltagare).forEach(n => rDeltagare.push(n.trim()));
+  filtreraNamn(r.Coach).forEach(n => rCoach.push(n.trim()));
+
+  // Förvalda namn från kontext (klick från deltagarvy/coachvy)
+  if (r.__deltagare && !rDeltagare.includes(r.__deltagare)) rDeltagare.push(r.__deltagare);
+  if (r.__coach && !rCoach.includes(r.__coach)) rCoach.push(r.__coach);
+
+  rRenderChips(rDeltagare, "rDeltagareChips");
+  rRenderChips(rCoach, "rCoachChips");
+
+  // Återkommande: återställ till "Upprepas inte"
+  document.getElementById("rRepeat").value = "none";
+  visaRepeatOptions();
+
+  // Smart veckodagsförslag
+  if (datum) {
+    const d = new Date(datum + "T12:00:00");
+    const dagNamn = ["söndag","måndag","tisdag","onsdag","torsdag","fredag","lördag"];
+    const rruleDag = ["SU","MO","TU","WE","TH","FR","SA"];
+    const dagIdx = d.getDay();
+    const weeklyOpt = document.querySelector("#rRepeat option[value=weekly]");
+    if (weeklyOpt) weeklyOpt.textContent = "Varje " + dagNamn[dagIdx];
+    // Förkryssa rätt dag i anpassad vy
+    document.querySelectorAll("#rCustomDays input[type=checkbox]").forEach(cb => {
+      cb.checked = (cb.value === rruleDag[dagIdx]);
+    });
+  }
+
+  document.getElementById("rStatusBar").textContent = "";
+  document.getElementById("rBtnRadera").style.display = rAktivitetId ? "block" : "none";
+  document.getElementById("rModalRubrik").textContent = rAktivitetId ? "Redigera aktivitet" : "Ny aktivitet";
+
+  const overlay = document.getElementById("redigeraOverlay");
+  overlay.style.display = "flex";
+  // Flytta fokus in i rutan - annars måste man Tabba dit själv från var man
+  // än stod på sidan.
+  setTimeout(() => document.getElementById("rAktivitet")?.focus(), 50);
+}
+
+function stangRedigeraModal() {
+  document.getElementById("redigeraOverlay").style.display = "none";
+}
+
+document.getElementById("redigeraOverlay").addEventListener("click", function(e) {
+  if (e.target === this) stangRedigeraModal();
+});
+
+document.addEventListener("keydown", function(e) {
+  if (e.key !== "Escape") return;
+  const overlay = document.getElementById("redigeraOverlay");
+  if (overlay && overlay.style.display !== "none") { stangRedigeraModal(); return; }
+  const snabbtitt = document.getElementById("krockSnabbtitt");
+  if (snabbtitt && snabbtitt.style.display !== "none") { snabbtitt.style.display = "none"; return; }
+});
+
+function byggTitel() {
+  const aktivitet = document.getElementById("rAktivitet").value.trim();
+  const deltagareTxt = rDeltagare.join(", ");
+  const coachTxt = rCoach.join(", ");
+  let titel = "";
+  if (deltagareTxt) titel += deltagareTxt + " - ";
+  titel += aktivitet;
+  if (coachTxt) titel += " (" + coachTxt + ")";
+  return titel;
+}
+
+function visaRepeatOptions() {
+  const val = document.getElementById("rRepeat").value;
+  document.getElementById("rCustomDays").style.display = (val === "custom") ? "block" : "none";
+  document.getElementById("rEndDateWrap").style.display = (val !== "none") ? "block" : "none";
+}
+
+function visaEndType() {
+  const val = document.getElementById("rEndType").value;
+  document.getElementById("rEndDate").style.display = (val === "date") ? "block" : "none";
+  document.getElementById("rEndCount").style.display = (val === "count") ? "block" : "none";
+}
+
+/* Räknar ut vilka datum i den vecka som visas en serie träffar, så att alla
+   dess dagar kan visas direkt. backfillTidigare=true: ta med matchande dagar
+   tidigare i veckan än "datum" också (används vid skapa och vid redigera
+   "hela serien" - backend flyttar startdagen bakåt på samma sätt). */
+function beraknaSerieDatumIVeckan(datum, repeat, checkedDays, backfillTidigare) {
+  const dayCodes = ["SU","MO","TU","WE","TH","FR","SA"];
+  const start = new Date(datum + "T12:00:00");
+  const dow = start.getDay();
+  const diffToMon = (dow === 0 ? -6 : 1 - dow);
+  const monday = new Date(start);
+  monday.setDate(start.getDate() + diffToMon);
+  monday.setHours(0,0,0,0);
+
+  let targetCodes;
+  if (repeat === "daily") targetCodes = ["MO","TU","WE","TH","FR"];
+  else if (repeat === "custom") targetCodes = checkedDays;
+  else return [datum]; // "weekly" (samma veckodag varje vecka) eller okänt: bara startdagen
+
+  const startMidnatt = new Date(datum + "T00:00:00");
+  const resultat = [];
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    if (!targetCodes.includes(dayCodes[d.getDay()])) continue;
+    if (!backfillTidigare && d < startMidnatt) continue; // före startdatum, ej med
+    resultat.push(d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"));
+  }
+  return resultat.length ? resultat : [datum];
+}
+
+// Rullistor för tid: timme (00-23) + minut (bara 00/15/30/45). Den dolda
+// input-taggen med samma id (rStart/rSlut) hålls i synk, så all annan kod
+// som läser/sätter .value på den fungerar precis som innan.
+function fyllTidRullistor(){
+  const timmar = [];
+  for (let h = 0; h < 24; h++) timmar.push(String(h).padStart(2,"0"));
+  const minuter = ["00","15","30","45"];
+
+  ["rStartTimme","rSlutTimme"].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel || sel.options.length) return;
+    timmar.forEach(h => sel.add(new Option(h, h)));
+  });
+  ["rStartMin","rSlutMin"].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel || sel.options.length) return;
+    minuter.forEach(m => sel.add(new Option(m, m)));
+  });
+}
+
+function setTidValde(prefix, tid){
+  fyllTidRullistor();
+  const t = avrundaTid15(tid || "09:00");
+  const [h, m] = t.split(":");
+  const selH = document.getElementById(prefix + "Timme");
+  const selM = document.getElementById(prefix + "Min");
+  if (selH) selH.value = h;
+  if (selM) selM.value = m;
+  const hidden = document.getElementById(prefix);
+  if (hidden) hidden.value = t;
+}
+
+function uppdateraTidFalt(prefix){
+  const h = document.getElementById(prefix + "Timme")?.value || "09";
+  const m = document.getElementById(prefix + "Min")?.value || "00";
+  const hidden = document.getElementById(prefix);
+  if (!hidden) return;
+  hidden.value = h + ":" + m;
+  hidden.dispatchEvent(new Event("change"));
+}
+
+// Rundar en "HH:MM"-tid till närmaste kvart (00/15/30/45) - säkerhetsspärr
+// om någon skriver in en udda tid för hand istället för att klicka i väljaren.
+function avrundaTid15(tid){
+  if (!tid || tid.indexOf(":") === -1) return tid;
+  const [h, m] = tid.split(":").map(Number);
+  const rundadM = Math.round(m / 15) * 15;
+  const extraH = Math.floor(rundadM / 60);
+  const slutM = rundadM % 60;
+  const slutH = (h + extraH) % 24;
+  return String(slutH).padStart(2,"0") + ":" + String(slutM).padStart(2,"0");
+}
+
+function byggRRule() {
+  const repeat = document.getElementById("rRepeat").value;
+  if (repeat === "none") return null;
+
+  let rrule = "RRULE:";
+
+  if (repeat === "daily") {
+    rrule += "FREQ=DAILY";
+  } else if (repeat === "weekly") {
+    const datum = document.getElementById("rDatum").value;
+    const d = new Date(datum + "T12:00:00");
+    const days = ["SU","MO","TU","WE","TH","FR","SA"];
+    rrule += "FREQ=WEEKLY;BYDAY=" + days[d.getDay()];
+  } else if (repeat === "custom") {
+    const checked = [...document.querySelectorAll("#rCustomDays input:checked")].map(cb => cb.value);
+    if (!checked.length) return null;
+    rrule += "FREQ=WEEKLY;BYDAY=" + checked.join(",");
+  }
+
+  const endType = document.getElementById("rEndType").value;
+  if (endType === "date") {
+    const endDate = document.getElementById("rEndDate").value.replace(/-/g,"");
+    if (endDate) rrule += ";UNTIL=" + endDate + "T235959Z";
+  } else if (endType === "count") {
+    const count = document.getElementById("rEndCount").value;
+    if (count) rrule += ";COUNT=" + count;
+  }
+
+  return rrule;
+}
+
+async function sparaFranModal(valRedanGjort) {
+  const aktivitet = document.getElementById("rAktivitet").value.trim();
+  const datum = document.getElementById("rDatum").value;
+  const start = avrundaTid15(document.getElementById("rStart").value);
+  const slut  = avrundaTid15(document.getElementById("rSlut").value);
+
+  // Validering
+  if (!aktivitet || !datum || !start || !slut) {
+    document.getElementById("rStatusBar").textContent = "⚠️ Fyll i aktivitet, datum och tid.";
+    return;
+  }
+  if (rCoach.length === 0) {
+    document.getElementById("rStatusBar").textContent = "⚠️ Coach saknas. Lägg till minst en coach eller skriv punkt om ingen behövs.";
+    return;
+  }
+  if (rDeltagare.length === 0) {
+    document.getElementById("rStatusBar").textContent = "⚠️ Deltagare saknas. Lägg till minst en deltagare eller skriv punkt om ingen behövs.";
+    return;
+  }
+
+  // Redigerar en BEFINTLIG, ÅTERKOMMANDE aktivitet, och valet (bara detta/
+  // framtida/alla) har inte redan gjorts för det här sparandet - fråga
+  // innan något sparas. Detta ersätter det tidigare trasiga flödet där
+  // redigering alltid tolkades som "hela serien" oavsett vad man menade.
+  if (rAktivitetId && !valRedanGjort) {
+    const masterIdChk = String(rAktivitetId).includes("_") ? rAktivitetId.split("_")[0] : rAktivitetId;
+    const arSerie = typeof RRULES_MAP !== "undefined" && !!RRULES_MAP[masterIdChk];
+    if (arSerie) {
+      const p = document.getElementById("repeatValAktivitet");
+      if (p) p.textContent = aktivitet + " (" + datum + ", " + start + "–" + slut + ")";
+      document.getElementById("repeatValOverlay").style.display = "flex";
+      return; // pausar - fortsätter i oppnaModalMedVal() när admin valt
+    }
+  }
+
+  // Ny aktivitet, inte i listan sedan innan - fråga och spara permanent.
+  if (!LISTOR_AKTIVITETER.some(a => a.toLowerCase() === aktivitet.toLowerCase())) {
+    const laggTill = confirm("\"" + aktivitet + "\" finns inte i listan.\nVill du lägga till som ny aktivitet?");
+    if (laggTill) {
+      LISTOR_AKTIVITETER.push(aktivitet);
+      postAdmin({ action: "leggTillLista", typ: "aktivitet", namn: aktivitet });
+    }
+  }
+
+  // Kontrollera aktivitet mot lista
+  const aktivitetILista = LISTOR_AKTIVITETER.some(a => a.toLowerCase() === aktivitet.toLowerCase());
+  if (!aktivitetILista && aktivitet) {
+    const svar = confirm(aktivitet + " finns inte i aktivitetslistan.\nVill du spara ändå?");
+    if (!svar) return;
+  }
+
+  // Kontrollera krockar
+  const konflikter = kontrolleraKrockarForeSpara(
+    datum, start, slut,
+    rDeltagare.filter(n => n !== "."),
+    rCoach.filter(n => n !== "."),
+    rAktivitetId
+  );
+
+  if (konflikter.length > 0) {
+    const veckodagForDatum = weekdayName(new Date(datum + "T12:00:00").getDay());
+    const datumLasbart = new Date(datum + "T12:00:00").toLocaleDateString("sv-SE", {day:"numeric", month:"long"});
+    const meddelanden = konflikter.map(k => {
+      const vemKrockar = [
+        k.gemCoach.length ? "Krockar via coach: " + k.gemCoach.join(", ") : "",
+        k.gemDelt.length ? "Krockar via deltagare: " + k.gemDelt.join(", ") : ""
+      ].filter(Boolean).join("\n");
+      const krockDeltagare = (k.r.Deltagare || "").replace(/\./g, "").trim() || "-";
+      const krockCoach = (k.r.Coach || "").replace(/\./g, "").trim() || "-";
+      return `${vemKrockar}\nKrockar med: ${k.r.Start}–${k.r.Slut} (${k.r.Aktivitet||""})\nDen aktivitetens deltagare: ${krockDeltagare} · coach: ${krockCoach}`;
+    });
+    const fortsatt = confirm("⚠️ Schemakonflikt " + veckodagForDatum + " " + datumLasbart + "!\n\n" + meddelanden.join("\n\n") + "\n\nVill du spara ändå?");
+    if (!fortsatt) return;
+  }
+
+  const titel = byggTitel();
+  const tzOffset = (() => {
+    const d = new Date(datum + "T" + start + ":00");
+    const off = -d.getTimezoneOffset();
+    const h = String(Math.floor(Math.abs(off)/60)).padStart(2,"0");
+    const m = String(Math.abs(off)%60).padStart(2,"0");
+    return (off >= 0 ? "+" : "-") + h + ":" + m;
+  })();
+  const startISO = datum + "T" + start + ":00" + tzOffset;
+  const slutISO  = datum + "T" + slut  + ":00" + tzOffset;
+
+  document.getElementById("rStatusBar").textContent = "Sparar...";
+
+  // Visa ändringen direkt på skärmen, innan svaret från kalendern kommit.
+  const repeat = document.getElementById("rRepeat").value;
+  const checkedDays = repeat === "custom"
+    ? [...document.querySelectorAll("#rCustomDays input:checked")].map(cb => cb.value)
+    : [];
+  const redTyp = typeof _redigeraTyp !== "undefined" ? _redigeraTyp : "all";
+  const nyRRule = byggRRule();
+
+  if (rAktivitetId && redTyp === "single") {
+    // Bara den klickade förekomsten ska ändras.
+    const optimistiskRad = {
+      Datum: datum, Start: start, Slut: slut, Aktivitet: aktivitet,
+      Deltagare: rDeltagare.join(", "), Coach: rCoach.join(", "),
+      EventId: rAktivitetId
+    };
+    const idx = DATA.findIndex(r => (r.EventId || "") === rAktivitetId);
+    if (idx > -1) DATA[idx] = optimistiskRad; else DATA.push(optimistiskRad);
+    if (typeof _rruleCache !== "undefined") delete _rruleCache[rAktivitetId];
+  } else if (rAktivitetId) {
+    // "future"/"all": hela (eller resten av) serien byts ut - ta bort de
+    // gamla dagarna som inte längre gäller och lägg in de nya, precis som
+    // vid radering av en serie.
+    const serieId = rAktivitetId.includes("_") ? rAktivitetId.split("_")[0] : rAktivitetId;
+    DATA = DATA.filter(r => {
+      const eid = r.EventId || "";
+      const eidSerie = eid.includes("_") ? eid.split("_")[0] : eid;
+      if (eidSerie !== serieId) return true; // annan serie/aktivitet, rör inte
+      if (redTyp === "future" && String(r.Datum) < datum) return true; // före redigerat datum, rör inte
+      if (typeof _rruleCache !== "undefined") delete _rruleCache[eid]; // gammal info ska aldrig visas igen
+      return false;
+    });
+    const datumLista = beraknaSerieDatumIVeckan(datum, repeat, checkedDays, redTyp === "all");
+    datumLista.forEach((d, i) => {
+      const tempId = "temp_" + Date.now() + "_" + i;
+      DATA.push({
+        Datum: d, Start: start, Slut: slut, Aktivitet: aktivitet,
+        Deltagare: rDeltagare.join(", "), Coach: rCoach.join(", "),
+        EventId: tempId
+      });
+      // Vi känner redan till mönstret (det står i formuläret) - visa det
+      // direkt istället för att fråga kalendern om ett ID som inte finns än.
+      if (typeof _rruleCache !== "undefined") _rruleCache[tempId] = nyRRule;
+    });
+  } else {
+    // Ny aktivitet: visa den på alla veckodagar den gäller (även tidigare i
+    // veckan än vald dag), inte bara startdagen - matchar hur backend nu
+    // backfyller serier.
+    const datumLista = beraknaSerieDatumIVeckan(datum, repeat, checkedDays, true);
+    datumLista.forEach((d, i) => {
+      const tempId = "temp_" + Date.now() + "_" + i;
+      DATA.push({
+        Datum: d, Start: start, Slut: slut, Aktivitet: aktivitet,
+        Deltagare: rDeltagare.join(", "), Coach: rCoach.join(", "),
+        EventId: tempId
+      });
+      if (typeof _rruleCache !== "undefined") _rruleCache[tempId] = nyRRule;
+    });
+  }
+  refreshVisibleContent();
+
+  document.getElementById("rStatusBar").textContent = "Sparad!";
+  await new Promise(r => setTimeout(r, 500));
+  stangRedigeraModal();
+
+  const _indikator = document.getElementById("globalSaveIndicator");
+  if (_indikator) { _indikator.textContent = "💾 Sparar mot kalendern..."; _indikator.style.display = "block"; }
+
+  const _svar = await postAdmin({
+    action: rAktivitetId ? "update" : "create",
+    id: rAktivitetId,
+    title: titel,
+    rrule: nyRRule,
+    start: startISO,
+    end: slutISO,
+    editType: typeof _redigeraTyp !== "undefined" ? _redigeraTyp : "all"
+  });
+
+  if (_indikator) _indikator.style.display = "none";
+
+  // Visa felet DIREKT (inte efter fördröjd bakgrundskontroll) och säg vilken
+  // aktivitet det gäller - annars vet man inte vad varningen syftar på om
+  // man redan hunnit gå vidare till annat.
+  if (!_svar || _svar.success !== true) {
+    const felinfo = (_svar && _svar.error) ? ("\n\nFelmeddelande: " + _svar.error) : "";
+    visaNotis("Kunde inte spara aktiviteten:\n\"" + aktivitet + "\" (" + datum + " " + start + "-" + slut + ")" + felinfo, "error");
+  } else if (_svar.forekomster && _svar.forekomster.length) {
+    // Byt ut de temporära ID:na mot de riktiga direkt - ingen väntan behövs
+    // för att låsa upp aktiviteten för redigering igen.
+    _svar.forekomster.forEach(f => {
+      const idx = DATA.findIndex(r => String(r.Datum) === String(f.Datum) &&
+        (r.EventId || "").indexOf("temp_") === 0);
+      if (idx > -1) {
+        if (typeof _rruleCache !== "undefined" && _rruleCache[DATA[idx].EventId] !== undefined) {
+          _rruleCache[f.EventId] = _rruleCache[DATA[idx].EventId];
+        }
+        DATA[idx].EventId = f.EventId;
+      }
+    });
+    refreshVisibleContent();
+  }
+
+  // Riktig kontroll mot kalendern efter en liten stund, som extra säkerhet.
+  const vantetid = (rAktivitetId && redTyp === "single") ? 800 : 1500;
+  setTimeout(async () => {
+    await loadData();
+  }, vantetid);
+}
+
+function visaRaderaDialog() {
+  if (!rAktivitetId) return;
+  const rruleInfo = document.getElementById("rruleInfo");
+  const arAterkommande = rruleInfo && rruleInfo.style.display !== "none" && rruleInfo.textContent;
+  if (arAterkommande) {
+    document.getElementById("raderaDialog").style.display = "block";
+  } else {
+    utforRadera("single");
+  }
+}
+
+async function utforRadera(typ) {
+  if (!rAktivitetId) return;
+
+  if (typ === "all") {
+    const bekraftat = confirm("Är du säker att du vill radera hela serien? Alla tillfällen, både tidigare och framtida, tas bort. Detta går inte att ångra.");
+    if (!bekraftat) return;
+  } else if (typ === "future") {
+    const bekraftat = confirm("Är du säker att du vill radera detta och alla framtida tillfällen? Detta går inte att ångra.");
+    if (!bekraftat) return;
+  } else if (typ === "single") {
+    const bekraftat = confirm("Är du säker att du vill radera detta tillfälle? Detta går inte att ångra.");
+    if (!bekraftat) return;
+  }
+
+  document.getElementById("raderaDialog").style.display = "none";
+  document.getElementById("rStatusBar").textContent = "Raderar...";
+
+  // Kort paus så det hinner uppfattas innan något försvinner.
+  await new Promise(r => setTimeout(r, 500));
+
+  const idAttRadera = rAktivitetId;
+  const datumAttRadera = document.getElementById("rDatum")?.value || "";
+  const startAttRadera = document.getElementById("rStart")?.value || "";
+  const aktivitetAttRadera = (DATA.find(r => (r.EventId || "") === idAttRadera) || {}).Aktivitet || "(okänd aktivitet)";
+  stangRedigeraModal();
+
+  // Ta bort direkt på skärmen (optimistiskt) medan raderingen sker i bakgrunden.
+  if (typ === "single") {
+    DATA = DATA.filter(r => (r.EventId || "") !== idAttRadera);
+  } else {
+    // "all": ta bort alla dagar i samma serie den här veckan.
+    // "future": ta bort samma serie, men bara från och med det klickade datumet.
+    const serieId = idAttRadera.includes("_") ? idAttRadera.split("_")[0] : idAttRadera;
+    DATA = DATA.filter(r => {
+      const eid = r.EventId || "";
+      const eidSerie = eid.includes("_") ? eid.split("_")[0] : eid;
+      if (eidSerie !== serieId) return true; // annan serie, rör inte
+      if (typ === "future" && datumAttRadera && String(r.Datum) < datumAttRadera) return true; // före klickat datum, rör inte
+      return false; // matchar - ta bort
+    });
+  }
+  refreshVisibleContent();
+
+  const _indikator = document.getElementById("globalSaveIndicator");
+  if (_indikator) { _indikator.textContent = "🗑 Raderar mot kalendern..."; _indikator.style.display = "block"; }
+
+  const _svar = await postAdmin({
+    action: "delete",
+    id: idAttRadera,
+    deleteType: typ,
+    datum: datumAttRadera,
+    start: startAttRadera
+  });
+
+  if (_indikator) _indikator.style.display = "none";
+
+  // Visa felet DIREKT (inte efter fördröjd bakgrundskontroll) och säg vilken
+  // aktivitet det gäller.
+  if (!_svar || _svar.success !== true) {
+    const felinfo = (_svar && _svar.error) ? ("\n\nFelmeddelande: " + _svar.error) : "";
+    visaNotis("Kunde inte radera aktiviteten:\n\"" + aktivitetAttRadera + "\" (" + datumAttRadera + " " + startAttRadera + ")" + felinfo + "\n\nDen kan fortfarande finnas kvar i kalendern.", "error");
+  }
+
+  // Riktig kontroll mot kalendern efter en liten stund, oavsett utfall.
+  // Serier (framtida/alla) kräver fler steg bakom kulisserna och Google
+  // Kalender hinner inte alltid uppdatera sin sökindex lika snabbt - därför
+  // längre väntetid för dem än för en enskild radering.
+  const vantetid = (typ === "single") ? 800 : 1500;
+  setTimeout(async () => {
+    await loadData();
+  }, vantetid);
+}
+
+async function raderaFranModal() {
+  visaRaderaDialog();
+}
+
+// Koppla chip-inputs
+window.addEventListener("load", () => {
+  rKopplaInput("rDeltagareInput", ()=>rDeltagare, "rDeltagareChips", ()=>LISTOR_DELTAGARE, "deltagare");
+  rKopplaInput("rCoachInput", ()=>rCoach, "rCoachChips", ()=>LISTOR_COACHER, "coach");
+
+  // Auto-fyll sluttid när starttiden ändras, så man slipper klicka två gånger.
+  // Behåller aktivitetens befintliga längd (eller 60 min för en ny aktivitet).
+  document.getElementById("rStart")?.addEventListener("change", () => {
+    const s = document.getElementById("rStart").value;
+    if (!s) return;
+    const totalStart = tidTillMinuter(s);
+    const totalSlut = (totalStart + (_redigerLangdMin || 60) + 1440) % 1440;
+    const slutH = Math.floor(totalSlut/60);
+    const slutM = totalSlut % 60;
+    setTidValde("rSlut", String(slutH).padStart(2,"0") + ":" + String(slutM).padStart(2,"0"));
+  });
+});
+</script>
+
+<script>
+function oppnaModalMedKontext() {
+  const activeView = document.querySelector(".view.active");
+  const r = {};
+  if (activeView?.id === "participantView") {
+    const namn = document.getElementById("nameSelect")?.value;
+    if (namn) r.__deltagare = namn;
+  } else if (activeView?.id === "coachView") {
+    const namn = document.getElementById("coachSelect")?.value;
+    if (namn) r.__coach = namn;
+  }
+  oppnaRedigeraModal(r);
+}
+</script>
+
+<script>
+/* ===== ADMINLÄGE ===== */
+// Adminkoden lagras ALDRIG i klartext i den här filen - det skulle göra
+// den läsbar för vem som helst via sidkällan. Variabeln fylls bara i när
+// någon faktiskt skriver in koden (kontrolleraAdminKodFranTab), och sparas
+// i sessionStorage så en omladdning (F5) inte kräver ny inloggning.
+let ADMIN_KOD_TYPAD = sessionStorage.getItem("adminKodTypad") || "";
+
+let adminUnlocked = false;
+
+function lasAdminPanel() {
+  adminUnlocked = false;
+  document.getElementById("adminLockPanel").style.display = "block";
+  document.getElementById("adminPanel").style.display = "none";
+  document.getElementById("adminPanel").style.visibility = "hidden";
+  document.getElementById("adminPanel").style.height = "0";
+  document.getElementById("adminBanner").style.display = "none";
+  document.getElementById("adminBannerSpacer").style.height = "0";
+  document.body.classList.remove("admin-active");
+  try { sessionStorage.removeItem("adminUnlocked"); } catch(e) {}
+  try { sessionStorage.removeItem("adminKodTypad"); } catch(e) {}
+  ADMIN_KOD_TYPAD = "";
+  document.getElementById("tabAdmin").style.display = "flex";
+  document.getElementById("tabLogout").style.display = "none";
+
+  // Lås tillbaka admin-knapparna visuellt i Verktygslådans hemmeny (de
+  // förblir synliga hela tiden, bara låsikonen/kanten kommer tillbaka).
+  vtSattLastVisuellt(true);
+
+  // Verktygslådan är fortfarande tillgänglig utloggad (Sök/Jämför/
+  // Sjukfrånvaro) - om man stod på en admin-endast undersida, gå bara
+  // tillbaka till Verktygslådans hemmeny, inte bort från den helt.
+  if (document.getElementById("verktygView")?.classList.contains("active")) {
+    visaVerktygsmeny();
+  }
+
+  const tabAdminBtn = document.getElementById("tabAdmin");
+  if (tabAdminBtn) {
+    tabAdminBtn.classList.remove("active");
+    tabAdminBtn.innerHTML = '🔒 <span class="corner-label">Logga in</span>';
+    tabAdminBtn.onclick = () => toggleAdminKodPanel();
+  }
+}
+
+function oppnaAdminModal(r) {
+  if (!adminUnlocked) return;
+  oppnaRedigeraModal(r || {});
+}
+
+function ritaAdminSchema() {
+  // Visa veckans aktiviteter i adminpanelen med redigerbara block
+  const wrap = document.getElementById("adminSchemaWrap");
+  if (!wrap) return;
+
+  const slots = makeSlots();
+  const days = ["måndag","tisdag","onsdag","torsdag","fredag"];
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const diffToMon = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + diffToMon);
+  monday.setHours(0,0,0,0);
+
+  const weekDays = Array.from({length:5}, (_,i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+
+  function isoD(d) {
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  }
+
+  const headerEl = document.createElement("div");
+  headerEl.className = "block-header";
+  headerEl.id = "adminBlockHeader";
+  headerEl.innerHTML = "<div>Tid</div>" + weekDays.map((d,i) => `<div>${days[i]}<br><span style="font-size:.8em;font-weight:400">${d.toLocaleDateString("sv-SE",{day:"numeric",month:"short"})}</span></div>`).join("");
+
+  const gridEl = document.createElement("div");
+  gridEl.className = "block-grid";
+  gridEl.id = "adminBlockGrid";
+  gridEl.style.gridTemplateColumns = "80px repeat(5,1fr)";
+
+  slots.forEach((t, slotIdx) => {
+    const tLabel = document.createElement("div");
+    tLabel.className = "block-time";
+    tLabel.textContent = t;
+    gridEl.appendChild(tLabel);
+
+    weekDays.forEach((d, dayIdx) => {
+      const cell = document.createElement("div");
+      cell.className = "block-cell";
+      cell.style.cursor = "pointer";
+      cell.style.background = "rgba(26,115,232,0.03)";
+      cell.title = "Klicka för att lägga till aktivitet";
+
+      const datum = isoD(d);
+      cell.onclick = () => {
+        const [h,m] = t.split(":").map(Number);
+        const sluttid = String(h+1).padStart(2,"0") + ":" + String(m).padStart(2,"0");
+        oppnaRedigeraModal({ __datum: datum, __start: t, __slut: sluttid });
+      };
+      gridEl.appendChild(cell);
+    });
+  });
+
+  wrap.innerHTML = "";
+  wrap.appendChild(headerEl);
+  wrap.appendChild(gridEl);
+
+  // Placera aktiviteter
+  const cells = [...gridEl.querySelectorAll(".block-cell")];
+  const slotMins = slots.map(timeToMin);
+
+  DATA.forEach(r => {
+    const dayIdx = weekDays.findIndex(d => isoD(d) === String(r.Datum).slice(0,10));
+    if (dayIdx < 0) return;
+    const sMin = timeToMin(r.Start), eMin = timeToMin(r.Slut);
+    if (sMin === null || eMin === null) return;
+    const gridStart = slotMins[0];
+    const gridEnd = slotMins[slotMins.length-1] + 30;
+    const sCl = clamp(sMin, gridStart, gridEnd);
+    const eCl = clamp(eMin, gridStart, gridEnd);
+    if (eCl <= sCl) return;
+    const baseIdx = slotIndexForMin(sCl, slotMins);
+    const cellIdx = baseIdx * 6 + (dayIdx + 1);
+    const firstCell = cells[cellIdx];
+    if (!firstCell) return;
+
+    const block = document.createElement("div");
+    block.className = "block";
+    block.style.background = colorFor(r);
+    block.style.cursor = "pointer";
+    block.style.zIndex = 10;
+    block.innerHTML = `<div class="title">${emojiFor(r)} ${r.Aktivitet||""}</div><div style="font-size:.78rem">${r.Deltagare||""}</div>`;
+    block.onclick = () => oppnaRedigeraModal(r);
+
+    requestAnimationFrame(() => {
+      const cellH = firstCell.clientHeight || 28;
+      const topOff = ((sCl - slotMins[baseIdx]) / 30) * cellH;
+      const h = ((eCl - sCl) / 30) * cellH;
+      block.style.top = (2 + topOff) + "px";
+      block.style.height = Math.max(10, h-4) + "px";
+      firstCell.appendChild(block);
+    });
+  });
+}
+</script>
+<script>
+/* ===== Klick på tom cell — bara i adminläge ===== */
+document.addEventListener("click", function(e) {
+  if (!adminUnlocked) return;
+  const cell = e.target.closest(".block-cell");
+  if (!cell) return;
+  if (e.target.closest(".block") || e.target.closest(".evt")) return;
+
+  const grid = cell.parentElement;
+  const cells = [...grid.querySelectorAll(".block-cell")];
+  const idx = cells.indexOf(cell);
+  if (idx < 0) return;
+
+  const slots = makeSlots();
+  const cols = 5;
+  const row = Math.floor(idx / cols);
+  const col = idx % cols;
+
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const diffToMon = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMon);
+  monday.setHours(0,0,0,0);
+  const targetDay = new Date(monday);
+  targetDay.setDate(monday.getDate() + col);
+  const y = targetDay.getFullYear();
+  const m = String(targetDay.getMonth()+1).padStart(2,"0");
+  const d = String(targetDay.getDate()).padStart(2,"0");
+  const datum = `${y}-${m}-${d}`;
+
+  let tid = "09:00";
+  if (slots.length > row) tid = slots[row];
+  const [th, tm] = tid.split(":").map(Number);
+  const sluttid = String(th+1).padStart(2,"0") + ":" + String(tm).padStart(2,"0");
+
+  const activeView = document.querySelector(".view.active");
+  const kontext = { __datum: datum, __start: tid, __slut: sluttid };
+  if (activeView?.id === "participantView") {
+    const namn = document.getElementById("nameSelect")?.value;
+    if (namn) kontext.__deltagare = namn;
+  } else if (activeView?.id === "coachView") {
+    const namn = document.getElementById("coachSelect")?.value;
+    if (namn) kontext.__coach = namn;
+  }
+  oppnaRedigeraModal(kontext);
+});
+</script>
+<script>
+/* ===== Admin-tab knapp ===== */
+function toggleAdminKodPanel() {
+  if (adminUnlocked) {
+    showView("verktygView");
+    return;
+  }
+  // Visa kodpanel som popup
+  const existing = document.getElementById("adminTabPopup");
+  if (existing) { existing.remove(); return; }
+
+  const popup = document.createElement("div");
+  popup.id = "adminTabPopup";
+  popup.style.cssText = "position:fixed;top:80px;right:20px;z-index:8500;background:white;border:1.5px solid #cfd8e3;border-radius:14px;padding:20px;width:280px;box-shadow:0 8px 24px rgba(0,0,0,0.15);";
+  popup.innerHTML = `
+    <div style="font-weight:800;font-size:15px;margin-bottom:10px;color:#1a1a2e;">🔒 Adminläge</div>
+    <input type="password" id="adminTabKodInput" placeholder="Ange kod" style="width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;margin-bottom:10px;letter-spacing:3px;" autofocus />
+    <button onclick="kontrolleraAdminKodFranTab()" style="width:100%;padding:10px;background:#1a73e8;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Lås upp</button>
+    <div id="adminTabFel" style="color:#c00;font-size:13px;margin-top:8px;display:none;text-align:center;">Fel kod</div>
+  `;
+  document.body.appendChild(popup);
+
+  document.getElementById("adminTabKodInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") kontrolleraAdminKodFranTab();
+    if (e.key === "Escape") popup.remove();
+  });
+
+  // Stäng om man klickar utanför
+  setTimeout(() => {
+    document.addEventListener("click", function stang(e) {
+      if (!popup.contains(e.target) && e.target.id !== "tabAdmin") {
+        popup.remove();
+        document.removeEventListener("click", stang);
+      }
+    });
+  }, 100);
+}
+
+function aktiveraAdminLage() {
+  adminUnlocked = true;
+  document.getElementById("adminTabPopup")?.remove();
+  document.getElementById("adminBanner").style.display = "block";
+  document.getElementById("adminBannerSpacer").style.height = "32px";
+  document.body.classList.add("admin-active");
+  try { sessionStorage.setItem("adminUnlocked", "1"); } catch(e) {}
+
+  // Två separata knappar (Verktyg + Logga ut) ersätter Logga in-knappen.
+  // Ingen automatisk navigering - man stannar kvar på den vy man redan var på.
+  document.getElementById("tabAdmin").style.display = "none";
+  document.getElementById("tabVerktyg").style.display = "flex";
+  document.getElementById("tabLogout").style.display = "flex";
+
+  document.getElementById("adminLockPanel").style.display = "none";
+  const ap = document.getElementById("adminPanel");
+  if(ap){ ap.style.display = "block"; ap.style.visibility = "visible"; ap.style.height = "auto"; }
+  const flytandeBtn = document.getElementById("btnNyAktivitetFlytande");
+  if (flytandeBtn) flytandeBtn.style.display = "flex";
+
+  // Lås upp admin-knapparna visuellt i Verktygslådans hemmeny.
+  vtSattLastVisuellt(false);
+
+  // Rita om alla block med onclick
+  document.querySelectorAll(".block").forEach(block => {
+    const evId = block.__eventData?.EventId;
+    if (evId) {
+      block.style.cursor = "pointer";
+      block.onclick = () => oppnaRedigeraModal(block.__eventData);
+    }
+  });
+}
+
+async function kontrolleraAdminKodFranTab() {
+  const inp = document.getElementById("adminTabKodInput");
+  const fel = document.getElementById("adminTabFel");
+  if (!inp) return;
+  const kod = inp.value;
+  if (!kod) return;
+
+  // Skickar den inskrivna koden till backend för kontroll - koden lagras
+  // aldrig i klartext i den här filen, så den går inte att läsa av genom
+  // att bara titta på sidkällan.
+  ADMIN_KOD_TYPAD = kod; // sätts innan anropet, så postAdmin() skickar med rätt kod
+  const svar = await postAdmin({ action: "verifieraKod" });
+
+  if (svar && svar.success === true) {
+    try { sessionStorage.setItem("adminKodTypad", kod); } catch(e) {}
+    aktiveraAdminLage();
+  } else {
+    ADMIN_KOD_TYPAD = "";
+    if (fel) fel.style.display = "block";
+    inp.value = "";
+    inp.focus();
+  }
+}
+
+// Uppdatera lasAdminPanel så den också återställer tab-knappen
+const _originalLas = lasAdminPanel;
+lasAdminPanel = function() {
+  _originalLas();
+  // Knappens text/onclick sätts redan korrekt i _originalLas() ovan.
+};
+</script>
+<script>
+/* ===== SÖKFUNKTION ===== */
+function sokISchema() {
+  const q = (document.getElementById("sokInput")?.value || "").trim().toLowerCase();
+  const ut = document.getElementById("sokResultat");
+  if (!ut) return;
+
+  if (!q || q.length < 2) {
+    ut.innerHTML = "";
+    return;
+  }
+
+  const matchande = DATA.filter(r => {
+    const deltagare = (r.Deltagare || "").toLowerCase();
+    const coach = (r.Coach || "").toLowerCase();
+    const aktivitet = (r.Aktivitet || "").toLowerCase();
+    return deltagare.includes(q) || coach.includes(q) || aktivitet.includes(q);
+  }).sort((a, b) => {
+    const da = String(a.Datum).slice(0,10);
+    const db = String(b.Datum).slice(0,10);
+    if (da !== db) return da.localeCompare(db);
+    return (a.Start||"").localeCompare(b.Start||"");
+  });
+
+  if (!matchande.length) {
+    ut.innerHTML = `<div style="text-align:center;color:#888;padding:16px;font-size:14px;">Inget hittades för "${q}"</div>`;
+    return;
+  }
+
+  const dagNamn = ["söndag","måndag","tisdag","onsdag","torsdag","fredag","lördag"];
+
+  // Gruppera per datum
+  const perDag = {};
+  matchande.forEach(r => {
+    const k = String(r.Datum).slice(0,10);
+    if (!perDag[k]) perDag[k] = [];
+    perDag[k].push(r);
+  });
+
+  let html = `<div style="font-size:13px;color:#888;margin-bottom:8px;">${matchande.length} aktivitet${matchande.length !== 1 ? "er" : ""} hittades</div>`;
+
+  Object.keys(perDag).sort().forEach(datum => {
+    const d = new Date(datum + "T12:00:00");
+    const dagRubrik = dagNamn[d.getDay()] + " " + d.toLocaleDateString("sv-SE", {day:"numeric", month:"long"});
+
+    html += `<div style="font-weight:800;font-size:13px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;">${dagRubrik}</div>`;
+
+    perDag[datum].forEach(r => {
+      const deltagare = (r.Deltagare || "-").replace(/\./g, "").trim() || "-";
+      const coach = (r.Coach || "-").replace(/\./g, "").trim() || "-";
+      const editBtn = adminUnlocked
+        ? `<button onclick="oppnaRedigeraModalFranKnapp('${registreraRedigeraKnapp(r)}')" style="background:none;border:1px solid #cfd8e3;border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;color:#1a73e8;white-space:nowrap;">✏️ Redigera</button>`
+        : "";
+
+      html += `<div style="background:${colorFor(r)};border-radius:10px;padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-left:4px solid rgba(0,0,0,0.15);">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:14px;">${emojiFor(r)} ${r.Aktivitet||""}</div>
+          <div style="font-size:13px;color:#444;margin-top:2px;">🕒 ${r.Start||""}–${r.Slut||""}</div>
+          <div style="font-size:12px;color:#555;margin-top:2px;">👥 ${deltagare}</div>
+          <div style="font-size:12px;color:#555;">🧑‍🏫 ${coach}</div>
+        </div>
+        ${editBtn}
+      </div>`;
+    });
+  });
+
+  ut.innerHTML = html;
+}
+</script>
+<script>
+/* ===== KROCKRAPPORT ===== */
+function timeToMinKrock(t) {
+  const m = String(t||"").match(/^\s*(\d{1,2}):(\d{2})\s*$/);
+  if (!m) return null;
+  return +m[1]*60 + +m[2];
+}
+
+function overlapper(a, b) {
+  const as = timeToMinKrock(a.Start), ae = timeToMinKrock(a.Slut);
+  const bs = timeToMinKrock(b.Start), be = timeToMinKrock(b.Slut);
+  if (as===null||ae===null||bs===null||be===null) return false;
+  return as < be && bs < ae;
+}
+
+async function visaHistorik(filtrera){
+  const ut = document.getElementById("historikResultat");
+  if (!ut) return;
+  ut.innerHTML = `<div style="color:#888;font-size:13px;">Hämtar...</div>`;
+
+  let query = url + "?historik=1&t=" + Date.now() + "&visakod=" + encodeURIComponent(VISAKOD_VARDE);
+  if (filtrera) {
+    const fran = document.getElementById("historikFran")?.value || "";
+    const till = document.getElementById("historikTill")?.value || "";
+    if (fran) query += "&fran=" + encodeURIComponent(fran);
+    if (till) query += "&till=" + encodeURIComponent(till);
+  } else {
+    query += "&antal=10";
+  }
+
+  try {
+    const res = await fetch(query);
+    const json = await res.json();
+    const rader = json.historik || [];
+    if (!rader.length) {
+      ut.innerHTML = `<div style="color:#888;font-size:13px;">Inga raderingar hittades.</div>`;
+      return;
+    }
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <tr style="text-align:left;border-bottom:2px solid #ddd;">
+        <th style="padding:6px;">Raderat</th><th style="padding:6px;">Typ</th>
+        <th style="padding:6px;">Datum</th><th style="padding:6px;">Tid</th>
+        <th style="padding:6px;">Aktivitet</th><th style="padding:6px;">Deltagare</th><th style="padding:6px;">Coach</th>
+      </tr>`;
+    rader.forEach(r => {
+      html += `<tr style="border-bottom:1px solid #eee;">
+        <td style="padding:6px;white-space:nowrap;">${r.RaderatTidpunkt}</td>
+        <td style="padding:6px;">${r.RaderingsTyp}</td>
+        <td style="padding:6px;">${r.Datum}</td>
+        <td style="padding:6px;">${r.Start}-${r.Slut}</td>
+        <td style="padding:6px;">${r.Aktivitet}</td>
+        <td style="padding:6px;">${r.Deltagare}</td>
+        <td style="padding:6px;">${r.Coach}</td>
+      </tr>`;
+    });
+    html += "</table>";
+    ut.innerHTML = html;
+  } catch (e) {
+    ut.innerHTML = `<div style="color:#c00;font-size:13px;">Kunde inte hämta historik: ${e.message}</div>`;
+  }
+}
+
+// Serie-ID oavsett instans (samma princip som används på flera ställen
+// redan): "master_YYYYMMDDTHHMMSSZ" -> "master". Enstaka event: hela ID:t.
+function serieIdFor(r){
+  const id = r.EventId || "";
+  return id.includes("_") ? id.split("_")[0] : id;
+}
+
+function byggKrockNyckel(veckodag, a, b){
+  const ids = [serieIdFor(a), serieIdFor(b)].sort();
+  return veckodag + "|" + ids[0] + "|" + ids[1];
+}
+
+// Snabbtitt: visar en persons veckoschema i den fasta rutan högst upp på
+// Krockar-sidan, utan att lämna listan - man kan klicka runt mellan olika
+// personers scheman snabbt, rutan bara byter innehåll.
+function visaSnabbtittSchema(namn, isCoach){
+  const box = document.getElementById("krockSnabbtitt");
+  if (!box) return;
+  box.style.display = "flex";
+  document.getElementById("krockSnabbtittNamn").textContent = (isCoach ? "🧑‍🏫 " : "👤 ") + namn;
+  renderBlocksGeneric(
+    namn, isCoach,
+    document.getElementById("krockSnabbtittHeader"),
+    document.getElementById("krockSnabbtittGrid")
+  );
+  setTimeout(() => document.getElementById("krockSnabbtittStang")?.focus(), 50);
+}
+
+async function visaKrockar() {
+  const ut = document.getElementById("krockResultat");
+  if (!ut) return;
+  ut.innerHTML = `<div style="color:#888;font-size:13px;">Kontrollerar...</div>`;
+
+  // Hämta godkända krockar (mönster) för att kunna filtrera bort dem.
+  let godkanda = [];
+  try {
+    const res = await fetch(url + "?godkandaKrockar=1&t=" + Date.now() + "&visakod=" + encodeURIComponent(VISAKOD_VARDE));
+    const json = await res.json();
+    godkanda = json.godkandaKrockar || [];
+  } catch (e) { /* funkar ändå, visar bara allt om detta misslyckas */ }
+  const godkandaNycklar = new Set(godkanda.map(g => g.Nyckel));
+
+  const dagNamn = ["söndag","måndag","tisdag","onsdag","torsdag","fredag","lördag"];
+
+  // Gruppera per datum
+  const perDag = {};
+  DATA.forEach(r => {
+    const k = String(r.Datum).slice(0,10);
+    if (!perDag[k]) perDag[k] = [];
+    perDag[k].push(r);
+  });
+
+  const krockar = [];
+  const godkandaBlandTraffar = [];
+
+  Object.keys(perDag).sort().forEach(datum => {
+    const rader = perDag[datum];
+    const d = new Date(datum + "T12:00:00");
+    const veckodag = dagNamn[d.getDay()];
+
+    for (let i = 0; i < rader.length; i++) {
+      for (let j = i+1; j < rader.length; j++) {
+        const a = rader[i], b = rader[j];
+        if (!overlapper(a, b)) continue;
+
+        const coachA = (a.Coach||"").split(/,\s*/).map(x=>x.trim()).filter(x=>x&&x!==".");
+        const coachB = (b.Coach||"").split(/,\s*/).map(x=>x.trim()).filter(x=>x&&x!==".");
+        const gemCoach = coachA.filter(c => coachB.some(d2 => d2.toLowerCase()===c.toLowerCase()));
+
+        const deltA = (a.Deltagare||"").split(/,\s*/).map(x=>x.trim()).filter(x=>x&&x!=="."&&x.toLowerCase()!=="alla");
+        const deltB = (b.Deltagare||"").split(/,\s*/).map(x=>x.trim()).filter(x=>x&&x!=="."&&x.toLowerCase()!=="alla");
+        const gemDelt = deltA.filter(d2 => deltB.some(e => e.toLowerCase()===d2.toLowerCase()));
+
+        if (gemCoach.length || gemDelt.length) {
+          const nyckel = byggKrockNyckel(veckodag, a, b);
+          if (godkandaNycklar.has(nyckel)) {
+            godkandaBlandTraffar.push(nyckel);
+            continue; // godkänd sedan tidigare - visa inte
+          }
+          krockar.push({ datum, veckodag, a, b, gemCoach, gemDelt, nyckel });
+        }
+      }
+    }
+  });
+
+  const antalEtikett = document.getElementById("antalGodkandaEtikett");
+  if (antalEtikett) antalEtikett.textContent = "(" + godkanda.length + ")";
+
+  if (!krockar.length) {
+    ut.style.display = "block";
+    ut.innerHTML = `<div style="background:#d1fae5;border-radius:10px;padding:14px 16px;color:#065f46;font-weight:700;">✅ Inga (ej godkända) krockar hittades denna vecka!</div>`;
+    return;
+  }
+
+  // Gruppera krockar per datum
+  const krockPerDag = {};
+  krockar.forEach(k => {
+    if (!krockPerDag[k.datum]) krockPerDag[k.datum] = [];
+    krockPerDag[k.datum].push(k);
+  });
+
+  let html = `<div style="font-weight:800;font-size:15px;margin-bottom:4px;color:#c00;">⚠️ ${krockar.length} krock${krockar.length!==1?"ar":""} hittades</div>
+    <div style="font-size:12px;color:#888;margin-bottom:12px;">💡 Klicka på ett namn för att se personens schema.</div>`;
+
+  Object.keys(krockPerDag).sort().forEach(datum => {
+    const d = new Date(datum + "T12:00:00");
+    html += `<div style="font-weight:800;font-size:13px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;">${dagNamn[d.getDay()]} ${d.toLocaleDateString("sv-SE",{day:"numeric",month:"long"})}</div>`;
+
+    krockPerDag[datum].forEach(({a, b, gemCoach, gemDelt, nyckel, veckodag}) => {
+      // Gör namn klickbara -> öppnar personens veckoschema i snabbtitt-rutan
+      // högst upp, utan att man behöver lämna krock-listan.
+      function klickbart(namn, isCoach){
+        const namnEsc = namn.replace(/'/g,"\\'");
+        return `<button onclick="visaSnabbtittSchema('${namnEsc}', ${isCoach})" style="background:none;border:none;color:inherit;font:inherit;font-weight:inherit;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;padding:0;">${namn}</button>`;
+      }
+      const vem = [...gemCoach.map(n=>"🧑‍🏫 "+klickbart(n,true)), ...gemDelt.map(n=>"👤 "+klickbart(n,false))].join(", ");
+      const editA = adminUnlocked ? `<button onclick="oppnaRedigeraModalFranKnapp('${registreraRedigeraKnapp(a)}')" style="font-size:11px;border:1px solid #ccc;border-radius:5px;padding:2px 6px;cursor:pointer;background:white;">✏️</button>` : "";
+      const editB = adminUnlocked ? `<button onclick="oppnaRedigeraModalFranKnapp('${registreraRedigeraKnapp(b)}')" style="font-size:11px;border:1px solid #ccc;border-radius:5px;padding:2px 6px;cursor:pointer;background:white;">✏️</button>` : "";
+
+      const aktivitetA = (a.Aktivitet||"").replace(/'/g,"\\'");
+      const aktivitetB = (b.Aktivitet||"").replace(/'/g,"\\'");
+      const tider = `${a.Start}-${a.Slut} / ${b.Start}-${b.Slut}`;
+      const godkannBtn = `<button onclick="godkannKrock('${nyckel}','${veckodag}','${aktivitetA}','${aktivitetB}','${vem.replace(/'/g,"\\'").replace(/<[^>]+>/g,"")}','${tider}')" style="font-size:11px;border:1px solid #16a34a;color:#16a34a;border-radius:5px;padding:3px 8px;cursor:pointer;background:white;font-weight:700;">✓ Godkänn</button>`;
+
+      // Coach + återkommande-info per aktivitet, samma princip som i Historik.
+      // Namnen är klickbara på samma sätt som i vem-raden ovan.
+      function infoRad(r){
+        const deltagareLista = (r.Deltagare||"").split(/,\s*/).map(x=>x.trim()).filter(x=>x&&x!==".");
+        const coachLista = (r.Coach||"").split(/,\s*/).map(x=>x.trim()).filter(x=>x&&x!==".");
+        const deltagareHtml = deltagareLista.length ? deltagareLista.map(n=>klickbart(n,false)).join(", ") : "-";
+        const coachHtml = coachLista.length ? coachLista.map(n=>klickbart(n,true)).join(", ") : "-";
+        const rr = (typeof RRULES_MAP !== "undefined" && RRULES_MAP[serieIdFor(r)]) || "";
+        const tolkat = rr ? tolkRRule(rr) : null;
+        const aterkommer = (tolkat && tolkat.typ !== "none") ? tolkat.text : "Engångstillfälle";
+        return `<div style="font-size:11px;color:#666;margin:2px 0 6px 4px;">👤 ${deltagareHtml} · 🧑‍🏫 ${coachHtml} · 🔁 ${aterkommer}</div>`;
+      }
+
+      html += `<div style="background:#fff;border:2px solid #fca5a5;border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-weight:700;color:#c00;">Krockar: ${vem}</div>
+          ${godkannBtn}
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="background:#fee2e2;border-radius:6px;padding:3px 8px;font-size:13px;">🕒 ${a.Start}–${a.Slut} · ${a.Aktivitet||""}</span>
+          ${editA}
+        </div>
+        ${infoRad(a)}
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="background:#fee2e2;border-radius:6px;padding:3px 8px;font-size:13px;">🕒 ${b.Start}–${b.Slut} · ${b.Aktivitet||""}</span>
+          ${editB}
+        </div>
+        ${infoRad(b)}
+      </div>`;
+    });
+  });
+
+  ut.style.display = "block";
+  ut.innerHTML = html;
+}
+
+async function godkannKrock(nyckel, veckodag, aktivitetA, aktivitetB, personer, tider){
+  const svar = await postAdmin({
+    action: "godkannKrock",
+    nyckel, veckodag, aktivitetA, aktivitetB, personer, tider
+  });
+  if (svar && svar.success) {
+    visaKrockar(); // rita om listan, den godkända försvinner nu
+  } else {
+    visaNotis("Kunde inte godkänna krocken" + (svar && svar.error ? ": " + svar.error : "") + ". Försök igen.", "error");
+  }
+}
+
+async function visaGodkandaKrockar(){
+  const ut = document.getElementById("krockResultat");
+  if (!ut) return;
+  ut.innerHTML = `<div style="color:#888;font-size:13px;">Hämtar...</div>`;
+
+  let godkanda = [];
+  try {
+    const res = await fetch(url + "?godkandaKrockar=1&t=" + Date.now() + "&visakod=" + encodeURIComponent(VISAKOD_VARDE));
+    const json = await res.json();
+    godkanda = json.godkandaKrockar || [];
+  } catch (e) {
+    ut.innerHTML = `<div style="color:#c00;font-size:13px;">Kunde inte hämta godkända krockar.</div>`;
+    return;
+  }
+
+  const antalEtikett = document.getElementById("antalGodkandaEtikett");
+  if (antalEtikett) antalEtikett.textContent = "(" + godkanda.length + ")";
+
+  const tillbaka = `<div style="margin-bottom:10px;"><button onclick="visaKrockar()" style="background:none;border:none;color:#1a73e8;font-size:13px;font-weight:700;cursor:pointer;padding:0;">← Tillbaka till krockar</button></div>`;
+
+  if (!godkanda.length) {
+    ut.innerHTML = tillbaka + `<div style="color:#888;font-size:13px;">Inga godkända krockar än.</div>`;
+    return;
+  }
+
+  let html = tillbaka + `<div style="font-weight:800;font-size:14px;margin-bottom:10px;">${godkanda.length} godkänd${godkanda.length!==1?"a":""} krock${godkanda.length!==1?"ar":""}</div>`;
+  godkanda.forEach(g => {
+    html += `<div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:13px;">
+        <b>${g.Veckodag}</b> · ${g.AktivitetA} / ${g.AktivitetB} · ${g.Tider}<br>
+        <span style="color:#555;">${g.Personer}</span>
+      </div>
+      <button onclick="angraGodkannande('${g.Nyckel}')" style="font-size:11px;border:1px solid #c00;color:#c00;border-radius:5px;padding:3px 8px;cursor:pointer;background:white;font-weight:700;white-space:nowrap;">Ångra</button>
+    </div>`;
+  });
+  ut.innerHTML = html;
+}
+
+async function angraGodkannande(nyckel){
+  const svar = await postAdmin({ action: "angraGodkannande", nyckel });
+  if (svar && svar.success) {
+    visaGodkandaKrockar();
+  } else {
+    visaNotis("Kunde inte ångra godkännandet" + (svar && svar.error ? ": " + svar.error : "") + ". Försök igen.", "error");
+  }
+}
+
+/* ===== VARNING VID DUBBELBOKNING ===== */
+function kontrolleraKrockarForeSpara(datum, start, slut, deltagare, coacher, excludeId) {
+  const sMin = timeToMinKrock(start);
+  const eMin = timeToMinKrock(slut);
+  if (sMin===null || eMin===null) return [];
+
+  const konflikter = [];
+
+  DATA.forEach(r => {
+    if (String(r.Datum).slice(0,10) !== datum) return;
+    if (r.EventId && excludeId && r.EventId === excludeId) return;
+
+    const rs = timeToMinKrock(r.Start), re = timeToMinKrock(r.Slut);
+    if (rs===null||re===null) return;
+    if (sMin >= re || rs >= eMin) return; // ingen överlapp
+
+    // Kolla coacher
+    const rCoaches = (r.Coach||"").split(/,\s*/).map(x=>x.trim()).filter(x=>x&&x!==".");
+    const gemCoach = coacher.filter(c => rCoaches.some(d => d.toLowerCase()===c.toLowerCase()));
+
+    // Kolla deltagare
+    const rDelt = (r.Deltagare||"").split(/,\s*/).map(x=>x.trim()).filter(x=>x&&x!=="."&&x.toLowerCase()!=="alla");
+    const gemDelt = deltagare.filter(d => rDelt.some(e => e.toLowerCase()===d.toLowerCase()));
+
+    if (gemCoach.length || gemDelt.length) {
+      konflikter.push({ r, gemCoach, gemDelt });
+    }
+  });
+
+  return konflikter;
+}
+</script>
+<script>
+/* ===== TA BORT PERSON ===== */
+
+// Visa/dölj panelen beroende på adminläge
+const _origLas2 = lasAdminPanel;
+lasAdminPanel = function() {
+  _origLas2();
+  const flytandeBtn = document.getElementById("btnNyAktivitetFlytande");
+  if (flytandeBtn) flytandeBtn.style.display = "none";
+};
+
+// Autocomplete i ta-bort-fältet
+document.getElementById("taBortInput")?.addEventListener("input", function() {
+  const q = this.value.trim();
+  const dd = document.getElementById("taBortDropdown");
+  if (!dd) return;
+
+  const alla = [...new Set([...LISTOR_DELTAGARE, ...LISTOR_COACHER])];
+  acByggLista(dd, alla, q, (namn) => {
+    document.getElementById("taBortInput").value = namn;
+    visaTaBortForhandsgranska();
+  });
+});
+
+document.getElementById("taBortInput")?.addEventListener("keydown", (e) => {
+  const dd = document.getElementById("taBortDropdown");
+  if (dd) acHanteraTangent(e, dd);
+});
+
+document.getElementById("taBortInput")?.addEventListener("blur", () => {
+  setTimeout(() => {
+    const dd = document.getElementById("taBortDropdown");
+    if (dd) dd.style.display = "none";
+  }, 150);
+});
+
+function visaTaBortForhandsgranska() {
+  const namn = (document.getElementById("taBortInput")?.value || "").trim();
+  const ut = document.getElementById("taBortForhandsgranska");
+  if (!ut) return;
+
+  if (!namn || namn.length < 2) { ut.innerHTML = ""; return; }
+
+  const matchande = DATA.filter(r => {
+    const d = (r.Deltagare||"").split(/,\s*/).map(x=>x.trim());
+    const c = (r.Coach||"").split(/,\s*/).map(x=>x.trim());
+    return d.some(x => x.toLowerCase() === namn.toLowerCase()) ||
+           c.some(x => x.toLowerCase() === namn.toLowerCase());
+  });
+
+  if (!matchande.length) {
+    ut.innerHTML = `<div style="color:#888;font-size:13px;margin-top:6px;">${namn} finns inte i något schema denna vecka.</div>`;
+    return;
+  }
+
+  const dagNamn = ["sön","mån","tis","ons","tor","fre","lör"];
+  ut.innerHTML = `<div style="font-size:13px;color:#555;margin-top:8px;margin-bottom:6px;">
+    <strong>${matchande.length} aktivitet${matchande.length!==1?"er":""}</strong> kommer att uppdateras:</div>` +
+    matchande.map(r => {
+      const d = new Date(String(r.Datum).slice(0,10) + "T12:00:00");
+      return `<div style="font-size:12px;color:#444;padding:3px 0;">
+        ${dagNamn[d.getDay()]} ${d.toLocaleDateString("sv-SE",{day:"numeric",month:"short"})} 
+        · ${r.Start}–${r.Slut} · ${r.Aktivitet||""}
+      </div>`;
+    }).join("");
+}
+
+async function utforTaBort() {
+  const namn = (document.getElementById("taBortInput")?.value || "").trim();
+  if (!namn) { visaNotis("Skriv in ett namn.", "info"); return; }
+  if (!adminUnlocked) return;
+
+  const matchande = DATA.filter(r => {
+    const d = (r.Deltagare||"").split(/,\s*/).map(x=>x.trim());
+    const c = (r.Coach||"").split(/,\s*/).map(x=>x.trim());
+    return d.some(x => x.toLowerCase() === namn.toLowerCase()) ||
+           c.some(x => x.toLowerCase() === namn.toLowerCase());
+  });
+
+  if (!matchande.length) {
+    visaNotis(namn + " finns inte i något schema denna vecka.", "info");
+    return;
+  }
+
+  const bekrafta = confirm(`Ta bort ${namn} helt från ${matchande.length} aktivitet${matchande.length!==1?"er":""} (alla framtida veckor, inte bara denna)?\n\nÖvriga deltagare påverkas inte. Om ${namn} är den enda deltagaren på en aktivitet raderas den aktiviteten helt (alla framtida veckor). ${namn} tas även bort ur namnlistan.`);
+  if (!bekrafta) return;
+
+  const ut = document.getElementById("taBortForhandsgranska");
+  if (ut) ut.innerHTML = `<div style="color:#888;font-size:13px;margin-top:8px;">Tar bort ${namn}... (${matchande.length} aktiviteter)</div>`;
+
+  const _indikator = document.getElementById("globalSaveIndicator");
+  if (_indikator) { _indikator.textContent = "🗑 Tar bort " + namn + " (0/" + matchande.length + ")..."; _indikator.style.display = "block"; }
+
+  // Varna om man försöker lämna/stänga sidan medan det pågår - annars kan
+  // borttagningen avbrytas i halvfärdigt läge utan att man vet vilka
+  // aktiviteter som hann uppdateras.
+  const _lamnaVarning = (e) => { e.preventDefault(); e.returnValue = ""; };
+  window.addEventListener("beforeunload", _lamnaVarning);
+
+  // Skicka varje uppdatering till Apps Script
+  let lyckades = 0;
+  const misslyckade = [];
+  let _klara = 0;
+  for (const r of matchande) {
+    // Hoppa över aktiviteter som precis skapats och inte hunnit få ett
+    // riktigt kalender-ID än - samma skydd som i redigeringsrutan.
+    if ((r.EventId || "").indexOf("temp_") === 0) {
+      misslyckade.push((r.Aktivitet||"?") + " (" + r.Datum + ", sparas fortfarande - försök igen om en stund)");
+      _klara++;
+      if (_indikator) _indikator.textContent = "🗑 Tar bort " + namn + " (" + _klara + "/" + matchande.length + ")...";
+      continue;
+    }
+
+    // Bygg ny titel utan namnet
+    const taBortNamn = (str) => (str||"").split(/,\s*/)
+      .map(x=>x.trim())
+      .filter(x => x.toLowerCase() !== namn.toLowerCase())
+      .join(", ") || ".";
+
+    const nyDeltagare = taBortNamn(r.Deltagare);
+    const nyCoach = taBortNamn(r.Coach);
+
+    let nyTitel = "";
+    if (nyDeltagare && nyDeltagare !== ".") nyTitel += nyDeltagare + " - ";
+    else nyTitel += ". - ";
+    nyTitel += (r.Aktivitet||"");
+    if (nyCoach) nyTitel += " (" + nyCoach + ")";
+
+    const datum = String(r.Datum).slice(0,10);
+    const tzOff2 = (() => {
+      const d = new Date(datum + "T" + r.Start + ":00");
+      const off = -d.getTimezoneOffset();
+      const h = String(Math.floor(Math.abs(off)/60)).padStart(2,"0");
+      const m = String(Math.abs(off)%60).padStart(2,"0");
+      return (off >= 0 ? "+" : "-") + h + ":" + m;
+    })();
+    const startISO = datum + "T" + r.Start + ":00" + tzOff2;
+    const slutISO  = datum + "T" + r.Slut  + ":00" + tzOff2;
+
+    let svar;
+    if (nyDeltagare === ".") {
+      // Sista deltagaren togs bort - HELA serien raderas (alla framtida
+      // veckor), inte bara denna veckas tillfälle. Annars skulle aktiviteten
+      // "återuppstå" med personen kvar nästa vecka.
+      svar = await postAdmin({
+        action: "delete",
+        id: r.EventId,
+        deleteType: "all",
+        datum: datum,
+        start: r.Start,
+        dolLoggning: true
+      });
+    } else {
+      // editType:"all" - personen ska bort permanent, från alla framtida
+      // veckor av serien, inte bara den vecka som visas just nu.
+      svar = await postAdmin({
+        action: "update",
+        id: r.EventId,
+        title: nyTitel,
+        start: startISO,
+        end: slutISO,
+        editType: "all",
+        dolLoggning: true
+      });
+    }
+
+    if (svar && svar.success === true) {
+      lyckades++;
+    } else {
+      misslyckade.push((r.Aktivitet||"?") + " (" + r.Datum + ", " + r.Start + ")" +
+        (svar && svar.error ? " - " + svar.error : ""));
+    }
+    _klara++;
+    if (_indikator) _indikator.textContent = "🗑 Tar bort " + namn + " (" + _klara + "/" + matchande.length + ")...";
+  }
+
+  window.removeEventListener("beforeunload", _lamnaVarning);
+  if (_indikator) _indikator.style.display = "none";
+
+  // En enda samlad rad i Historik istället för en rad per aktivitet -
+  // annars skulle övriga senaste-poster drunkna om personen var med i
+  // många aktiviteter.
+  if (lyckades > 0) {
+    await postAdmin({
+      action: "loggaBulkBorttagning",
+      namn: namn,
+      aktiviteter: matchande.map(r => r.Aktivitet || "?")
+    });
+  }
+
+  // Personen har slutat helt - ta bort ur namnlistan så den inte längre
+  // dyker upp som förslag.
+  const listaSvar = await postAdmin({ action: "taBortFranLista", namn: namn });
+  if (listaSvar && listaSvar.success) {
+    LISTOR_DELTAGARE = LISTOR_DELTAGARE.filter(n => n.toLowerCase() !== namn.toLowerCase());
+    LISTOR_COACHER = LISTOR_COACHER.filter(n => n.toLowerCase() !== namn.toLowerCase());
+  }
+
+  await new Promise(res => setTimeout(res, 800));
+  document.getElementById("taBortInput").value = "";
+  if (ut) {
+    let html = `<div style="color:#065f46;font-size:13px;margin-top:8px;">✅ ${namn} borttagen helt, från ${lyckades} aktivitet${lyckades!==1?"er":""} och ur namnlistan.</div>`;
+    if (misslyckade.length) {
+      html += `<div style="color:#991b1b;font-size:13px;margin-top:6px;font-weight:700;">⚠️ Misslyckades för ${misslyckade.length}:</div>` +
+        misslyckade.map(m => `<div style="color:#991b1b;font-size:12px;padding:2px 0;">${m}</div>`).join("");
+    }
+    ut.innerHTML = html;
+  }
+  await loadData();
+}
+</script>
+<script>
+/* ===== Aktivitet autocomplete ===== */
+window.addEventListener("load", () => {
+  const inp = document.getElementById("rAktivitet");
+  const dd = document.getElementById("rAktivitetDropdown");
+  if (!inp || !dd) return;
+
+  inp.addEventListener("input", () => {
+    acByggLista(dd, LISTOR_AKTIVITETER, inp.value, (namn) => { inp.value = namn; });
+  });
+
+  inp.addEventListener("blur", () => setTimeout(() => dd.style.display = "none", 150));
+  inp.addEventListener("keydown", e => {
+    if (e.key === "Escape") { dd.style.display = "none"; return; }
+    acHanteraTangent(e, dd);
+  });
+});
+</script>
+<script>
+/* ===== RRULE-tolkning ===== */
+function tolkRRule(rrule) {
+  if (!rrule) return null;
+  
+  const r = rrule.replace("RRULE:", "");
+  const delar = {};
+  r.split(";").forEach(d => {
+    const [k, v] = d.split("=");
+    delar[k] = v;
+  });
+
+  const dagNamn = { MO:"måndag", TU:"tisdag", WE:"onsdag", TH:"torsdag", FR:"fredag", SA:"lördag", SU:"söndag" };
+  const rruleDag = { MO:"MO", TU:"TU", WE:"WE", TH:"TH", FR:"FR", SA:"SA", SU:"SU" };
+
+  let typ = "none";
+  let dagar = [];
+  let text = "";
+
+  if (delar.FREQ === "DAILY") {
+    typ = "daily";
+    text = "Återkommer varje dag";
+  } else if (delar.FREQ === "WEEKLY") {
+    const bydag = (delar.BYDAY || "").split(",").filter(Boolean);
+    if (bydag.length === 1) {
+      typ = "weekly";
+      text = "Återkommer varje " + (dagNamn[bydag[0]] || bydag[0]);
+    } else if (bydag.length > 1) {
+      typ = "custom";
+      dagar = bydag;
+      text = "Återkommer varje " + bydag.map(d => dagNamn[d] || d).join(", ");
+    }
+  }
+
+  // Slutvillkor
+  if (delar.UNTIL) {
+    const u = delar.UNTIL;
+    const datum = u.slice(0,4) + "-" + u.slice(4,6) + "-" + u.slice(6,8);
+    text += " t.o.m. " + new Date(datum).toLocaleDateString("sv-SE", {day:"numeric", month:"long", year:"numeric"});
+  } else if (delar.COUNT) {
+    text += " (" + delar.COUNT + " gånger)";
+  }
+
+  return { typ, dagar, text, rrule };
+}
+
+/* Uppdatera oppnaRedigeraModal för att hämta RRULE vid klick */
+const _rruleCache = {};
+
+const _origOppna = oppnaRedigeraModal;
+oppnaRedigeraModal = function(r) {
+  _origOppna(r);
+
+  const rruleInfo = document.getElementById("rruleInfo");
+  if (rruleInfo) {
+    rruleInfo.textContent = "⏳ Laddar information...";
+    rruleInfo.style.display = "block";
+    rruleInfo.style.background = "#fff3cd";
+    rruleInfo.style.color = "#856404";
+  }
+
+  // Inaktivera Spara/Radera tills informationen om återkommande har laddat,
+  // så man inte hinner klicka innan modalen är redo.
+  const btnSpara = document.getElementById("rBtnSpara");
+  const btnRadera = document.getElementById("rBtnRadera");
+  if (btnSpara) { btnSpara.disabled = true; btnSpara.style.opacity = "0.5"; btnSpara.style.cursor = "not-allowed"; }
+  if (btnRadera) { btnRadera.disabled = true; btnRadera.style.opacity = "0.5"; btnRadera.style.cursor = "not-allowed"; }
+
+  function laddningKlar() {
+    if (btnSpara) { btnSpara.disabled = false; btnSpara.style.opacity = ""; btnSpara.style.cursor = "pointer"; }
+    if (btnRadera) { btnRadera.disabled = false; btnRadera.style.opacity = ""; btnRadera.style.cursor = "pointer"; }
+    if (rruleInfo && rruleInfo.textContent === "⏳ Laddar information...") {
+      rruleInfo.textContent = "";
+      rruleInfo.style.display = "none";
+    }
+    if (rruleInfo) { rruleInfo.style.background = "#e8f0fe"; rruleInfo.style.color = "#1a3a6b"; }
+  }
+
+  const eventId = r.EventId || r.id || "";
+  if (!eventId) { laddningKlar(); return; }
+
+  const evIdShort = eventId; // Skicka hela ID:t
+
+  function tillaRRule(rruleRaw) {
+    const tolkat = tolkRRule(rruleRaw);
+    const repeatSel = document.getElementById("rRepeat");
+    const customDiv = document.getElementById("rCustomDays");
+    const endWrap = document.getElementById("rEndDateWrap");
+    if (!repeatSel) return;
+
+    if (tolkat && tolkat.typ !== "none") {
+      repeatSel.value = tolkat.typ;
+      if (tolkat.typ === "custom") {
+        document.querySelectorAll("#rCustomDays input[type=checkbox]").forEach(cb => {
+          cb.checked = tolkat.dagar.includes(cb.value);
+        });
+      }
+      if (endWrap) endWrap.style.display = "block";
+      if (customDiv) customDiv.style.display = tolkat.typ === "custom" ? "block" : "none";
+      if (rruleInfo) {
+        rruleInfo.textContent = tolkat.text;
+        rruleInfo.style.display = "block";
+      }
+    }
+  }
+
+  // 1) Cache från just genomförd spara/redigera (känt direkt, ingen fråga behövs).
+  if (_rruleCache[evIdShort] !== undefined) {
+    tillaRRule(_rruleCache[evIdShort]);
+    laddningKlar();
+    return;
+  }
+
+  // 2) Redan hämtat i det gemensamma anropet som laddade hela schemat -
+  //    ingen extra fråga till kalendern behövs för de allra flesta klick.
+  const masterIdForRrule = evIdShort.includes("_") ? evIdShort.split("_")[0] : evIdShort;
+  if (typeof RRULES_MAP !== "undefined" && RRULES_MAP[masterIdForRrule] !== undefined) {
+    tillaRRule(RRULES_MAP[masterIdForRrule]);
+    laddningKlar();
+    return;
+  }
+
+  // 3) Sista utväg (sällsynt): fråga kalendern direkt om just denna.
+  fetch(url + "?rrule=" + encodeURIComponent(evIdShort.split("@")[0]) + "&t=" + Date.now() + "&visakod=" + encodeURIComponent(VISAKOD_VARDE))
+    .then(r => r.json())
+    .then(json => {
+      _rruleCache[evIdShort] = json.rrule || "";
+      tillaRRule(_rruleCache[evIdShort]);
+    })
+    .catch(() => {})
+    .finally(() => { laddningKlar(); });
+};
+</script>
+<script>
+/* ===== Förvals-dialog för återkommande aktiviteter ===== */
+let _redigeraTyp = "single"; // single, future, all
+
+// Klick på block öppnar redigeringsrutan direkt. Serie-frågan (bara detta /
+// framtida / alla) ställs vid Spara, av sparaFranModal() självt, om
+// aktiviteten visar sig vara återkommande - se den funktionen.
+document.addEventListener("click", function(e) {
+  if (!adminUnlocked) return;
+  const block = e.target.closest(".block");
+  if (!block || !block.__eventData) return;
+  e.stopPropagation();
+  oppnaRedigeraModal(block.__eventData);
+}, true);
+
+function oppnaModalMedVal(typ) {
+  _redigeraTyp = typ;
+  document.getElementById("repeatValOverlay").style.display = "none";
+  // Fortsätt sparandet med det valda typet - läser samma formulärfält som
+  // redan var ifyllda (modalen har inte stängts under tiden).
+  sparaFranModal(true);
+}
+</script>

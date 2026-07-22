@@ -39,99 +39,137 @@ header .title{ font-weight:900; font-size:18px; }
 
 .picto-wrap{ width:100%; max-width:1100px; margin:0 auto; }
 
-/* A4: 297mm. Margins 6mm top+bottom => 285mm usable */
+/* A4: 297mm. Marginal 6mm topp+botten => 285mm användbart. */
 :root{
   --pageH: 285mm;
-  --titleH: 9mm;
-  --gap: 2mm;
-  --itemH: calc((var(--pageH) - var(--titleH) - (7 * var(--gap))) / 8);
 }
 
-/* Default day block (prints one day per page) */
 .picto-day{
   background:#fff;
   height: var(--pageH);
-  display:grid;
-  grid-template-rows: var(--titleH) repeat(8, var(--itemH));
-  row-gap: var(--gap);
+  display:flex;
+  flex-direction:column;
   break-after: page;
   page-break-after: always;
 }
-
+/* Sista dagen delar sidan med källhänvisningsraden - ge den lite mindre
+   höjd så båda garanterat får plats (samma lärdom som från veckoschemat). */
 .picto-day:last-child{
+  height: calc(var(--pageH) - 8mm);
   break-after: auto;
   page-break-after: auto;
 }
 
 .picto-day-title{
   text-align:center;
-  font-size:15pt;
+  font-size:17pt;
   font-weight:900;
-  line-height: var(--titleH);
-  height: var(--titleH);
+  padding:5mm 0;
+  border-radius:10px;
+  margin-bottom:3mm;
+  flex-shrink:0;
   overflow:hidden;
   white-space:nowrap;
   text-overflow:ellipsis;
 }
+.rubrik-mandag{ background:#a8d98a; }
+.rubrik-tisdag{ background:#8ec8ec; }
+.rubrik-onsdag{ background:#ffffff; border:2px solid #000; }
+.rubrik-torsdag{ background:#b98a5a; color:#fff; }
+.rubrik-fredag{ background:#f5e05a; }
 
-/* Item card */
+.picto-rader{
+  flex:1;
+  display:grid;
+  gap: 3mm;
+  min-height:0;
+}
+
+/* Aktivitetskort: klocka+tid till vänster, bild+namn+coach till höger */
 .picto-item{
-  height: var(--itemH);
   border: 2.5px solid #000;
   border-radius: 12px;
   display:grid;
-  grid-template-columns: 78px 1fr 145px;
-  align-items:center;
-  gap: 4mm;
-  padding: 3.2mm;
+  grid-template-columns: 30mm 1fr;
   overflow:hidden;
+  min-height:0;
   break-inside: avoid;
   page-break-inside: avoid;
 }
 
+.picto-time-cell{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1.5mm;
+  border-right: 2px solid #000;
+  background:#fafafa;
+  padding:2mm 1mm;
+  min-width:0;
+}
+.picto-time-cell .klocka{ display:block; }
+.picto-time-cell .klocka svg{ display:block; width:100%; height:100%; }
 .picto-time{
   text-align:center;
-  font-size:16pt;
   font-weight:900;
   line-height:1.0;
   white-space:nowrap;
 }
-.picto-act{ text-align:center; overflow:hidden; }
-.picto-act .emoji{ font-size:30pt; line-height:0.95; }
+.picto-act{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1.5mm;
+  text-align:center;
+  overflow:hidden;
+  padding:2mm;
+  min-height:0;
+}
+.picto-act .emoji{ line-height:0.95; flex-shrink:1; min-height:0; }
+.picto-act .pictoimg{ object-fit:contain; flex-shrink:1; min-height:0; }
 .picto-act .label{
-  font-size:13.5pt;
   font-weight:900;
-  line-height:1.0;
+  line-height:1.1;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
+  max-width:100%;
+}
+.picto-coach-rad{
+  display:flex;
+  align-items:center;
+  gap:2mm;
+}
+.picto-coach-avatar{
+  border-radius:50%;
+  background:#cbd5e1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  color:#475569;
+  flex-shrink:0;
+  /* Plats reserverad för framtida foto på coachen - byt bakgrund mot
+     <img class="picto-coach-avatar" src="..."> när foton finns. */
 }
 .picto-coach{
-  text-align:center;
-  font-size:11pt;
-  font-weight:900;
-  line-height:1.0;
+  font-weight:700;
+  color:#475569;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
 }
 
-/* Tight mode (only when 8 items) – this is the “last mile” */
-.picto-day.tight{
-  --titleH: 8mm;
-  --gap: 1.5mm;
-}
-.picto-day.tight .picto-item{
-  padding: 2.7mm;
-  border-width: 2px;
-  grid-template-columns: 74px 1fr 140px;
-}
-.picto-day.tight .picto-time{ font-size:15pt; }
-.picto-day.tight .picto-act .emoji{ font-size:28pt; }
-.picto-day.tight .picto-act .label{ font-size:12.8pt; }
-.picto-day.tight .picto-coach{ font-size:10.5pt; }
-
 .hint{ text-align:center; margin:18mm auto 0 auto; font-size:14px; color:#333; max-width:700px; }
+
+.kredit{
+  text-align:center;
+  font-size:8pt;
+  color:#666;
+  margin-top:3mm;
+}
 
 @media print{
   body{ background:#fff; padding:0; }
@@ -155,7 +193,122 @@ header .title{ font-weight:900; font-size:18px; }
 <div id="output" class="picto-wrap"></div>
 
 <script>
+// Bildkarta: aktivitetsnamn -> riktig ARASAAC/OpenMoji-bildadress (istället
+// för bara emoji). Aktiviteter som inte finns här behåller sin emoji.
+// Källor: ARASAAC (CC BY-NC-SA, Sergio Palao/Regeringen i Aragonien),
+// OpenMoji (CC BY-SA, OpenMoji-projektet) - se kreditrad längst ner.
+const PICTO_BILDER = {
+  "Ateljé": "https://globalsymbols.com/uploads/production/image/imagefile/15869/17_15870_e6942be9-ba7f-4cad-b521-4009e099b495.png",
+  "Ateljén": "https://globalsymbols.com/uploads/production/image/imagefile/15869/17_15870_e6942be9-ba7f-4cad-b521-4009e099b495.png",
+  "Autentiskt relaterande": "https://globalsymbols.com/uploads/production/image/imagefile/15126/17_15127_dc576e8b-1e66-427c-b721-dc28352ea457.png",
+  "Avslappning": "https://globalsymbols.com/uploads/production/image/imagefile/24053/17_24054_2b953703-553a-4501-aa33-76cf7c8577be.png",
+  "Bad": "https://globalsymbols.com/uploads/production/image/imagefile/21219/17_21220_46d90149-0be1-4061-9dc8-660f8083e822.png",
+  "Behandling": "https://globalsymbols.com/uploads/production/image/imagefile/18690/17_18691_399a0b2a-4e38-4125-a222-107a01d236bf.png",
+  "Behandlingar": "https://globalsymbols.com/uploads/production/image/imagefile/18690/17_18691_399a0b2a-4e38-4125-a222-107a01d236bf.png",
+  "Biljard": "https://kuha.papunet.net/api/image/37083?lang=se",
+  "Egen musikproduktion": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Film": "https://globalsymbols.com/uploads/production/image/imagefile/20763/17_20764_c5fbb443-017a-447d-8706-307f8f671fb6.png",
+  "Filmgruppen": "https://globalsymbols.com/uploads/production/image/imagefile/91461/17_91462_516a56fc-2b86-45a4-b157-21bc52d418f0.png",
+  "Filmkunskap": "https://globalsymbols.com/uploads/production/image/imagefile/20763/17_20764_c5fbb443-017a-447d-8706-307f8f671fb6.png",
+  "Foto": "https://globalsymbols.com/uploads/production/image/imagefile/21852/17_21853_fa7305e0-a2bf-4362-9e0c-a4fd1bcccb03.png",
+  "Frukost": "https://globalsymbols.com/uploads/production/image/imagefile/22048/17_22049_5d15e20c-8654-4f80-b4c7-6a7bc7a20f6f.png",
+  "Föreningsgruppen": "https://globalsymbols.com/uploads/production/image/imagefile/90134/17_90135_766590c7-7893-4430-b1eb-6f62662bbce2.png",
+  "Gaming": "https://globalsymbols.com/uploads/production/image/imagefile/14077/17_14078_f2076265-a72e-4141-8f3c-72b1e5ab5ce0.png",
+  "Gruppmöte": "https://globalsymbols.com/uploads/production/image/imagefile/90134/17_90135_766590c7-7893-4430-b1eb-6f62662bbce2.png",
+  "Gym": "https://globalsymbols.com/uploads/production/image/imagefile/20757/17_20758_5c18bbe3-3899-464e-8ea4-eee80c32feef.png",
+  "Gym Slottskogens Gym": "https://globalsymbols.com/uploads/production/image/imagefile/20757/17_20758_5c18bbe3-3899-464e-8ea4-eee80c32feef.png",
+  "Gåträning": "https://globalsymbols.com/uploads/production/image/imagefile/22772/17_22773_0c40a5dc-cc65-48c3-b474-ae152d95c374.png",
+  "Gåträning / byte till rullstol": "https://globalsymbols.com/uploads/production/image/imagefile/22772/17_22773_0c40a5dc-cc65-48c3-b474-ae152d95c374.png",
+  "Handla": "https://globalsymbols.com/uploads/production/image/imagefile/18737/17_18738_601b8b5f-ea0b-4c9c-bfb6-7afd8ea1f850.png",
+  "Handling": "https://globalsymbols.com/uploads/production/image/imagefile/18737/17_18738_601b8b5f-ea0b-4c9c-bfb6-7afd8ea1f850.png",
+  "Kommunikation": "https://globalsymbols.com/uploads/production/image/imagefile/20141/17_20142_b0ca6955-0a02-46e3-92f2-2e90ab85bfb5.png",
+  "Kulturpromenad": "https://globalsymbols.com/uploads/production/image/imagefile/45995/17_45996_5d08e7f1-682d-4a7b-873c-00767961ba5a.png",
+  "Ladda stol": "https://kuha.papunet.net/api/image/25895?lang=se",
+  "Lokalvård": "https://globalsymbols.com/uploads/production/image/imagefile/19201/17_19202_d6559eb6-c8ba-47ea-8926-f17f6f03fce3.png",
+  "Lunch": "https://globalsymbols.com/uploads/production/image/imagefile/22049/17_22050_45e2e39f-cbb1-4790-879b-82c0d8c8600f.png",
+  "Lunch Anders B": "https://globalsymbols.com/uploads/production/image/imagefile/22049/17_22050_45e2e39f-cbb1-4790-879b-82c0d8c8600f.png",
+  "Lunch Mio": "https://globalsymbols.com/uploads/production/image/imagefile/22049/17_22050_45e2e39f-cbb1-4790-879b-82c0d8c8600f.png",
+  "Lunchpromenad": "https://globalsymbols.com/uploads/production/image/imagefile/45099/17_45100_7b922e9d-7fed-45a6-baf4-d81585864780.png",
+  "Manusarbete": "https://globalsymbols.com/uploads/production/image/imagefile/18486/17_18487_ed68deab-09e0-4580-8799-78b1bed9c2c5.png",
+  "Mediagruppen": "https://globalsymbols.com/uploads/production/image/imagefile/15121/17_15122_f3d06bca-097f-4152-ab7d-87e377d28a7f.png",
+  "Medicin": "https://globalsymbols.com/uploads/production/image/imagefile/22806/17_22807_2cd9c984-ba4f-450f-983c-57b1c58d964f.png",
+  "morgonrutiner": "https://globalsymbols.com/uploads/production/image/imagefile/22048/17_22049_5d15e20c-8654-4f80-b4c7-6a7bc7a20f6f.png",
+  "Musik": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Musik veckomöte": "https://globalsymbols.com/uploads/production/image/imagefile/45970/17_45971_20061863-6cc3-4f64-bde5-d88845ef2ba1.png",
+  "Musikdokumentär": "https://globalsymbols.com/uploads/production/image/imagefile/20763/17_20764_c5fbb443-017a-447d-8706-307f8f671fb6.png",
+  "Musikproduktion": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Musikquizz": "https://kuha.papunet.net/api/image/10230?lang=se",
+  "Musikutbyte": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Måndagsmöte": "https://d18vdu4p71yql0.cloudfront.net/libraries/arasaac/meeting_2.png.varianted-skin.png",
+  "Padel": "https://globalsymbols.com/uploads/production/image/imagefile/45875/17_45876_8fb73cc2-b9eb-41ea-a94c-708ec7dc5f54.png",
+  "Pod": "https://globalsymbols.com/uploads/production/image/imagefile/46615/17_46616_d1f2df66-9748-4077-b6d4-8002f4e5e41d.png",
+  "Pod sidbenor": "https://globalsymbols.com/uploads/production/image/imagefile/46615/17_46616_d1f2df66-9748-4077-b6d4-8002f4e5e41d.png",
+  "Pod Sidbenor": "https://globalsymbols.com/uploads/production/image/imagefile/46615/17_46616_d1f2df66-9748-4077-b6d4-8002f4e5e41d.png",
+  "Poesi": "https://globalsymbols.com/uploads/production/image/imagefile/20115/17_20116_8cb3621c-e44d-4dc0-b1f6-b66beb05ce00.png",
+  "Poesigrupp": "https://globalsymbols.com/uploads/production/image/imagefile/20115/17_20116_8cb3621c-e44d-4dc0-b1f6-b66beb05ce00.png",
+  "Poesigruppen": "https://globalsymbols.com/uploads/production/image/imagefile/20115/17_20116_8cb3621c-e44d-4dc0-b1f6-b66beb05ce00.png",
+  "Promenad": "https://globalsymbols.com/uploads/production/image/imagefile/45099/17_45100_7b922e9d-7fed-45a6-baf4-d81585864780.png",
+  "Relax Massagestol": "https://globalsymbols.com/uploads/production/image/imagefile/18690/17_18691_399a0b2a-4e38-4125-a222-107a01d236bf.png",
+  "Rep och jam": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Samtal": "https://globalsymbols.com/uploads/production/image/imagefile/20141/17_20142_b0ca6955-0a02-46e3-92f2-2e90ab85bfb5.png",
+  "Samtal onsdag eller torsdag": "https://globalsymbols.com/uploads/production/image/imagefile/20141/17_20142_b0ca6955-0a02-46e3-92f2-2e90ab85bfb5.png",
+  "Skrivgruppen": "https://globalsymbols.com/uploads/production/image/imagefile/18486/17_18487_ed68deab-09e0-4580-8799-78b1bed9c2c5.png",
+  "Spelgruppen": "https://globalsymbols.com/uploads/production/image/imagefile/16111/17_16112_5a348a88-231c-432d-b9c0-75d7db180e0f.png",
+  "Sömnad": "https://globalsymbols.com/uploads/production/image/imagefile/17747/17_17748_ee036703-ee3a-4036-af92-2d49d11b47dc.png",
+  "Teatergruppen": "https://globalsymbols.com/uploads/production/image/imagefile/45186/17_45187_638828ee-65a2-472f-8f5e-d655c9db7823.png",
+  "Toa, promenad": "https://globalsymbols.com/uploads/production/image/imagefile/45099/17_45100_7b922e9d-7fed-45a6-baf4-d81585864780.png",
+  "Transkibering": "https://globalsymbols.com/uploads/production/image/imagefile/15450/17_15451_071f0a09-5ca9-40e7-bce1-ca6bb8d71ae5.png",
+  "Transkribering": "https://globalsymbols.com/uploads/production/image/imagefile/15450/17_15451_071f0a09-5ca9-40e7-bce1-ca6bb8d71ae5.png",
+  "Trummor": "https://globalsymbols.com/uploads/production/image/imagefile/20477/17_20478_5707acd8-4721-44ac-a19e-c0a974ee3489.png",
+  "Uppstart": "https://kuha.papunet.net/api/image/22979?lang=se",
+  "Utflykt": "https://globalsymbols.com/uploads/production/image/imagefile/45099/17_45100_7b922e9d-7fed-45a6-baf4-d81585864780.png",
+  "Vocal": "https://kuha.papunet.net/api/image/38276?lang=se",
+  "Warhammer": "https://globalsymbols.com/uploads/production/image/imagefile/16848/17_16849_d088f45b-031a-455b-b22f-05df0a144a6e.png",
+  "Yoga": "https://globalsymbols.com/uploads/production/image/imagefile/18777/17_18778_715a40e5-3fc6-420a-a4a2-3bab9327390c.png",
+  "Öppen verkstad": "https://globalsymbols.com/uploads/production/image/imagefile/19354/17_19355_84de2a2f-f810-4a14-83f4-d06c67e6f565.png"
+};
+
 (function(){
+  function analogKlocka(tidStr){
+    const m = /(\d{1,2}):(\d{2})/.exec(tidStr || "");
+    if (!m) return "";
+    const h = parseInt(m[1], 10) % 12;
+    const min = parseInt(m[2], 10);
+    const minAngle = min * 6;
+    const hourAngle = (h + min / 60) * 30;
+    const cx = 30, cy = 30, r = 27;
+    function point(angleDeg, length) {
+      const rad = (angleDeg - 90) * Math.PI / 180;
+      return [cx + length * Math.cos(rad), cy + length * Math.sin(rad)];
+    }
+    let marks = "";
+    for (let i = 0; i < 12; i++) {
+      const a = i * 30;
+      const [x1, y1] = point(a, r - 3);
+      const [x2, y2] = point(a, r - (i % 3 === 0 ? 9 : 5));
+      marks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#000" stroke-width="${i % 3 === 0 ? 2.2 : 1.3}"/>`;
+    }
+    const [hx, hy] = point(hourAngle, 13);
+    const [mx, my] = point(minAngle, 22);
+    return `<svg viewBox="0 0 60 60" aria-hidden="true">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#000" stroke-width="2.5"/>
+      ${marks}
+      <line x1="${cx}" y1="${cy}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+      <line x1="${cx}" y1="${cy}" x2="${mx.toFixed(1)}" y2="${my.toFixed(1)}" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="${cx}" cy="${cy}" r="2.2" fill="#000"/>
+    </svg>`;
+  }
+
+  function veckodagsKlass(text){
+    const t = (text || "").toLowerCase();
+    if (t.includes("mån")) return "rubrik-mandag";
+    if (t.includes("tis")) return "rubrik-tisdag";
+    if (t.includes("ons")) return "rubrik-onsdag";
+    if (t.includes("tors")) return "rubrik-torsdag";
+    if (t.includes("fre")) return "rubrik-fredag";
+    return "";
+  }
+
   function getData(){
     try{
       const raw = localStorage.getItem("PICTO_DATA_V1");
@@ -187,43 +340,144 @@ header .title{ font-weight:900; font-size:18px; }
     return;
   }
 
+  const root = document.documentElement.style;
+
   data.forEach(day => {
     if(!day.items || !day.items.length) return;
 
-    const items = day.items.slice(0,8);
+    const items = day.items.slice(0, 8);
+    const antal = items.length;
+
     const dayDiv = document.createElement("div");
-    dayDiv.className = "picto-day" + (items.length === 8 ? " tight" : "");
+    dayDiv.className = "picto-day";
 
     const title = document.createElement("div");
-    title.className = "picto-day-title";
+    title.className = "picto-day-title " + veckodagsKlass(day.title);
     title.textContent = day.title;
     dayDiv.appendChild(title);
+
+    const raderDiv = document.createElement("div");
+    raderDiv.className = "picto-rader";
+    raderDiv.style.gridTemplateRows = `repeat(${antal}, 1fr)`;
+    dayDiv.appendChild(raderDiv);
 
     items.forEach(item => {
       const el = document.createElement("div");
       el.className = "picto-item";
+
+      // Använd riktig bild om vi har en för aktiviteten, annars emoji som förut.
+      const bildUrl = PICTO_BILDER[item.label];
+      const bildHtml = bildUrl
+        ? `<img class="pictoimg" src="${bildUrl}" alt="${item.label || ''}" />`
+        : `<div class="emoji">${item.emoji || "✨"}</div>`;
+
+      const coachHtml = (item.coach && item.coach !== "-")
+        ? `<div class="picto-coach-rad">
+             <div class="picto-coach-avatar">${(item.coach[0] || "").toUpperCase()}</div>
+             <div class="picto-coach">${item.coach}</div>
+           </div>`
+        : "";
+
       el.innerHTML = `
-        <div class="picto-time">${item.time || ""}</div>
-        <div class="picto-act">
-          <div class="emoji">${item.emoji || "✨"}</div>
-          <div class="label">${item.label || ""}</div>
+        <div class="picto-time-cell">
+          <span class="klocka">${analogKlocka(item.time)}</span>
+          <div class="picto-time">${item.time || ""}</div>
         </div>
-        <div class="picto-coach">${item.coach || ""}</div>
+        <div class="picto-act">
+          ${bildHtml}
+          <div class="label">${item.label || ""}</div>
+          ${coachHtml}
+        </div>
       `;
-      dayDiv.appendChild(el);
+      raderDiv.appendChild(el);
     });
 
-    // Fyll resterande rader så grid alltid har 8 rader (hindrar konstiga höjdberäkningar)
-    for(let i=items.length; i<8; i++){
-      const filler = document.createElement("div");
-      filler.className = "picto-item";
-      filler.style.visibility = "hidden";
-      filler.innerHTML = '<div class="picto-time"> </div><div class="picto-act"><div class="emoji"> </div><div class="label"> </div></div><div class="picto-coach"> </div>';
-      dayDiv.appendChild(filler);
-    }
-
     out.appendChild(dayDiv);
+
+    // ===== Skala storlekar efter antal aktiviteter denna dag (färre
+    // aktiviteter -> större kort), sedan mät verklig höjd i webbläsaren
+    // och krymp ytterligare stegvis om något ändå inte får plats. Samma
+    // beprövade teknik som löste veckoschemat. =====
+    anpassaStorlekar(raderDiv, antal);
+    krympTillsDetFarPlats(raderDiv);
   });
+
+  function anpassaStorlekar(raderDiv, antal){
+    const t = Math.max(0, Math.min(1, (antal - 3) / (8 - 3)));
+    const lerp = (stor, litet) => stor + (litet - stor) * t;
+
+    const digitalPt = lerp(15, 11);
+    const namnPt    = lerp(20, 13);
+    const coachPt   = lerp(12, 9);
+    const avatarMm  = lerp(8, 5.5);
+    const bildMm    = lerp(30, 16);
+    const klockMm   = lerp(16, 9);
+
+    raderDiv.querySelectorAll(".picto-time").forEach(e => e.style.fontSize = digitalPt + "pt");
+    raderDiv.querySelectorAll(".label").forEach(e => e.style.fontSize = namnPt + "pt");
+    raderDiv.querySelectorAll(".picto-coach").forEach(e => e.style.fontSize = coachPt + "pt");
+    raderDiv.querySelectorAll(".picto-coach-avatar").forEach(e => {
+      e.style.width = avatarMm + "mm"; e.style.height = avatarMm + "mm";
+      e.style.fontSize = (avatarMm * 0.45) + "mm";
+    });
+    raderDiv.querySelectorAll(".pictoimg, .emoji").forEach(e => {
+      e.style.maxHeight = bildMm + "mm";
+      e.style.maxWidth = (bildMm * 1.8) + "mm";
+    });
+    raderDiv.querySelectorAll(".emoji").forEach(e => e.style.fontSize = bildMm + "mm");
+    raderDiv.querySelectorAll(".klocka").forEach(e => {
+      e.style.width = klockMm + "mm"; e.style.height = klockMm + "mm";
+    });
+  }
+
+  function allaRaderFarPlats(raderDiv){
+    const rader = raderDiv.querySelectorAll(".picto-item");
+    for (const r of rader){
+      if (r.scrollHeight > r.clientHeight + 0.5) return false;
+    }
+    return true;
+  }
+
+  function krympTillsDetFarPlats(raderDiv){
+    let steg = 0;
+    let skala = 1.0;
+
+    // Spara [element, CSS-egenskap, basvärde, enhet] för allt vi kan krympa.
+    const bas = [];
+    raderDiv.querySelectorAll(".picto-time").forEach(e => bas.push([e, "fontSize", parseFloat(e.style.fontSize), "pt"]));
+    raderDiv.querySelectorAll(".label").forEach(e => bas.push([e, "fontSize", parseFloat(e.style.fontSize), "pt"]));
+    raderDiv.querySelectorAll(".picto-coach").forEach(e => bas.push([e, "fontSize", parseFloat(e.style.fontSize), "pt"]));
+    raderDiv.querySelectorAll(".picto-coach-avatar").forEach(e => {
+      bas.push([e, "width", parseFloat(e.style.width), "mm"]);
+      bas.push([e, "height", parseFloat(e.style.height), "mm"]);
+      bas.push([e, "fontSize", parseFloat(e.style.fontSize), "mm"]);
+    });
+    raderDiv.querySelectorAll(".pictoimg, .emoji").forEach(e => {
+      bas.push([e, "maxHeight", parseFloat(e.style.maxHeight), "mm"]);
+      bas.push([e, "maxWidth", parseFloat(e.style.maxWidth), "mm"]);
+    });
+    raderDiv.querySelectorAll(".emoji").forEach(e => bas.push([e, "fontSize", parseFloat(e.style.fontSize), "mm"]));
+    raderDiv.querySelectorAll(".klocka").forEach(e => {
+      bas.push([e, "width", parseFloat(e.style.width), "mm"]);
+      bas.push([e, "height", parseFloat(e.style.height), "mm"]);
+    });
+
+    while (steg < 30 && skala > 0.35){
+      if (allaRaderFarPlats(raderDiv)) return;
+      skala -= 0.03;
+      bas.forEach(([e, prop, varde, enhet]) => {
+        const golv = enhet === "pt" ? 2.5 : 2;
+        e.style[prop] = Math.max(varde * skala, golv) + enhet;
+      });
+      steg++;
+    }
+  }
+
+  // Kreditrad längst ner (bara på sista sidan, en gång - inte per bild).
+  const kredit = document.createElement("div");
+  kredit.className = "kredit";
+  kredit.textContent = "Piktogram: ARASAAC (CC BY-NC-SA), Sergio Palao / Regeringen i Aragonien · Papunets bildbank, papunet.net (CC BY-NC-SA) · Pool 8 Ball: OpenMoji-projektet (CC BY-SA)";
+  out.appendChild(kredit);
 })();
 </script>
 </body>
