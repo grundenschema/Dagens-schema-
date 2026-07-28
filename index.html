@@ -4496,7 +4496,7 @@ window.addEventListener("afterprint", ()=>{
 </html>
 <!-- ===== REDIGERA-MODAL ===== -->
 <!-- Dialog: välj tillfälle innan redigering -->
-<div id="repeatValOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9500;align-items:center;justify-content:center;">
+<div id="repeatValOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9700;align-items:center;justify-content:center;">
   <div style="background:white;border-radius:14px;padding:28px;width:90%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.2);" onclick="event.stopPropagation()">
     <h2 style="font-size:17px;margin-bottom:6px;color:#1a73e8;">Redigera återkommande aktivitet</h2>
     <p id="repeatValAktivitet" style="font-size:13px;color:#555;margin-bottom:16px;"></p>
@@ -5065,8 +5065,10 @@ function oppnaRedigeraModal(r) {
   setTidValde("rStart", start);
   setTidValde("rSlut", slut);
 
-  // Filtrera bort punkt-placeholder
-  const filtreraNamn = str => (str||"").split(/,\s*/).filter(n => n.trim() && n.trim() !== ".");
+  // Punkt-placeholdern ("ingen specifik person behövs") behålls nu som en
+  // vanlig tagg, precis som riktiga namn - annars försvann den vid varje
+  // redigering och man var tvungen att skriva in den på nytt varje gång.
+  const filtreraNamn = str => (str||"").split(/,\s*/).filter(n => n.trim());
   filtreraNamn(r.Deltagare).forEach(n => rDeltagare.push(n.trim()));
   filtreraNamn(r.Coach).forEach(n => rCoach.push(n.trim()));
 
