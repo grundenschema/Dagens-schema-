@@ -5313,7 +5313,7 @@ async function sparaFranModal(valRedanGjort) {
   }
 
   // Kontrollera krockar
-  const konflikter = kontrolleraKrockarForeSpara(
+  const konflikter = await kontrolleraKrockarForeSpara(
     datum, start, slut,
     rDeltagare.filter(n => n !== "."),
     rCoach.filter(n => n !== "."),
@@ -6020,6 +6020,25 @@ function byggKrockNyckel(veckodag, a, b){
   return veckodag + "|" + ids[0] + "|" + ids[1];
 }
 
+// Cachad lista över godkända krock-nycklar, delad mellan krocksidan och
+// sparande-kontrollen (kontrolleraKrockarForeSpara) - tidigare hämtade bara
+// krocksidan sin egen lokala kopia, så en godkänd krock "höll" bara där,
+// inte när man faktiskt sparade en aktivitet. cacheTid rensas vid
+// godkannKrock/angraGodkannande så en färsk hämtning sker direkt efter.
+let _godkandaNycklarCache = null;
+async function hamtaGodkandaNycklarCache(){
+  if (_godkandaNycklarCache) return _godkandaNycklarCache;
+  try{
+    const res = await fetch(url + "?godkandaKrockar=1&t=" + Date.now() + "&visakod=" + encodeURIComponent(VISAKOD_VARDE));
+    const json = await res.json();
+    const godkanda = json.godkandaKrockar || [];
+    _godkandaNycklarCache = new Set(godkanda.map(g => g.nyckel || g.Nyckel));
+  }catch(e){
+    _godkandaNycklarCache = new Set();
+  }
+  return _godkandaNycklarCache;
+}
+
 // Snabbtitt: visar en persons veckoschema i den fasta rutan högst upp på
 // Krockar-sidan, utan att lämna listan - man kan klicka runt mellan olika
 // personers scheman snabbt, rutan bara byter innehåll.
@@ -6174,6 +6193,7 @@ async function godkannKrock(nyckel, veckodag, aktivitetA, aktivitetB, personer, 
     nyckel, veckodag, aktivitetA, aktivitetB, personer, tider
   });
   if (svar && svar.success) {
+    _godkandaNycklarCache = null; // ny godkänd krock ska gälla direkt vid nästa sparande
     visaKrockar(); // rita om listan, den godkända försvinner nu
   } else {
     visaNotis("Kunde inte godkänna krocken" + (svar && svar.error ? ": " + svar.error : "") + ". Försök igen.", "error");
@@ -6221,6 +6241,7 @@ async function visaGodkandaKrockar(){
 async function angraGodkannande(nyckel){
   const svar = await postAdmin({ action: "angraGodkannande", nyckel });
   if (svar && svar.success) {
+    _godkandaNycklarCache = null; // ångrad krock ska varna igen direkt
     visaGodkandaKrockar();
   } else {
     visaNotis("Kunde inte ångra godkännandet" + (svar && svar.error ? ": " + svar.error : "") + ". Försök igen.", "error");
@@ -6228,7 +6249,7 @@ async function angraGodkannande(nyckel){
 }
 
 /* ===== VARNING VID DUBBELBOKNING ===== */
-function kontrolleraKrockarForeSpara(datum, start, slut, deltagare, coacher, excludeId) {
+async function kontrolleraKrockarForeSpara(datum, start, slut, deltagare, coacher, excludeId) {
   const sMin = timeToMinKrock(start);
   const eMin = timeToMinKrock(slut);
   if (sMin===null || eMin===null) return [];
@@ -6256,7 +6277,19 @@ function kontrolleraKrockarForeSpara(datum, start, slut, deltagare, coacher, exc
     }
   });
 
-  return konflikter;
+  if (!konflikter.length) return konflikter;
+
+  // Filtrera bort krockar som redan är godkända (samma nyckel-format som
+  // krocksidan använder: veckodag + de två aktiviteternas serie-id:n).
+  const godkandaNycklar = await hamtaGodkandaNycklarCache();
+  if (!godkandaNycklar.size) return konflikter;
+
+  const veckodag = weekdayName(new Date(datum + "T12:00:00").getDay());
+  const denna = { EventId: excludeId || "" };
+  return konflikter.filter(k => {
+    const nyckel = byggKrockNyckel(veckodag, denna, k.r);
+    return !godkandaNycklar.has(nyckel);
+  });
 }
 </script>
 <script>
