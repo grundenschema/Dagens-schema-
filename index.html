@@ -2277,7 +2277,7 @@ body.print-week{ }
       <div style="background:white;border-radius:14px;padding:16px;width:92%;max-width:620px;max-height:85vh;box-shadow:0 8px 32px rgba(0,0,0,0.25);display:flex;flex-direction:column;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-shrink:0;">
           <div id="krockSnabbtittNamn" style="font-weight:800;color:#1a73e8;font-size:16px;"></div>
-          <button id="krockSnabbtittStang" onclick="document.getElementById('krockSnabbtitt').style.display='none';" style="background:none;border:none;font-size:22px;cursor:pointer;color:#999;line-height:1;">×</button>
+          <button id="krockSnabbtittStang" onclick="document.getElementById('krockSnabbtitt').style.display='none'; _snabbtittNamn=null; _snabbtittIsCoach=null;" style="background:none;border:none;font-size:22px;cursor:pointer;color:#999;line-height:1;">×</button>
         </div>
         <div style="overflow:auto;flex:1;">
           <div id="krockSnabbtittSkala" style="transform:scale(0.62);transform-origin:top left;width:161%;">
@@ -3330,6 +3330,10 @@ function krympHalvblockTillsDetFarPlats(block){
 }
 
 function renderBlocksGeneric(name,isCoach,headerEl,gridEl){
+  // Märk rutnätet med vem det tillhör - används av klick-på-tom-ruta för att
+  // veta exakt vems schema det är (viktigt i t.ex. Jämför scheman, där flera
+  // olika personers rutnät visas samtidigt på samma sida).
+  if (gridEl) { gridEl.dataset.namn = name; gridEl.dataset.iscoach = isCoach ? "1" : "0"; }
   const slots=makeSlots();
   const days=["måndag","tisdag","onsdag","torsdag","fredag"];
   const field=isCoach?"Coach":"Deltagare";
@@ -3538,7 +3542,9 @@ document.getElementById("btnCompareTillbaka").onclick = () => {
   document.getElementById("comparePanel").style.display = "block";
 };
 
-document.getElementById("btnShowCompare").onclick = () => {
+document.getElementById("btnShowCompare").onclick = () => visaJamforelse();
+
+function visaJamforelse(){
   const selected = compareValda;
 
   if (!selected.length) { visaNotis("Välj minst ett namn.", "info"); return; }
@@ -3580,7 +3586,7 @@ document.getElementById("btnShowCompare").onclick = () => {
   out.appendChild(wrap);
   document.getElementById("compareOutput").style.display="block";
   document.getElementById("comparePanel").style.display="none";
-};
+}
 
 function renderSingleWeek(name,isCoach,compact=false){
   const slots=makeSlots(), days=["måndag","tisdag","onsdag","torsdag","fredag"];
@@ -4728,6 +4734,18 @@ function refreshVisibleContent(){
     }
   } else if(activeView === "nowView"){
     renderNow();
+  } else if(activeView === "verktygView"){
+    // Jämför scheman: bara rita om om resultatet faktiskt visas just nu
+    // (inte om man bara står på valpanelen och inte tryckt "Visa" än).
+    const compareOut = document.getElementById("compareOutput");
+    if (compareOut && compareOut.style.display !== "none" && typeof visaJamforelse === "function") {
+      visaJamforelse();
+    }
+    // Krocksidans snabbtitt-ruta: bara om den faktiskt är öppen just nu.
+    const snabbtittBox = document.getElementById("krockSnabbtitt");
+    if (snabbtittBox && snabbtittBox.style.display !== "none" && _snabbtittNamn && typeof visaSnabbtittSchema === "function") {
+      visaSnabbtittSchema(_snabbtittNamn, _snabbtittIsCoach);
+    }
   }
 
   if(adminUnlocked && typeof ritaAdminSchema === "function") ritaAdminSchema();
@@ -5765,7 +5783,12 @@ document.addEventListener("click", function(e) {
 
   const activeView = document.querySelector(".view.active");
   const kontext = { __datum: datum, __start: tid, __slut: sluttid };
-  if (activeView?.id === "participantView") {
+  if (grid.dataset.namn) {
+    // Rutnätet vet själv vem det tillhör (fungerar överallt renderBlocksGeneric
+    // används: Deltagare, Coach, Jämför scheman, krock-snabbtitt).
+    if (grid.dataset.iscoach === "1") kontext.__coach = grid.dataset.namn;
+    else kontext.__deltagare = grid.dataset.namn;
+  } else if (activeView?.id === "participantView") {
     const namn = document.getElementById("nameSelect")?.value;
     if (namn) kontext.__deltagare = namn;
   } else if (activeView?.id === "coachView") {
@@ -6042,9 +6065,11 @@ async function hamtaGodkandaNycklarCache(){
 // Snabbtitt: visar en persons veckoschema i den fasta rutan högst upp på
 // Krockar-sidan, utan att lämna listan - man kan klicka runt mellan olika
 // personers scheman snabbt, rutan bara byter innehåll.
+let _snabbtittNamn = null, _snabbtittIsCoach = null;
 function visaSnabbtittSchema(namn, isCoach){
   const box = document.getElementById("krockSnabbtitt");
   if (!box) return;
+  _snabbtittNamn = namn; _snabbtittIsCoach = isCoach;
   box.style.display = "flex";
   document.getElementById("krockSnabbtittNamn").textContent = (isCoach ? "🧑‍🏫 " : "👤 ") + namn;
   renderBlocksGeneric(
