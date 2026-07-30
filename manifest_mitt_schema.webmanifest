@@ -1,0 +1,22 @@
+{
+  "name": "Mitt Schema",
+  "short_name": "Mitt Schema",
+  "start_url": "./mitt_schema.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f0f4f8",
+  "theme_color": "#1a73e8",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

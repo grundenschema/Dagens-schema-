@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mitt schema</title>
+<link rel="manifest" href="./manifest_mitt_schema.webmanifest">
+<meta name="theme-color" content="#1a73e8">
+<style>
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body{
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background:#f0f4f8;
+  margin:0;
+  padding:14px;
+  color:#222;
+}
+
+/* ===== Namnval (visas bara första gången) ===== */
+#valjNamnVy{
+  max-width:420px;
+  margin:40px auto 0 auto;
+  text-align:center;
+}
+#valjNamnVy h1{ font-size:20px; margin-bottom:6px; }
+#valjNamnVy p{ font-size:14px; color:#666; margin-bottom:18px; }
+#namnSok{
+  width:100%;
+  padding:12px 14px;
+  border:1.5px solid #cfd8e3;
+  border-radius:10px;
+  font-size:16px;
+  margin-bottom:12px;
+}
+#namnLista{
+  max-height:60vh;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.namn-knapp{
+  padding:14px;
+  border-radius:10px;
+  border:1.5px solid #cfd8e3;
+  background:#fff;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+  text-align:left;
+}
+.namn-knapp:hover{ background:#eef3fb; }
+
+/* ===== Dagsvy ===== */
+#schemaVy{ display:none; max-width:520px; margin:0 auto; }
+.rubrik{
+  text-align:center;
+  margin-bottom:4px;
+}
+.rubrik .namn{ font-size:19px; font-weight:900; }
+.rubrik .dag{ font-size:15px; color:#555; margin-top:2px; }
+.svep-tips{ text-align:center; font-size:12px; color:#999; margin-bottom:14px; }
+
+.swipe-yta{ overflow:hidden; touch-action:pan-y; }
+.dag-kort-omrade{ min-height:50vh; }
+
+.cards{ display:flex; flex-direction:column; gap:10px; max-width:750px; margin:0 auto; }
+.card{
+  position:relative;
+  background:#fff;
+  border:1px solid #e3e6ea;
+  border-radius:12px;
+  padding:12px 14px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.08);
+}
+.card::before{
+  content:"";
+  position:absolute; left:0; top:0; bottom:0; width:6px;
+  background:var(--band,#9ecbff);
+  border-top-left-radius:12px; border-bottom-left-radius:12px;
+}
+.card h3{ margin:0 0 6px; font-size:1.05rem; }
+.card .row{ font-size:.95rem; color:#222; }
+
+.laddar{ text-align:center; color:#888; padding:40px 0; }
+.fel{ text-align:center; color:#c0392b; padding:20px; font-size:14px; }
+
+/* ===== Bildstöd-läge ===== */
+.bild-kort{
+  position:relative;
+  background:#fff;
+  border:3px solid #000;
+  border-radius:16px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  text-align:center;
+}
+.bild-kort .klocka-rad{ display:flex; align-items:center; gap:8px; }
+.bild-kort .klocka-rad svg{ width:40px; height:40px; }
+.bild-kort .klocka-rad .digital{ font-size:22px; font-weight:900; }
+.bild-kort .bild-yta{ min-height:110px; display:flex; align-items:center; justify-content:center; }
+.bild-kort .bild-yta img{ max-height:130px; max-width:100%; object-fit:contain; }
+.bild-kort .bild-yta .emoji-stor{ font-size:70px; }
+.bild-kort .namn{ font-size:24px; font-weight:900; }
+</style>
+</head>
+<body>
+
+<div id="valjNamnVy">
+  <div class="laddar">Laddar schema...</div>
+</div>
+
+<div id="schemaVy">
+  <div class="rubrik">
+    <div class="namn" id="mittNamn"></div>
+    <div class="dag" id="mittDag"></div>
+  </div>
+  <div class="svep-tips" id="svepTips">Svep ← / → för att bläddra dagar</div>
+  <div class="swipe-yta" id="swipeYta">
+    <div class="dag-kort-omrade cards" id="dagKort"></div>
+  </div>
+</div>
+
+<script>
+const url = "https://script.google.com/macros/s/AKfycbx1WUFIXUqn7x0Fj4K7bXeSeZujJGl3l0vJVA-oGquxRThR00Lm7GNQ4uG5TGQOgpgK/exec";
+// Samma visningskod-mekanism som huvudappen (för närvarande avstängd där,
+// men skickas ändå med för att vara redo om den slås på i framtiden).
+const VISAKOD_VARDE = localStorage.getItem("VISAKOD_V1") || "";
+const NAMN_NYCKEL = "MITT_SCHEMA_NAMN";
+const VY_NYCKEL = "MITT_SCHEMA_VY";
+
+/* ===== Aktivitetsfärger/emoji - samma karta som huvudappen ===== */
+const aktivitetFarger = {
+  "Måndagsmöte": { color: "#AED6F1", emoji: "📅" },
+  "Gruppmöte": { color: "#7FB3D5", emoji: "👥" },
+
+  "Lunch": { color: "#F9E79F", emoji: "🍽️" },
+  "Lunch Mio": { color: "#F9A825", emoji: "🍽️" },
+  "Lunch Anders B": { color: "#F9A825", emoji: "🍽️" },
+
+  "Frukost": { color: "#FAD7A0", emoji: "🥐" },
+  "morgonrutiner": { color: "#FAD7A0", emoji: "☀️" },
+
+  "Ateljé": { color: "#F5CBA7", emoji: "🎨" },
+  "Ateljén": { color: "#F5CBA7", emoji: "🎨" },
+
+  "Musik": { color: "#C9C3D6", emoji: "🎶" },
+  "Musik veckomöte": { color: "#C9C3D6", emoji: "🎶" },
+  "Musikutbyte": { color: "#C9C3D6", emoji: "🎶" },
+  "Musikproduktion": { color: "#C9C3D6", emoji: "🎶" },
+  "Egen musikproduktion": { color: "#C9C3D6", emoji: "🎶" },
+  "Rep och jam": { color: "#C9C3D6", emoji: "🎶" },
+  "Musikquizz": { color: "#C9C3D6", emoji: "🎶" },
+  "Musikdokumentär": { color: "#C9C3D6", emoji: "🎶" },
+  "Vocal": { color: "#C9C3D6", emoji: "🎤" },
+
+  "Pod": { color: "#A9CCE3", emoji: "🎙️" },
+  "Pod sidbenor": { color: "#A9CCE3", emoji: "🎙️" },
+
+  "Padel": { color: "#82E0AA", emoji: "🏓" },
+
+  "Lite av varje": { color: "#FADBD8", emoji: "✨" },
+
+  "Yoga": { color: "#D5F5E3", emoji: "🧘" },
+  "Behandling": { color: "#D5F5E3", emoji: "💆‍♀️" },
+  "Behandlingar": { color: "#D5F5E3", emoji: "💆‍♀️" },
+
+  "Gym": { color: "#A3E4D7", emoji: "🏋️‍♂️" },
+  "Gym Slottskogens Gym": { color: "#A3E4D7", emoji: "🏋️‍♂️" },
+
+  "Film": { color: "#E6B0AA", emoji: "🎬" },
+  
+
+  "Föreningsgruppen": { color: "#D6DBDF", emoji: "🤝" },
+  "Autentiskt relaterande": { color: "#FCF3CF", emoji: "💬" },
+
+  "Trummor": { color: "#F1948A", emoji: "🥁" },
+
+  "Återkoppling": { color: "#D6DBDF", emoji: "🔄" },
+
+  "Medicin": { color: "#E59866", emoji: "💊" },
+
+  "Biljard": { color: "#A9DFBF", emoji: "🎱" },
+
+  "Spelgruppen": { color: "#F8C471", emoji: "🎲" },
+
+  "Sömnad": { color: "#F5EEF8", emoji: "🧵" },
+
+  "Warhammer": { color: "#C39BD3", emoji: "🛡️" },
+
+  "Utflykt": { color: "#ABEBC6", emoji: "🚌" },
+  "Promenad": { color: "#ABEBC6", emoji: "🚶‍♀️" },
+  "Gåträning": { color: "#ABEBC6", emoji: "🚶‍♂️" },
+  "Gåträning / byte till rullstol": { color: "#ABEBC6", emoji: "🚶‍♂️" },
+  "Toa, promenad": { color: "#ABEBC6", emoji: "🚶‍♀️" },
+  "Lunchpromenad": { color: "#ABEBC6", emoji: "🚶‍♀️🍲" },
+  "Kulturpromenad": { color: "#ABEBC6", emoji: "🏛️" },
+
+  "Lokalvård": { color: "#E5E7E8", emoji: "🧹" },
+  "Öppen verkstad": { color: "#E5E7E8", emoji: "🧰" },
+  "Handla": { color: "#E5E7E8", emoji: "🛒" },
+  "Handling": { color: "#E5E7E8", emoji: "🛒" },
+
+  
+  
+  "Relax Massagestol": { color: "#FDEDEC", emoji: "💺" },
+
+  "Transkribering": { color: "#E8DAEF", emoji: "⌨️" },
+  "Transkibering": { color: "#E8DAEF", emoji: "⌨️" },
+  "Manusarbete": { color: "#E8DAEF", emoji: "📝" },
+  "Mark- Manusarbete (John)": { color: "#E8DAEF", emoji: "📝" },
+  "Foto": { color: "#E8DAEF", emoji: "📸" },
+
+  "Kommunikation": { color: "#D6EAF8", emoji: "💬" },
+
+  "Poesigrupp": { color: "#FDEBD0", emoji: "✍️" },
+  "Poesigruppen": { color: "#FDEBD0", emoji: "✍️" },
+"Poesi": { color: "#FDEBD0", emoji: "✍️" },
+  "Skrivgruppen": { color: "#FDEBD0", emoji: "✍️" },
+  
+  "Samtal": { color: "#FCF3CF", emoji: "💬" },
+  "Samtal onsdag eller torsdag": { color: "#FCF3CF", emoji: "💬" },
+
+  "Avslappning": { color: "#D5F5E3", emoji: "🪷" },
+
+  "Ladda stol": { color: "#FAD7A0", emoji: "🔋" },
+
+  "Gåträning": { color: "#ABEBC6", emoji: "🚶‍♂️" },
+  "Uppstart": { color: "#D6DBDF", emoji: "🚀" },
+  "Filmkunskap": { color: "#E6B0AA", emoji: "🎥" },
+  "Pod Sidbenor": { color: "#A9CCE3", emoji: "🎙️" },
+
+  "Foto": { color: "#E8DAEF", emoji: "📸" },
+  "Samtal": { color: "#FCF3CF", emoji: "💬" },
+  "Mediagruppen": { color: "#E8DAEF", emoji: "📱" },
+  "Gaming":       { color: "#C39BD3", emoji: "🎮" },
+"Filmgruppen":  { color: "#D6EAF8", emoji: "🎬" },
+"Teatergruppen": { color: "#FADBD8", emoji: "🎭" },
+"Bad": { color: "#85C1E9", emoji: "🏊‍♂️" },
+
+};
+
+/* ===== Piktogram-karta - samma som bildstödsschemat ===== */
+const PICTO_BILDER = {
+  "Ateljé": "https://globalsymbols.com/uploads/production/image/imagefile/15869/17_15870_e6942be9-ba7f-4cad-b521-4009e099b495.png",
+  "Ateljén": "https://globalsymbols.com/uploads/production/image/imagefile/15869/17_15870_e6942be9-ba7f-4cad-b521-4009e099b495.png",
+  "Autentiskt relaterande": "https://globalsymbols.com/uploads/production/image/imagefile/15126/17_15127_dc576e8b-1e66-427c-b721-dc28352ea457.png",
+  "Avslappning": "https://globalsymbols.com/uploads/production/image/imagefile/24053/17_24054_2b953703-553a-4501-aa33-76cf7c8577be.png",
+  "Bad": "https://globalsymbols.com/uploads/production/image/imagefile/21219/17_21220_46d90149-0be1-4061-9dc8-660f8083e822.png",
+  "Behandling": "https://globalsymbols.com/uploads/production/image/imagefile/18690/17_18691_399a0b2a-4e38-4125-a222-107a01d236bf.png",
+  "Behandlingar": "https://globalsymbols.com/uploads/production/image/imagefile/18690/17_18691_399a0b2a-4e38-4125-a222-107a01d236bf.png",
+  "Biljard": "https://kuha.papunet.net/api/image/37083?lang=se",
+  "Egen musikproduktion": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Film": "https://globalsymbols.com/uploads/production/image/imagefile/20763/17_20764_c5fbb443-017a-447d-8706-307f8f671fb6.png",
+  "Filmgruppen": "https://globalsymbols.com/uploads/production/image/imagefile/91461/17_91462_516a56fc-2b86-45a4-b157-21bc52d418f0.png",
+  "Filmkunskap": "https://globalsymbols.com/uploads/production/image/imagefile/20763/17_20764_c5fbb443-017a-447d-8706-307f8f671fb6.png",
+  "Foto": "https://globalsymbols.com/uploads/production/image/imagefile/21852/17_21853_fa7305e0-a2bf-4362-9e0c-a4fd1bcccb03.png",
+  "Frukost": "https://globalsymbols.com/uploads/production/image/imagefile/22048/17_22049_5d15e20c-8654-4f80-b4c7-6a7bc7a20f6f.png",
+  "Föreningsgruppen": "https://globalsymbols.com/uploads/production/image/imagefile/90134/17_90135_766590c7-7893-4430-b1eb-6f62662bbce2.png",
+  "Gaming": "https://globalsymbols.com/uploads/production/image/imagefile/14077/17_14078_f2076265-a72e-4141-8f3c-72b1e5ab5ce0.png",
+  "Gruppmöte": "https://globalsymbols.com/uploads/production/image/imagefile/90134/17_90135_766590c7-7893-4430-b1eb-6f62662bbce2.png",
+  "Gym": "https://globalsymbols.com/uploads/production/image/imagefile/20757/17_20758_5c18bbe3-3899-464e-8ea4-eee80c32feef.png",
+  "Gym Slottskogens Gym": "https://globalsymbols.com/uploads/production/image/imagefile/20757/17_20758_5c18bbe3-3899-464e-8ea4-eee80c32feef.png",
+  "Gåträning": "https://globalsymbols.com/uploads/production/image/imagefile/22772/17_22773_0c40a5dc-cc65-48c3-b474-ae152d95c374.png",
+  "Gåträning / byte till rullstol": "https://globalsymbols.com/uploads/production/image/imagefile/22772/17_22773_0c40a5dc-cc65-48c3-b474-ae152d95c374.png",
+  "Handla": "https://globalsymbols.com/uploads/production/image/imagefile/18737/17_18738_601b8b5f-ea0b-4c9c-bfb6-7afd8ea1f850.png",
+  "Handling": "https://globalsymbols.com/uploads/production/image/imagefile/18737/17_18738_601b8b5f-ea0b-4c9c-bfb6-7afd8ea1f850.png",
+  "Kommunikation": "https://globalsymbols.com/uploads/production/image/imagefile/20141/17_20142_b0ca6955-0a02-46e3-92f2-2e90ab85bfb5.png",
+  "Kulturpromenad": "https://globalsymbols.com/uploads/production/image/imagefile/45995/17_45996_5d08e7f1-682d-4a7b-873c-00767961ba5a.png",
+  "Ladda stol": "https://kuha.papunet.net/api/image/25895?lang=se",
+  "Lokalvård": "https://globalsymbols.com/uploads/production/image/imagefile/19201/17_19202_d6559eb6-c8ba-47ea-8926-f17f6f03fce3.png",
+  "Lunch": "https://globalsymbols.com/uploads/production/image/imagefile/22049/17_22050_45e2e39f-cbb1-4790-879b-82c0d8c8600f.png",
+  "Lunch Anders B": "https://globalsymbols.com/uploads/production/image/imagefile/22049/17_22050_45e2e39f-cbb1-4790-879b-82c0d8c8600f.png",
+  "Lunch Mio": "https://globalsymbols.com/uploads/production/image/imagefile/22049/17_22050_45e2e39f-cbb1-4790-879b-82c0d8c8600f.png",
+  "Lunchpromenad": "https://globalsymbols.com/uploads/production/image/imagefile/45099/17_45100_7b922e9d-7fed-45a6-baf4-d81585864780.png",
+  "Manusarbete": "https://globalsymbols.com/uploads/production/image/imagefile/18486/17_18487_ed68deab-09e0-4580-8799-78b1bed9c2c5.png",
+  "Mediagruppen": "https://globalsymbols.com/uploads/production/image/imagefile/15121/17_15122_f3d06bca-097f-4152-ab7d-87e377d28a7f.png",
+  "Medicin": "https://globalsymbols.com/uploads/production/image/imagefile/22806/17_22807_2cd9c984-ba4f-450f-983c-57b1c58d964f.png",
+  "morgonrutiner": "https://globalsymbols.com/uploads/production/image/imagefile/22048/17_22049_5d15e20c-8654-4f80-b4c7-6a7bc7a20f6f.png",
+  "Musik": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Musik veckomöte": "https://globalsymbols.com/uploads/production/image/imagefile/45970/17_45971_20061863-6cc3-4f64-bde5-d88845ef2ba1.png",
+  "Musikdokumentär": "https://globalsymbols.com/uploads/production/image/imagefile/20763/17_20764_c5fbb443-017a-447d-8706-307f8f671fb6.png",
+  "Musikproduktion": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Musikquizz": "https://kuha.papunet.net/api/image/10230?lang=se",
+  "Musikutbyte": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Måndagsmöte": "https://d18vdu4p71yql0.cloudfront.net/libraries/arasaac/meeting_2.png.varianted-skin.png",
+  "Padel": "https://globalsymbols.com/uploads/production/image/imagefile/45875/17_45876_8fb73cc2-b9eb-41ea-a94c-708ec7dc5f54.png",
+  "Pod": "https://globalsymbols.com/uploads/production/image/imagefile/46615/17_46616_d1f2df66-9748-4077-b6d4-8002f4e5e41d.png",
+  "Pod sidbenor": "https://globalsymbols.com/uploads/production/image/imagefile/46615/17_46616_d1f2df66-9748-4077-b6d4-8002f4e5e41d.png",
+  "Pod Sidbenor": "https://globalsymbols.com/uploads/production/image/imagefile/46615/17_46616_d1f2df66-9748-4077-b6d4-8002f4e5e41d.png",
+  "Poesi": "https://globalsymbols.com/uploads/production/image/imagefile/20115/17_20116_8cb3621c-e44d-4dc0-b1f6-b66beb05ce00.png",
+  "Poesigrupp": "https://globalsymbols.com/uploads/production/image/imagefile/20115/17_20116_8cb3621c-e44d-4dc0-b1f6-b66beb05ce00.png",
+  "Poesigruppen": "https://globalsymbols.com/uploads/production/image/imagefile/20115/17_20116_8cb3621c-e44d-4dc0-b1f6-b66beb05ce00.png",
+  "Promenad": "https://globalsymbols.com/uploads/production/image/imagefile/45099/17_45100_7b922e9d-7fed-45a6-baf4-d81585864780.png",
+  "Relax Massagestol": "https://globalsymbols.com/uploads/production/image/imagefile/18690/17_18691_399a0b2a-4e38-4125-a222-107a01d236bf.png",
+  "Rep och jam": "https://globalsymbols.com/uploads/production/image/imagefile/20473/17_20474_29a22089-ddfe-486c-907e-3cf2565ac380.png",
+  "Samtal": "https://globalsymbols.com/uploads/production/image/imagefile/20141/17_20142_b0ca6955-0a02-46e3-92f2-2e90ab85bfb5.png",
+  "Samtal onsdag eller torsdag": "https://globalsymbols.com/uploads/production/image/imagefile/20141/17_20142_b0ca6955-0a02-46e3-92f2-2e90ab85bfb5.png",
+  "Skrivgruppen": "https://globalsymbols.com/uploads/production/image/imagefile/18486/17_18487_ed68deab-09e0-4580-8799-78b1bed9c2c5.png",
+  "Spelgruppen": "https://globalsymbols.com/uploads/production/image/imagefile/16111/17_16112_5a348a88-231c-432d-b9c0-75d7db180e0f.png",
+  "Sömnad": "https://globalsymbols.com/uploads/production/image/imagefile/17747/17_17748_ee036703-ee3a-4036-af92-2d49d11b47dc.png",
+  "Teatergruppen": "https://globalsymbols.com/uploads/production/image/imagefile/45186/17_45187_638828ee-65a2-472f-8f5e-d655c9db7823.png",
+  "Toa, promenad": "https://globalsymbols.com/uploads/production/image/imagefile/45099/17_45100_7b922e9d-7fed-45a6-baf4-d81585864780.png",
+  "Transkibering": "https://globalsymbols.com/uploads/production/image/imagefile/15450/17_15451_071f0a09-5ca9-40e7-bce1-ca6bb8d71ae5.png",
+  "Transkribering": "https://globalsymbols.com/uploads/production/image/imagefile/15450/17_15451_071f0a09-5ca9-40e7-bce1-ca6bb8d71ae5.png",
+  "Trummor": "https://globalsymbols.com/uploads/production/image/imagefile/20477/17_20478_5707acd8-4721-44ac-a19e-c0a974ee3489.png",
+  "Uppstart": "https://kuha.papunet.net/api/image/22979?lang=se",
+  "Utflykt": "https://globalsymbols.com/uploads/production/image/imagefile/45099/17_45100_7b922e9d-7fed-45a6-baf4-d81585864780.png",
+  "Vocal": "https://kuha.papunet.net/api/image/38276?lang=se",
+  "Warhammer": "https://globalsymbols.com/uploads/production/image/imagefile/16848/17_16849_d088f45b-031a-455b-b22f-05df0a144a6e.png",
+  "Yoga": "https://globalsymbols.com/uploads/production/image/imagefile/18777/17_18778_715a40e5-3fc6-420a-a4a2-3bab9327390c.png",
+  "Öppen verkstad": "https://globalsymbols.com/uploads/production/image/imagefile/19354/17_19355_84de2a2f-f810-4a14-83f4-d06c67e6f565.png"
+};
+
+function analogKlocka(tidStr){
+  const m = /(\d{1,2}):(\d{2})/.exec(tidStr || "");
+  if (!m) return "";
+  const h = parseInt(m[1], 10) % 12;
+  const min = parseInt(m[2], 10);
+  const minAngle = min * 6;
+  const hourAngle = (h + min / 60) * 30;
+  const cx = 30, cy = 30, r = 27;
+  function point(angleDeg, length) {
+    const rad = (angleDeg - 90) * Math.PI / 180;
+    return [cx + length * Math.cos(rad), cy + length * Math.sin(rad)];
+  }
+  let marks = "";
+  for (let i = 0; i < 12; i++) {
+    const a = i * 30;
+    const [x1, y1] = point(a, r - 3);
+    const [x2, y2] = point(a, r - (i % 3 === 0 ? 9 : 5));
+    marks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#000" stroke-width="${i % 3 === 0 ? 2.2 : 1.3}"/>`;
+  }
+  const [hx, hy] = point(hourAngle, 13);
+  const [mx, my] = point(minAngle, 22);
+  return `<svg viewBox="0 0 60 60" aria-hidden="true">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#000" stroke-width="2.5"/>
+    ${marks}
+    <line x1="${cx}" y1="${cy}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+    <line x1="${cx}" y1="${cy}" x2="${mx.toFixed(1)}" y2="${my.toFixed(1)}" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="2.2" fill="#000"/>
+  </svg>`;
+}
+
+
+function colorFor(r) { return (aktivitetFarger[r.Aktivitet] || { color: "#edf2f7" }).color; }
+function emojiFor(r) { return (aktivitetFarger[r.Aktivitet] || { emoji: "" }).emoji; }
+function dayKey(str) { return String(str).slice(0, 10); }
+function todayKey(){
+  const d=new Date(); d.setHours(0,0,0,0);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function mondayOfWeek(date){
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function weekDaysMonFri(baseDate){
+  const mon = mondayOfWeek(baseDate);
+  const days = [];
+  for(let i=0;i<5;i++){ const x = new Date(mon); x.setDate(mon.getDate() + i); days.push(x); }
+  return days;
+}
+function keyFromDate(d){
+  const x=new Date(d); x.setHours(0,0,0,0);
+  return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`;
+}
+function prettyDay(d){
+  const dt = new Date(d);
+  const wd = ["söndag","måndag","tisdag","onsdag","torsdag","fredag","lördag"][dt.getDay()];
+  const date = new Intl.DateTimeFormat("sv-SE",{ day:"numeric", month:"short"}).format(dt);
+  return { wd, date };
+}
+function sanitizeName(x){
+  const bad=["alla","ingen coach","ingen","eget arbete",".","-","na","n/a","okänt","unknown","(tom)",""];
+  return x && !bad.includes(String(x).trim().toLowerCase());
+}
+function splitNames(str){
+  return (str||"").split(/,|\/|;|\n/).map(s=>s.trim()).filter(sanitizeName);
+}
+
+/* ===== Svep mellan dagar - samma teknik som huvudappens mobilvy ===== */
+function attachDaySwipe(opts){
+  const surface = opts.surface;
+  if(surface.__swipeAttached){
+    surface.__swipeState = { getIndex: opts.getIndex, setIndex: opts.setIndex, maxIndex: opts.maxIndex, onChange: opts.onChange || function(){} };
+    return;
+  }
+  surface.__swipeAttached = true;
+  surface.__swipeState = { getIndex: opts.getIndex, setIndex: opts.setIndex, maxIndex: opts.maxIndex, onChange: opts.onChange || function(){} };
+  const state = surface.__swipeState;
+  const getIndex = ()=>state.getIndex();
+  const setIndex = (v)=>state.setIndex(v);
+  const maxIndex = ()=>state.maxIndex;
+  const onChange = (i)=>state.onChange(i);
+
+  let startX=0, startY=0, dx=0, dy=0, dragging=false, horizontal=false, lastCommitTs=0;
+  function rubberband(dist){ return dist * 0.35; }
+  function reset(){
+    surface.style.transition = "transform 180ms cubic-bezier(.2,.8,.2,1)";
+    surface.style.transform = "translateX(0px)";
+  }
+  surface.addEventListener("touchstart",(e)=>{
+    if(!e.touches || e.touches.length!==1) return;
+    dragging=true; horizontal=false;
+    startX=e.touches[0].clientX; startY=e.touches[0].clientY;
+    dx=0; dy=0;
+    surface.style.transition = "none";
+  },{passive:true});
+  surface.addEventListener("touchmove",(e)=>{
+    if(!dragging || !e.touches || e.touches.length!==1) return;
+    dx=e.touches[0].clientX - startX; dy=e.touches[0].clientY - startY;
+    if(!horizontal){
+      if(Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) horizontal = true;
+      else return;
+    }
+    const idx = getIndex();
+    const atStart = idx<=0, atEnd = idx>=maxIndex();
+    let move = dx;
+    if((atStart && dx>0) || (atEnd && dx<0)) move = rubberband(dx);
+    surface.style.transform = `translateX(${move}px)`;
+    e.preventDefault();
+  },{passive:false});
+  surface.addEventListener("touchend",()=>{
+    if(!dragging){ reset(); return; }
+    dragging=false;
+    const idx = getIndex();
+    const atStart = idx<=0, atEnd = idx>=maxIndex();
+    const threshold = 60;
+    const nowTs = Date.now();
+    if(nowTs - lastCommitTs < 220){ reset(); return; }
+    if(horizontal && Math.abs(dx) > threshold){
+      if(dx < 0 && !atEnd){ setIndex(idx+1); lastCommitTs = Date.now(); onChange(getIndex()); }
+      else if(dx > 0 && !atStart){ setIndex(idx-1); lastCommitTs = Date.now(); onChange(getIndex()); }
+    }
+    reset();
+  },{passive:true});
+}
+
+/* ===== Data ===== */
+let DATA = [];
+let mittNamn = "";
+let mDays = [];
+let mIndex = 0;
+
+async function hamtaData(){
+  const res = await fetch(url + "?t=" + Date.now() + "&visakod=" + encodeURIComponent(VISAKOD_VARDE));
+  const json = await res.json();
+  DATA = json.data || [];
+  return json;
+}
+
+function hamtaAktivitetsraderForDag(k){
+  return DATA.filter(r => dayKey(r.Datum)===k)
+    .filter(r => splitNames(r.Deltagare).map(x=>x.toLowerCase()).includes(mittNamn.toLowerCase())
+      || (r.Deltagare||"").trim().toLowerCase()==="alla")
+    .sort((a,b)=>(a.Start||"").localeCompare(b.Start||""));
+}
+
+// Avgör om en given aktivitet pågår exakt just nu - bara relevant om dagen
+// som visas faktiskt är idag (annars är frågan meningslös).
+function tidTillMinuter(tidStr){
+  const [h,m] = (tidStr||"00:00").split(":").map(Number);
+  return h*60 + (m||0);
+}
+function arPagaende(r, visasDagK){
+  if (visasDagK !== todayKey()) return false;
+  const nu = new Date();
+  const minsNu = nu.getHours()*60 + nu.getMinutes();
+  return minsNu >= tidTillMinuter(r.Start) && minsNu <= tidTillMinuter(r.Slut);
+}
+
+/* ===== Läge: text (standard) ===== */
+function ritaDagKortText(){
+  const d = mDays[mIndex];
+  const k = keyFromDate(d);
+  const pretty = prettyDay(d);
+  const idag = todayKey();
+  document.getElementById("mittDag").textContent =
+    (k===idag ? "Idag, " : "") + pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1) + " " + pretty.date;
+
+  const rows = hamtaAktivitetsraderForDag(k);
+  const cont = document.getElementById("dagKort");
+  if (!rows.length){
+    cont.innerHTML = `<div class="card" style="--band:#cfd8e3"><div class="row" style="text-align:center">Ledig dag</div></div>`;
+    return;
+  }
+  cont.innerHTML = rows.map(r => {
+    const coachNamn = (r.Coach || "-").replace(/\./g, "").trim() || "-";
+    const pagar = arPagaende(r, k);
+    const pagarMarkor = pagar ? `<span style="font-size:12px;font-weight:800;color:#c0392b;margin-left:6px;">● PÅGÅR</span>` : "";
+    return `<div class="card" style="--band:${colorFor(r)}" ${pagar ? 'data-pagar="1"' : ''}>
+      <h3>${emojiFor(r)} ${r.Aktivitet||"Aktivitet"}${pagarMarkor}</h3>
+      <div class="row">🕐 ${r.Start||""}–${r.Slut||""}</div>
+      <div class="row">🧑‍🏫 ${coachNamn}</div>
+    </div>`;
+  }).join("");
+}
+
+/* ===== Läge: bildstöd ===== */
+function ritaDagKortBildstod(){
+  const d = mDays[mIndex];
+  const k = keyFromDate(d);
+  const pretty = prettyDay(d);
+  const idag = todayKey();
+  document.getElementById("mittDag").textContent =
+    (k===idag ? "Idag, " : "") + pretty.wd.charAt(0).toUpperCase()+pretty.wd.slice(1) + " " + pretty.date;
+
+  const rows = hamtaAktivitetsraderForDag(k);
+  const cont = document.getElementById("dagKort");
+  if (!rows.length){
+    cont.innerHTML = `<div class="bild-kort"><div class="namn">Ledig dag</div></div>`;
+    return;
+  }
+  cont.innerHTML = rows.map(r => {
+    const bildUrl = PICTO_BILDER[r.Aktivitet];
+    const bildHtml = bildUrl
+      ? `<img src="${bildUrl}" alt="${r.Aktivitet||''}">`
+      : `<div class="emoji-stor">${emojiFor(r) || "✨"}</div>`;
+    const pagar = arPagaende(r, k);
+    const pagarMarkor = pagar ? `<div style="font-size:13px;font-weight:800;color:#c0392b;">● PÅGÅR</div>` : "";
+    return `<div class="bild-kort" ${pagar ? 'data-pagar="1" style="border-color:#c0392b;border-width:4px;"' : ''}>
+      ${pagarMarkor}
+      <div class="klocka-rad">${analogKlocka(r.Start)}<span class="digital">${r.Start||""}</span></div>
+      <div class="bild-yta">${bildHtml}</div>
+      <div class="namn">${r.Aktivitet||""}</div>
+    </div>`;
+  }).join("");
+}
+
+function hamtaValtVylage(){
+  try{ return localStorage.getItem(VY_NYCKEL) || "text"; }catch(e){ return "text"; }
+}
+
+function ritaAktuellVy(){
+  const vy = hamtaValtVylage();
+  if (vy === "bildstod") ritaDagKortBildstod();
+  else ritaDagKortText();
+}
+
+function visaSchemaFor(namn, arForstaLaddning){
+  mittNamn = namn;
+  document.getElementById("mittNamn").textContent = namn;
+  document.getElementById("valjNamnVy").style.display = "none";
+  document.getElementById("schemaVy").style.display = "block";
+
+  mDays = weekDaysMonFri(new Date());
+  const today = todayKey();
+  const todayIdx = mDays.findIndex(d=>keyFromDate(d)===today);
+  mIndex = (todayIdx>=0) ? todayIdx : 0;
+  ritaAktuellVy();
+
+  // Bara vid själva sidladdningen, och bara om det som visas faktiskt är
+  // idag: scrolla så den pågående aktiviteten hamnar mitt i vyn, så man
+  // slipper leta efter "nu" bland tidigare/kommande aktiviteter samma dag.
+  if (arForstaLaddning && todayIdx >= 0) {
+    requestAnimationFrame(() => {
+      const pagaende = document.querySelector('[data-pagar="1"]');
+      if (pagaende) pagaende.scrollIntoView({ block: "center", behavior: "instant" });
+    });
+  }
+
+  attachDaySwipe({
+    surface: document.getElementById("swipeYta"),
+    getIndex: () => mIndex,
+    setIndex: (v) => { mIndex = v; },
+    maxIndex: mDays.length - 1,
+    onChange: () => ritaAktuellVy()
+  });
+}
+
+
+// "Byt person": skriv in namnet manuellt istället för att bläddra i en
+// synlig lista med alla deltagares namn - man kan fortfarande byta till
+// vem som helst (om man vet/skriver namnet), men kan inte av nyfikenhet
+// bläddra igenom och klicka sig in på andras scheman.
+let _allaNamnCache = [];
+function visaBytNamnFalt(){
+  document.getElementById("schemaVy").style.display = "none";
+  const vy = document.getElementById("valjNamnVy");
+  vy.style.display = "block";
+  vy.innerHTML = `
+    <h1>Byt person</h1>
+    <p>Skriv in namnet du vill byta till.</p>
+    <input type="text" id="bytNamnInput" placeholder="Namn...">
+    <button class="namn-knapp" id="bytNamnKnapp" style="width:100%;text-align:center;margin-top:10px;">Byt</button>
+    <div id="bytNamnFel" class="fel" style="display:none;margin-top:10px;"></div>
+  `;
+  document.getElementById("bytNamnKnapp").addEventListener("click", () => {
+    const skrivet = document.getElementById("bytNamnInput").value.trim();
+    const match = _allaNamnCache.find(n => n.toLowerCase() === skrivet.toLowerCase());
+    if (!match){
+      document.getElementById("bytNamnFel").style.display = "block";
+      document.getElementById("bytNamnFel").textContent = "Hittade inget namn som stämmer exakt - kontrollera stavningen.";
+      return;
+    }
+    try{ localStorage.setItem(NAMN_NYCKEL, match); }catch(e){}
+    visaSchemaFor(match);
+  });
+}
+
+(async function(){
+  let json;
+  try{
+    json = await hamtaData();
+  }catch(e){
+    document.getElementById("valjNamnVy").innerHTML = `<div class="fel">Kunde inte hämta schemadata. Kontrollera internetanslutningen och ladda om sidan.</div>`;
+    return;
+  }
+
+  const alla = (json.listor && json.listor.deltagare) || [];
+  _allaNamnCache = alla;
+
+  // Länk/QR-kod från Verktygslådan: ?namn=Anna&vy=bildstod - sätter upp
+  // direkt utan att fråga, så deltagaren aldrig behöver välja något själv.
+  const params = new URLSearchParams(location.search);
+  const namnFranLank = params.get("namn");
+  const vyFranLank = params.get("vy");
+
+  if (namnFranLank && alla.some(n => n.toLowerCase() === namnFranLank.toLowerCase())){
+    const rattNamn = alla.find(n => n.toLowerCase() === namnFranLank.toLowerCase());
+    try{
+      localStorage.setItem(NAMN_NYCKEL, rattNamn);
+      if (vyFranLank) localStorage.setItem(VY_NYCKEL, vyFranLank);
+    }catch(e){}
+    // Städa bort namn/vy ur adressfältet så det inte ligger synligt kvar
+    // eller råkar delas vidare av misstag.
+    history.replaceState(null, "", location.pathname);
+    visaSchemaFor(rattNamn, true);
+    return;
+  }
+
+  const sparat = (function(){ try{ return localStorage.getItem(NAMN_NYCKEL); }catch(e){ return null; } })();
+
+  if (sparat && alla.some(n => n.toLowerCase() === sparat.toLowerCase())){
+    visaSchemaFor(sparat, true);
+  } else {
+    // Inget sparat namn och ingen länk-parameter - enda fallet där det
+    // enkla textfältet för namn faktiskt behövs.
+    visaBytNamnFalt();
+  }
+})();
+
+// Minimal PWA: registrera service worker (kräver HTTPS eller localhost) -
+// samma mönster som huvudappen, men en egen, separat service worker-fil.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw_mitt_schema.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
