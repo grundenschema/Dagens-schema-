@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Mitt schema</title>
-<link rel="manifest" href="./manifest_mitt_schema.webmanifest">
 <meta name="theme-color" content="#1a73e8">
 <style>
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -127,49 +126,6 @@ body{
 <script>
 const NAMN_NYCKEL = "MITT_SCHEMA_NAMN";
 const VY_NYCKEL = "MITT_SCHEMA_VY";
-
-// ===== Dynamiskt, personligt manifest =====
-// VIKTIGT: iPhone struntar i vilken exakt webbadress man stod på när man
-// lägger till en sida på hemskärmen - den använder ALLTID manifestets
-// egen, fasta "start_url" vid varje öppning av den installerade appen. En
-// delad manifest-fil för alla (med en fast start_url utan namn) gör därför
-// att appen alltid startar tomt, oavsett vilken persons länk/QR-kod som
-// användes för att lägga till den.
-//
-// Lösningen: bygga manifestet HÄR, i webbläsaren, med just den här
-// specifika personens namn (och vyläge) redan inbakat i start_url - innan
-// sidan ens hunnit läsas klart, så det garanterat gäller när man trycker
-// "Lägg till på hemskärmen".
-(function byggPersonligtManifest(){
-  const params = new URLSearchParams(location.search);
-  const namn = params.get("namn");
-  if (!namn) return; // ingen namn-parameter - behåll det vanliga, delade manifestet
-
-  const vy = params.get("vy") || "text";
-  const basadress = location.href.split("?")[0];
-  const startUrl = basadress + "?namn=" + encodeURIComponent(namn) + "&vy=" + encodeURIComponent(vy);
-  const ikonBas = location.origin + location.pathname.replace(/[^/]+$/, "");
-
-  const manifest = {
-    name: "Mitt Schema – " + namn,
-    short_name: namn,
-    start_url: startUrl,
-    scope: basadress,
-    display: "standalone",
-    orientation: "portrait",
-    background_color: "#f0f4f8",
-    theme_color: "#1a73e8",
-    icons: [
-      { src: ikonBas + "icon-192.png", sizes: "192x192", type: "image/png" },
-      { src: ikonBas + "icon-512.png", sizes: "512x512", type: "image/png" }
-    ]
-  };
-
-  const blob = new Blob([JSON.stringify(manifest)], { type: "application/json" });
-  const manifestUrl = URL.createObjectURL(blob);
-  const link = document.querySelector('link[rel="manifest"]');
-  if (link) link.setAttribute("href", manifestUrl);
-})();
 
 const url = "https://script.google.com/macros/s/AKfycbx1WUFIXUqn7x0Fj4K7bXeSeZujJGl3l0vJVA-oGquxRThR00Lm7GNQ4uG5TGQOgpgK/exec";
 // Samma visningskod-mekanism som huvudappen (för närvarande avstängd där,
