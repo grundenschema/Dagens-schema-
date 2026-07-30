@@ -493,11 +493,28 @@ let mittNamn = "";
 let mDays = [];
 let mIndex = 0;
 
+const DATA_CACHE_NYCKEL = "MITT_SCHEMA_DATA_CACHE";
+
 async function hamtaData(){
   const res = await fetch(url + "?t=" + Date.now() + "&visakod=" + encodeURIComponent(VISAKOD_VARDE));
   const json = await res.json();
   DATA = json.data || [];
+  try{ localStorage.setItem(DATA_CACHE_NYCKEL, JSON.stringify(json)); }catch(e){}
   return json;
+}
+
+// Läser en tidigare cachad kopia direkt (synkront, ingen väntan) - används
+// för att visa schemat direkt vid sidladdning, medan en färsk hämtning
+// sker i bakgrunden. Samma trick som huvudappen redan använder, fast med
+// en egen cache-nyckel (mitt_schema.html ska inte dela data med huvudappen).
+function hamtaDataFranCache(){
+  try{
+    const raw = localStorage.getItem(DATA_CACHE_NYCKEL);
+    if (!raw) return null;
+    const json = JSON.parse(raw);
+    DATA = json.data || [];
+    return json;
+  }catch(e){ return null; }
 }
 
 function hamtaAktivitetsraderForDag(k){
@@ -649,15 +666,7 @@ function visaBytNamnFalt(){
   });
 }
 
-(async function(){
-  let json;
-  try{
-    json = await hamtaData();
-  }catch(e){
-    document.getElementById("valjNamnVy").innerHTML = `<div class="fel">Kunde inte hämta schemadata. Kontrollera internetanslutningen och ladda om sidan.</div>`;
-    return;
-  }
-
+function hanteraData(json){
   const alla = (json.listor && json.listor.deltagare) || [];
   _allaNamnCache = alla;
 
@@ -679,17 +688,44 @@ function visaBytNamnFalt(){
     // pålitligt mellan vanlig Safari-surfning och en hemskärms-app. Genom
     // att låta namnet ligga kvar i webbadressen fungerar genvägen alltid,
     // oavsett vad som händer med det delade minnet.
-    visaSchemaFor(rattNamn, true);
-    return;
+    return rattNamn;
   }
 
   const sparat = (function(){ try{ return localStorage.getItem(NAMN_NYCKEL); }catch(e){ return null; } })();
-
   if (sparat && alla.some(n => n.toLowerCase() === sparat.toLowerCase())){
-    visaSchemaFor(sparat, true);
-  } else {
-    // Inget sparat namn och ingen länk-parameter - enda fallet där det
-    // enkla textfältet för namn faktiskt behövs.
+    return sparat;
+  }
+  return null; // inget namn kunde avgöras - textfältet behövs
+}
+
+(async function(){
+  // Steg 1: visa cachad data DIREKT om den finns (ingen väntan), så sidan
+  // känns lika snabb som huvudappen redan gör.
+  const cachadJson = hamtaDataFranCache();
+  let visatNamn = null;
+  if (cachadJson) {
+    visatNamn = hanteraData(cachadJson);
+    if (visatNamn) visaSchemaFor(visatNamn, true);
+    else visaBytNamnFalt();
+  }
+
+  // Steg 2: hämta färsk data i bakgrunden och uppdatera tyst. Om det INTE
+  // fanns någon cache alls (första besöket någonsin) är det här istället
+  // den enda, vanliga (väntande) hämtningen.
+  let json;
+  try{
+    json = await hamtaData();
+  }catch(e){
+    if (!cachadJson) {
+      document.getElementById("valjNamnVy").innerHTML = `<div class="fel">Kunde inte hämta schemadata. Kontrollera internetanslutningen och ladda om sidan.</div>`;
+    }
+    return;
+  }
+
+  const namn = hanteraData(json);
+  if (namn) {
+    visaSchemaFor(namn, !cachadJson);
+  } else if (!cachadJson) {
     visaBytNamnFalt();
   }
 })();
