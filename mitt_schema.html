@@ -629,9 +629,12 @@ function visaBytNamnFalt(){
       localStorage.setItem(NAMN_NYCKEL, rattNamn);
       if (vyFranLank) localStorage.setItem(VY_NYCKEL, vyFranLank);
     }catch(e){}
-    // Städa bort namn/vy ur adressfältet så det inte ligger synligt kvar
-    // eller råkar delas vidare av misstag.
-    history.replaceState(null, "", location.pathname);
+    // OBS: vi städar MEDVETET INTE bort namn/vy ur adressfältet längre.
+    // Om man lägger till sidan på hemskärmen (iPhone) sparas exakt den
+    // webbadress man står på just då - och localStorage delas inte alltid
+    // pålitligt mellan vanlig Safari-surfning och en hemskärms-app. Genom
+    // att låta namnet ligga kvar i webbadressen fungerar genvägen alltid,
+    // oavsett vad som händer med det delade minnet.
     visaSchemaFor(rattNamn, true);
     return;
   }
