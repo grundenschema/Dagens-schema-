@@ -251,6 +251,8 @@ select, .btn {
    samma rad. Två separata rader (öppna / kräver inloggning) som radbryter
    av sig själva om det inte får plats, t.ex. på en smal skärm. */
 .vt-meny-rad { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
+#vtAdminRad.vt-meny-rad { gap:8px; }
+#vtAdminRad .vt-meny-knapp { flex:0 1 122px; min-width:104px; max-width:150px; padding:16px 6px; font-size:13px; }
 .vt-meny-knapp {
   flex: 0 1 150px;
   min-width: 130px;
@@ -2165,11 +2167,12 @@ body.print-week{ }
       <button onclick="visaVerktygssida('vtCompare')" class="btn primary vt-meny-knapp">📊<br>Jämför scheman</button>
       <button onclick="visaVerktygssida('vtSick')" class="btn primary vt-meny-knapp">🩺<br>Sjukfrånvaro</button>
     </div>
-    <div class="vt-meny-rad" style="margin-top:12px;">
+    <div class="vt-meny-rad" id="vtAdminRad" style="margin-top:12px;">
       <button id="vtBtnLaggTill" onclick="vtKlickAdminKnapp('vtLaggTill')" class="btn primary vt-admin-knapp vt-meny-knapp"><span class="vt-lasikon">🔒</span>➕<br>Lägg till person</button>
       <button id="vtBtnTaBort" onclick="vtKlickAdminKnapp('vtTaBort')" class="btn primary vt-admin-knapp vt-meny-knapp"><span class="vt-lasikon">🔒</span>🗑<br>Ta bort person</button>
       <button id="vtBtnKrock" onclick="vtKlickAdminKnapp('vtKrock')" class="btn primary vt-admin-knapp vt-meny-knapp"><span class="vt-lasikon">🔒</span>⚠️<br>Hantera krockar</button>
       <button id="vtBtnHistorik" onclick="vtKlickAdminKnapp('vtHistorik')" class="btn primary vt-admin-knapp vt-meny-knapp"><span class="vt-lasikon">🔒</span>🕒<br>Hantera historik</button>
+      <button id="vtBtnMittSchema" onclick="vtKlickAdminKnapp('vtMittSchema')" class="btn primary vt-admin-knapp vt-meny-knapp"><span class="vt-lasikon">🔒</span>📱<br>Mitt Schema-länk</button>
     </div>
   </div>
 
@@ -2304,6 +2307,56 @@ body.print-week{ }
         <button class="btn" onclick="visaHistorik(true)">Filtrera</button>
       </div>
       <div id="historikResultat"></div>
+    </div>
+  </div>
+
+  <div id="vtMittSchema" class="vt-sida" style="display:none;">
+    <div style="max-width:820px;margin:0 auto;background:white;border-radius:12px;padding:4px;">
+      <div style="font-weight:800;font-size:15px;color:#1a73e8;margin-bottom:10px;">📱 Skapa länk till Mitt Schema</div>
+      <p style="font-size:13px;color:#555;margin-bottom:14px;">
+        Skapar en länk/QR-kod som tar en deltagare direkt till sitt eget schema i
+        "Mitt Schema" - en helt separat, förenklad sida. Deltagaren skannar koden
+        med telefonens kamera, eller så skickas länken som sms.
+      </p>
+
+      <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:5px;text-transform:uppercase;">Deltagare</label>
+      <div style="position:relative;margin-bottom:14px;max-width:400px;">
+        <input type="text" id="msNamnInput" placeholder="🔍 Sök namn..." autocomplete="off" style="width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;" />
+        <div id="msNamnDropdown" style="position:absolute;z-index:9999;background:white;border:1.5px solid #ddd;border-radius:8px;width:100%;max-height:200px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+      </div>
+
+      <label style="display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:6px;text-transform:uppercase;">Vyläge</label>
+      <div style="display:flex;gap:18px;margin-bottom:18px;flex-wrap:wrap;align-items:flex-start;">
+        <label style="font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;">
+          <input type="radio" name="msVy" value="bildstod" checked>
+          <div style="width:140px;height:140px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border:2.5px solid #000;border-radius:12px;padding:10px;background:#fff;">
+            <img src="https://globalsymbols.com/uploads/production/image/imagefile/22048/17_22049_5d15e20c-8654-4f80-b4c7-6a7bc7a20f6f.png" alt="Frukost" style="max-height:56px;max-width:100%;object-fit:contain;">
+            <div style="font-weight:900;font-size:13px;margin-top:6px;">Frukost</div>
+            <div style="font-size:11px;color:#666;margin-top:2px;">08:00</div>
+          </div>
+          🖼️ Bildstöd
+        </label>
+        <label style="font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;">
+          <input type="radio" name="msVy" value="text">
+          <div style="width:140px;height:140px;display:flex;flex-direction:column;justify-content:center;text-align:left;border:1px solid #e3e6ea;border-left:6px solid #FAD7A0;border-radius:12px;padding:10px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="font-weight:900;font-size:12px;">✨ Lite av varje</div>
+            <div style="font-size:11px;color:#444;margin-top:4px;">🕐 08:00–09:00</div>
+            <div style="font-size:11px;color:#444;margin-top:4px;">🧑‍🏫 Lisa</div>
+          </div>
+          📄 Kort
+        </label>
+
+        <div id="msResultat" style="display:none;text-align:center;padding-left:20px;border-left:1px solid #eee;width:170px;">
+          <div id="msQrCanvas" style="margin:0 auto 10px auto;"></div>
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">Länk (för sms):</div>
+          <input type="text" id="msLankText" readonly style="width:100%;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;font-size:10px;text-align:center;">
+          <button class="btn" style="margin-top:8px;font-size:12px;padding:6px 10px;" onclick="navigator.clipboard.writeText(document.getElementById('msLankText').value)">📋 Kopiera länk</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;max-width:400px;">
+        <button type="button" onclick="skapaMittSchemaLank()" style="flex:1;padding:10px 16px;background:#1a73e8;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Skapa länk/QR-kod</button>
+      </div>
     </div>
   </div>
 
@@ -3443,7 +3496,7 @@ function visaVerktygsmeny(){
 // alltid synliga och klickbara, bara utseendet (orange kant + låsikon)
 // signalerar om de kräver inloggning just nu.
 function vtSattLastVisuellt(last){
-  ["vtBtnLaggTill","vtBtnTaBort","vtBtnKrock","vtBtnHistorik"].forEach(id => {
+  ["vtBtnLaggTill","vtBtnTaBort","vtBtnKrock","vtBtnHistorik","vtBtnMittSchema"].forEach(id => {
     const btn = document.getElementById(id);
     if (!btn) return;
     const ikon = btn.querySelector(".vt-lasikon");
@@ -3475,8 +3528,54 @@ const VT_SIDNAMN = {
   vtLaggTill: "Lägg till person",
   vtTaBort: "Ta bort person",
   vtKrock: "Hantera krockar",
-  vtHistorik: "Hantera historik"
+  vtHistorik: "Hantera historik",
+  vtMittSchema: "Skapa länk till Mitt Schema"
 };
+
+// ===== Mitt Schema: skapa länk/QR-kod =====
+// Bygger en webbadress till den helt separata, fristående sidan
+// "mitt_schema.html" med namn+vyläge redan ifyllt, så deltagaren slipper
+// välja något själv - QR-koden genereras helt lokalt i webbläsaren
+// (qrcode.min.js, laddad från CDN i <head>), ingen data skickas iväg.
+let _msValtNamn = "";
+function fyllMittSchemaNamnlista(){
+  const inp = document.getElementById("msNamnInput");
+  const dropdown = document.getElementById("msNamnDropdown");
+  if (!inp || !dropdown || inp._msKopplad) return;
+  inp._msKopplad = true;
+
+  function valjNamn(namn){
+    _msValtNamn = namn;
+    inp.value = namn;
+    dropdown.style.display = "none";
+  }
+  function visaForslag(filter){
+    _msValtNamn = ""; // ändrar man texten manuellt räknas inget som valt förrän man klickar/Enter igen
+    acByggLista(dropdown, LISTOR_DELTAGARE || [], filter, valjNamn, []);
+  }
+  inp.addEventListener("input", () => visaForslag(inp.value));
+  inp.addEventListener("focus", () => visaForslag(inp.value));
+  inp.addEventListener("blur", () => setTimeout(() => dropdown.style.display = "none", 150));
+  inp.addEventListener("keydown", e => acHanteraTangent(e, dropdown));
+}
+
+function skapaMittSchemaLank(){
+  const namn = _msValtNamn;
+  if (!namn) { visaNotis("Sök och välj en deltagare ur listan först.", "info"); return; }
+  const vy = document.querySelector('input[name="msVy"]:checked')?.value || "text";
+
+  // OBS: byt ut basadressen nedan mot den riktiga adressen där
+  // mitt_schema.html faktiskt ligger, när den är uppladdad.
+  const basadress = location.href.replace(/[^/]+$/, "") + "mitt_schema.html";
+  const lank = basadress + "?namn=" + encodeURIComponent(namn) + "&vy=" + encodeURIComponent(vy);
+
+  document.getElementById("msLankText").value = lank;
+  document.getElementById("msResultat").style.display = "block";
+
+  const qrEl = document.getElementById("msQrCanvas");
+  const qrBildUrl = "https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=" + encodeURIComponent(lank);
+  qrEl.innerHTML = `<img src="${qrBildUrl}" width="140" height="140" alt="QR-kod" onerror="this.replaceWith(Object.assign(document.createElement('div'),{textContent:'Kunde inte hämta QR-kod (kräver internetanslutning). Länken nedan fungerar ändå.',style:'color:#c00;font-size:13px;'}))">`;
+}
 
 function visaVerktygssida(id){
   const meny = document.getElementById("verktygMeny");
@@ -3503,6 +3602,9 @@ function visaVerktygssida(id){
   }
   if (id === "vtKrock") {
     visaKrockar();
+  }
+  if (id === "vtMittSchema") {
+    fyllMittSchemaNamnlista();
   }
 }
 
