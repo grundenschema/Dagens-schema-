@@ -2991,7 +2991,7 @@ primeFromCache();
 // Sätt till false under intensiv testning - matcha samma switch
 // (VISNINGSKOD_AKTIV) i Code_LIVE.gs. Kom ihåg att sätta tillbaka till true
 // innan skarp drift igen.
-const VISAKOD_AKTIV = false;
+const VISAKOD_AKTIV = true;
 let VISAKOD_VARDE = localStorage.getItem("VISAKOD_V1") || "";
 
 async function kontrolleraVisaKod(){
