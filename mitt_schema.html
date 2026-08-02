@@ -655,7 +655,8 @@ function hanteraData(json){
   return null; // inget namn kunde avgöras - textfältet behövs
 }
 
-(async function(){
+async function startaAppen(){
+  document.getElementById("valjNamnVy").style.display = "block";
   // Steg 1: visa cachad data DIREKT om den finns (ingen väntan), så sidan
   // känns lika snabb som huvudappen redan gör.
   const cachadJson = hamtaDataFranCache();
@@ -685,7 +686,9 @@ function hanteraData(json){
   } else if (!cachadJson) {
     visaBytNamnFalt();
   }
-})();
+}
+
+startaAppen();
 
 // Minimal PWA: registrera service worker (kräver HTTPS eller localhost) -
 // samma mönster som huvudappen, men en egen, separat service worker-fil.
