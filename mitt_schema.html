@@ -131,7 +131,9 @@ const VY_NYCKEL = "MITT_SCHEMA_VY";
 const url = "https://script.google.com/macros/s/AKfycbx1WUFIXUqn7x0Fj4K7bXeSeZujJGl3l0vJVA-oGquxRThR00Lm7GNQ4uG5TGQOgpgK/exec";
 // Samma visningskod-mekanism som huvudappen (för närvarande avstängd där,
 // men skickas ändå med för att vara redo om den slås på i framtiden).
-const VISAKOD_VARDE = localStorage.getItem("VISAKOD_V1") || "";
+// Visningskoden skickas alltid automatiskt med - deltagarsidan ska inte
+// fråga om någon kod alls. Måste matcha VISNINGSKOD i Code_LIVE.gs.
+const VISAKOD_VARDE = "grunden2026";
 
 /* ===== Aktivitetsfärger/emoji - samma karta som huvudappen ===== */
 const aktivitetFarger = {
